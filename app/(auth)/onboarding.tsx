@@ -15,7 +15,7 @@ const STEPS = [
   },
   {
     title: 'Set your reminder',
-    body: 'We'll send you a daily nudge when your passage is ready. You can change this any time in settings.',
+    body: "We'll send you a daily nudge when your passage is ready. You can change this any time in settings.",
     emoji: '🔔',
     cta: 'Continue',
   },
