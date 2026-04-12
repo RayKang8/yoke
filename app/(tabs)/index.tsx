@@ -10,7 +10,7 @@ import { colors } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
 import { Translation, Visibility } from '../../types';
 
-const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV'];
+const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'BBE', 'AKJV'];
 const VISIBILITIES: { value: Visibility; label: string }[] = [
   { value: 'friends', label: 'Friends Only' },
   { value: 'public', label: 'Public' },
@@ -44,7 +44,7 @@ export default function HomeScreen() {
       return;
     }
     getVerseText(passage.reference, translation).then(text => {
-      setPassageText(text ?? passage.text); // fallback to NIV if not seeded yet
+      setPassageText(text ?? passage.text); // fallback to NIV if not found
     });
   }, [passage, translation]);
 

@@ -13,7 +13,7 @@ import { Translation, Visibility } from '../types';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { usePremium } from '../hooks/usePremium';
 
-const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV'];
+const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'BBE', 'AKJV'];
 const VISIBILITIES: { value: Visibility; label: string }[] = [
   { value: 'friends', label: 'Friends Only' },
   { value: 'public', label: 'Public' },

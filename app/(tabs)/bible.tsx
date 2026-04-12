@@ -10,7 +10,7 @@ import { BIBLE_BOOKS } from '../../constants/bible-books';
 import { colors } from '../../constants/theme';
 import { Translation } from '../../types';
 
-const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV'];
+const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'BBE', 'AKJV'];
 type View = 'book' | 'chapter' | 'reader' | 'search';
 
 export default function BibleScreen() {
