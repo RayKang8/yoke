@@ -18,7 +18,7 @@ export default function FeedScreen() {
   const [tab, setTab] = useState<Tab>('public');
   const [currentUserId, setCurrentUserId] = useState('');
 
-  const { items, loading, refreshing, refresh } = useFeed(tab);
+  const { items, loading, refreshing, error, refresh } = useFeed(tab);
 
   // Mutate reactions locally so the UI updates instantly
   const [localItems, setLocalItems] = useState(items);
@@ -69,6 +69,18 @@ export default function FeedScreen() {
       {loading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color={c.accent} size="large" />
+        </View>
+      ) : error ? (
+        <View className="flex-1 items-center justify-center px-8">
+          <Text style={{ color: c.textPrimary, fontSize: 17, fontWeight: '600', marginBottom: 8, textAlign: 'center' }}>
+            Something went wrong
+          </Text>
+          <Text style={{ color: c.textSecondary, textAlign: 'center', marginBottom: 20 }}>{error}</Text>
+          <TouchableOpacity onPress={refresh}
+            style={{ backgroundColor: c.accent, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12 }}
+          >
+            <Text style={{ color: '#1A1A1A', fontWeight: '600' }}>Try Again</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList

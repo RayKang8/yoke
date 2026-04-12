@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useFriends } from '../hooks/useFriends';
 import { sendPushToUser } from '../lib/notifications';
+import { haptics } from '../lib/haptics';
 import { colors } from '../constants/theme';
 
 export default function FriendsScreen() {
@@ -75,6 +76,7 @@ export default function FriendsScreen() {
     if (error) { Alert.alert('Error', error.message); return; }
 
     setCode('');
+    haptics.success();
     // Notify the other user
     const { data: me } = await supabase.from('users').select('name').eq('id', currentUserId).single();
     await sendPushToUser(target.id, 'New Friend Request', `${me?.name ?? 'Someone'} wants to be Yoke friends.`, { screen: 'profile', userId: currentUserId });
@@ -84,6 +86,7 @@ export default function FriendsScreen() {
 
   async function acceptRequest(friendshipId: string) {
     await supabase.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId);
+    haptics.success();
     refetch();
   }
 

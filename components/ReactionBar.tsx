@@ -3,6 +3,7 @@ import { useColorScheme } from 'react-native';
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { colors } from '../constants/theme';
+import { haptics } from '../lib/haptics';
 
 const REACTIONS = [
   { type: 'pray', label: '🙏 Pray' },
@@ -34,6 +35,7 @@ export function ReactionBar({ devotionalId, reactions, currentUserId, onUpdate }
     if (busy) return;
     setBusy(type);
 
+    haptics.light();
     if (myReactions.has(type)) {
       // remove
       await supabase

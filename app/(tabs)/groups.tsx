@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useGroups } from '../../hooks/useGroups';
+import { haptics } from '../../lib/haptics';
 import { GroupCard } from '../../components/GroupCard';
 import { colors } from '../../constants/theme';
 
@@ -69,6 +70,7 @@ export default function GroupsScreen() {
     setBusy(false);
     setShowCreate(false);
     setGroupName('');
+    haptics.success();
     refetch();
 
     // Share invite code
@@ -118,6 +120,7 @@ export default function GroupsScreen() {
     setBusy(false);
     setShowJoin(false);
     setInviteCode('');
+    haptics.success();
     refetch();
     Alert.alert('Joined!', `You joined "${group.name}".`);
   }

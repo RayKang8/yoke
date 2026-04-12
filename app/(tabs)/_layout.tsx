@@ -1,12 +1,28 @@
 import { Tabs } from 'expo-router';
-import { useColorScheme, Text } from 'react-native';
+import { useColorScheme, View } from 'react-native';
 import { colors } from '../../constants/theme';
 
-function TabIcon({ label }: { label: string }) {
-  const icons: Record<string, string> = {
-    Home: '⌂', Feed: '☰', Bible: '📖', Groups: '👥', Profile: '○',
-  };
-  return <Text style={{ fontSize: 20 }}>{icons[label] ?? '●'}</Text>;
+interface TabIconProps {
+  focused: boolean;
+  name: string;
+}
+
+function TabIcon({ focused, name }: TabIconProps) {
+  const scheme = useColorScheme();
+  const c = colors[scheme === 'dark' ? 'dark' : 'light'];
+
+  // Simple solid/outline dot indicator under active tab
+  return (
+    <View style={{ alignItems: 'center', justifyContent: 'center', width: 28, height: 28 }}>
+      <View style={{
+        width: focused ? 6 : 5,
+        height: focused ? 6 : 5,
+        borderRadius: 3,
+        backgroundColor: focused ? c.accent : c.textSecondary,
+        opacity: focused ? 1 : 0.4,
+      }} />
+    </View>
+  );
 }
 
 export default function TabsLayout() {
@@ -20,17 +36,18 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: c.surface,
           borderTopColor: c.border,
+          borderTopWidth: 1,
         },
         tabBarActiveTintColor: c.accent,
         tabBarInactiveTintColor: c.textSecondary,
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '500', marginBottom: 2 },
       }}
     >
-      <Tabs.Screen name="index"   options={{ title: 'Home',    tabBarIcon: () => <TabIcon label="Home" /> }} />
-      <Tabs.Screen name="feed"    options={{ title: 'Feed',    tabBarIcon: () => <TabIcon label="Feed" /> }} />
-      <Tabs.Screen name="bible"   options={{ title: 'Bible',   tabBarIcon: () => <TabIcon label="Bible" /> }} />
-      <Tabs.Screen name="groups"  options={{ title: 'Groups',  tabBarIcon: () => <TabIcon label="Groups" /> }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: () => <TabIcon label="Profile" /> }} />
+      <Tabs.Screen name="index"   options={{ title: 'Home',    tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="home" /> }} />
+      <Tabs.Screen name="feed"    options={{ title: 'Feed',    tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="feed" /> }} />
+      <Tabs.Screen name="bible"   options={{ title: 'Bible',   tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="bible" /> }} />
+      <Tabs.Screen name="groups"  options={{ title: 'Groups',  tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="groups" /> }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="profile" /> }} />
     </Tabs>
   );
 }

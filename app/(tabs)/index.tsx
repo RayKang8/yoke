@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { usePassage } from '../../hooks/usePassage';
 import { colors } from '../../constants/theme';
+import { haptics } from '../../lib/haptics';
 import { Translation, Visibility } from '../../types';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV'];
@@ -76,6 +77,7 @@ export default function HomeScreen() {
       return;
     }
 
+    haptics.success();
     setTodaysDevotion(data);
   }
 

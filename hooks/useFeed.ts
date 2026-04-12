@@ -48,6 +48,7 @@ export function useFeed(tab: 'public' | 'friends') {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetch = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -88,8 +89,11 @@ export function useFeed(tab: 'public' | 'friends') {
         .in('visibility', ['public', 'friends']);
     }
 
-    const { data, error } = await query;
-    if (!error && data) {
+    const { data, error: fetchError } = await query;
+    if (fetchError) {
+      setError('Could not load feed. Pull to refresh.');
+    } else if (data) {
+      setError(null);
       const counts = await fetchCommentCounts(data.map((d: any) => d.id));
       setItems(attachCounts(data, counts));
     }
@@ -99,5 +103,5 @@ export function useFeed(tab: 'public' | 'friends') {
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  return { items, loading, refreshing, refresh: () => fetch(true) };
+  return { items, loading, refreshing, error, refresh: () => fetch(true) };
 }
