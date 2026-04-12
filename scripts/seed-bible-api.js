@@ -43,7 +43,16 @@ const CHAPTER_COUNTS = [
 ];
 
 function stripHtml(text) {
-  return text.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  return text
+    .replace(/<[^>]+>/g, ' ')   // replace tags with a space so words don't concatenate
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, ' ')       // collapse any runs of whitespace
+    .trim();
 }
 
 function sleep(ms) {
