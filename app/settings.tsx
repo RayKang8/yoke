@@ -88,6 +88,7 @@ export default function SettingsScreen() {
   }
 
   return (
+    <>
     <ScrollView
       style={{ flex: 1, backgroundColor: c.background }}
       contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 40 }}
@@ -184,5 +185,6 @@ export default function SettingsScreen() {
       onClose={() => setShowPaywall(false)}
       onPurchased={() => { setShowPaywall(false); recheck(); }}
     />
+    </>
   );
 }
