@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  useColorScheme, Alert, Switch,
+  useColorScheme, Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -10,6 +10,8 @@ import { supabase } from '../lib/supabase';
 import { scheduleDailyReminder } from '../lib/notifications';
 import { colors } from '../constants/theme';
 import { Translation, Visibility } from '../types';
+import { PaywallSheet } from '../components/PaywallSheet';
+import { usePremium } from '../hooks/usePremium';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV'];
 const VISIBILITIES: { value: Visibility; label: string }[] = [
@@ -26,8 +28,8 @@ export default function SettingsScreen() {
   const [reminderTime, setReminderTime] = useState('8:00 AM');
   const [defaultTranslation, setDefaultTranslation] = useState<Translation>('NIV');
   const [defaultVisibility, setDefaultVisibility] = useState<Visibility>('friends');
-  const [isPremium, setIsPremium] = useState(false);
-  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const { isPremium, isTrialActive, trialDaysLeft, recheck } = usePremium();
 
   useEffect(() => { load(); }, []);
 
@@ -40,13 +42,6 @@ export default function SettingsScreen() {
     if (time) setReminderTime(time);
     if (trans) setDefaultTranslation(trans as Translation);
     if (vis) setDefaultVisibility(vis as Visibility);
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase.from('users').select('is_premium, trial_ends_at').eq('id', user.id).single();
-      setIsPremium(data?.is_premium ?? false);
-      setTrialEndsAt(data?.trial_ends_at ?? null);
-    }
   }
 
   async function setSetting(key: string, value: string) {
@@ -77,11 +72,6 @@ export default function SettingsScreen() {
     router.replace('/(auth)/welcome');
   }
 
-  const trialActive = trialEndsAt && new Date(trialEndsAt) > new Date();
-  const trialDaysLeft = trialEndsAt
-    ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-    : 0;
-
   function SectionHeader({ label }: { label: string }) {
     return <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8, marginTop: 24 }}>{label}</Text>;
   }
@@ -111,15 +101,22 @@ export default function SettingsScreen() {
       {/* Subscription */}
       <SectionHeader label="SUBSCRIPTION" />
       <View style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 8 }}>
-        {isPremium ? (
+        {isPremium && !isTrialActive ? (
           <View>
             <Text style={{ color: c.accent, fontWeight: '700', fontSize: 16 }}>Yoke Premium ✓</Text>
             <Text style={{ color: c.textSecondary, fontSize: 14, marginTop: 2 }}>Active subscription</Text>
           </View>
-        ) : trialActive ? (
-          <View>
-            <Text style={{ color: c.accent, fontWeight: '700', fontSize: 16 }}>Free Trial</Text>
-            <Text style={{ color: c.textSecondary, fontSize: 14, marginTop: 2 }}>{trialDaysLeft} day{trialDaysLeft !== 1 ? 's' : ''} remaining</Text>
+        ) : isTrialActive ? (
+          <View className="flex-row items-center justify-between">
+            <View>
+              <Text style={{ color: c.accent, fontWeight: '700', fontSize: 16 }}>Free Trial</Text>
+              <Text style={{ color: c.textSecondary, fontSize: 14, marginTop: 2 }}>{trialDaysLeft} day{trialDaysLeft !== 1 ? 's' : ''} remaining</Text>
+            </View>
+            <TouchableOpacity onPress={() => setShowPaywall(true)}
+              style={{ backgroundColor: c.accent, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 }}
+            >
+              <Text style={{ color: '#1A1A1A', fontWeight: '600' }}>Upgrade</Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <View className="flex-row items-center justify-between">
@@ -127,7 +124,9 @@ export default function SettingsScreen() {
               <Text style={{ color: c.textPrimary, fontWeight: '600', fontSize: 16 }}>Free Tier</Text>
               <Text style={{ color: c.textSecondary, fontSize: 13 }}>$4.99/mo or $49.99/yr</Text>
             </View>
-            <TouchableOpacity style={{ backgroundColor: c.accent, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 }}>
+            <TouchableOpacity onPress={() => setShowPaywall(true)}
+              style={{ backgroundColor: c.accent, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 }}
+            >
               <Text style={{ color: '#1A1A1A', fontWeight: '600' }}>Upgrade</Text>
             </TouchableOpacity>
           </View>
@@ -179,5 +178,11 @@ export default function SettingsScreen() {
         <Text style={{ color: '#FF4444', fontSize: 16 }}>Delete Account</Text>
       </TouchableOpacity>
     </ScrollView>
+
+    <PaywallSheet
+      visible={showPaywall}
+      onClose={() => setShowPaywall(false)}
+      onPurchased={() => { setShowPaywall(false); recheck(); }}
+    />
   );
 }

@@ -4,6 +4,7 @@ import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '../hooks/useAuth';
 import { registerForPushNotifications, useNotificationListener } from '../lib/notifications';
+import { initRevenueCat } from '../lib/revenuecat';
 
 export default function RootLayout() {
   const { session, loading } = useAuth();
@@ -13,10 +14,11 @@ export default function RootLayout() {
     if (loading) return;
     if (session) {
       router.replace('/(tabs)');
-      // Register for push once per session
+      // Register for push + init RevenueCat once per session
       if (!registered.current) {
         registered.current = true;
         registerForPushNotifications();
+        initRevenueCat(session.user.id);
       }
     } else {
       router.replace('/(auth)/welcome');
