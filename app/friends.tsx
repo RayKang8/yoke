@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { useFriends } from '../hooks/useFriends';
+import { sendPushToUser } from '../lib/notifications';
 import { colors } from '../constants/theme';
 
 export default function FriendsScreen() {
@@ -74,6 +75,9 @@ export default function FriendsScreen() {
     if (error) { Alert.alert('Error', error.message); return; }
 
     setCode('');
+    // Notify the other user
+    const { data: me } = await supabase.from('users').select('name').eq('id', currentUserId).single();
+    await sendPushToUser(target.id, 'New Friend Request', `${me?.name ?? 'Someone'} wants to be Yoke friends.`, { screen: 'profile', userId: currentUserId });
     Alert.alert('Request sent!', `Friend request sent to ${target.name}.`);
     refetch();
   }

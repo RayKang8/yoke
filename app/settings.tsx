@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
+import { scheduleDailyReminder } from '../lib/notifications';
 import { colors } from '../constants/theme';
 import { Translation, Visibility } from '../types';
 
@@ -137,7 +138,7 @@ export default function SettingsScreen() {
       <SectionHeader label="DAILY REMINDER TIME" />
       <View className="flex-row flex-wrap gap-2 mb-4">
         {REMINDER_TIMES.map(t => (
-          <TouchableOpacity key={t} onPress={() => { setReminderTime(t); setSetting('reminderTime', t); }}
+          <TouchableOpacity key={t} onPress={async () => { setReminderTime(t); await setSetting('reminderTime', t); await scheduleDailyReminder(t); }}
             style={{ backgroundColor: reminderTime === t ? c.accent : c.surface, borderColor: reminderTime === t ? c.accent : c.border, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 }}
           >
             <Text style={{ color: reminderTime === t ? '#1A1A1A' : c.textPrimary, fontWeight: reminderTime === t ? '600' : '400', fontSize: 14 }}>

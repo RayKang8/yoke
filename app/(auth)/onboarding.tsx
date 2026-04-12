@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import {
   View, Text, TouchableOpacity, useColorScheme,
-  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { registerForPushNotifications, scheduleDailyReminder } from '../../lib/notifications';
 import { colors } from '../../constants/theme';
 
 const STEPS = [
@@ -38,7 +39,13 @@ export default function OnboardingScreen() {
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
 
-  function handleContinue() {
+  async function handleContinue() {
+    if (step === 1) {
+      // Step 2: request permission and schedule reminder
+      await registerForPushNotifications();
+      await AsyncStorage.setItem('reminderTime', selectedTime);
+      await scheduleDailyReminder(selectedTime);
+    }
     if (isLast) {
       router.replace('/(tabs)');
     } else {
