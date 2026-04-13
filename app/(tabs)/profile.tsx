@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, useColorScheme,
   Clipboard, Alert, Modal, TextInput, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useProfile } from '../../hooks/useProfile';
 import { colors } from '../../constants/theme';
@@ -13,7 +13,9 @@ export default function ProfileScreen() {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
-  const { profile, devoCount, friendCount, loading, updateProfile } = useProfile();
+  const { profile, devoCount, friendCount, loading, refetch, updateProfile } = useProfile();
+
+  useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
 
   const [editVisible, setEditVisible] = useState(false);
   const [editName, setEditName] = useState('');
