@@ -23,7 +23,7 @@ export default function LoginScreen() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
@@ -31,6 +31,11 @@ export default function LoginScreen() {
 
     if (error) {
       Alert.alert('Login failed', error.message);
+      return;
+    }
+
+    if (!data.session?.user?.email_confirmed_at) {
+      router.replace('/(auth)/verify-email');
       return;
     }
 

@@ -5,6 +5,8 @@ import {
   useColorScheme, Alert, ScrollView,
 } from 'react-native';
 import { router } from 'expo-router';
+import * as Linking from 'expo-linking';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
 
@@ -28,15 +30,25 @@ export default function SignUpScreen() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    await AsyncStorage.setItem('pending_email', email.trim());
+    const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { name: name.trim() } },
+      options: {
+        data: { name: name.trim() },
+        emailRedirectTo: Linking.createURL('/'),
+      },
     });
     setLoading(false);
 
     if (error) {
       Alert.alert('Sign up failed', error.message);
+      return;
+    }
+
+    // No session means email confirmation is required
+    if (!data.session) {
+      router.replace('/(auth)/verify-email');
       return;
     }
 
