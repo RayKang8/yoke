@@ -1,17 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, FlatList,
-  TextInput, ActivityIndicator, useColorScheme, Clipboard,
+  View, Text, ScrollView, TouchableOpacity,
+  ActivityIndicator, useColorScheme, Clipboard,
   Alert, Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getChapter, searchVerses, Verse } from '../../lib/bible-api';
+import { getChapter, Verse } from '../../lib/bible-api';
 import { BIBLE_BOOKS } from '../../constants/bible-books';
 import { colors } from '../../constants/theme';
 import { Translation } from '../../types';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
-type View = 'book' | 'chapter' | 'reader' | 'search';
+type View = 'book' | 'chapter' | 'reader';
 
 export default function BibleScreen() {
   const scheme = useColorScheme();
@@ -24,9 +24,6 @@ export default function BibleScreen() {
   const [selectedChapter, setSelectedChapter] = useState(1);
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loadingVerses, setLoadingVerses] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<(Verse & { book: string; chapter: number })[]>([]);
-  const [searching, setSearching] = useState(false);
   const [showTranslations, setShowTranslations] = useState(false);
 
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook)!;
@@ -41,14 +38,6 @@ export default function BibleScreen() {
   useEffect(() => {
     if (view === 'reader') loadChapter();
   }, [view, loadChapter]);
-
-  async function handleSearch() {
-    if (!searchQuery.trim()) return;
-    setSearching(true);
-    const results = await searchVerses(searchQuery.trim(), translation);
-    setSearchResults(results);
-    setSearching(false);
-  }
 
   function copyVerse(book: string, chapter: number, verse: number, text: string) {
     Clipboard.setString(`${book} ${chapter}:${verse} — ${text} (${translation})`);
@@ -66,11 +55,6 @@ export default function BibleScreen() {
           <View className="flex-row items-center justify-between mb-4">
             <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700' }}>Bible</Text>
             <View className="flex-row gap-2 items-center">
-              <TouchableOpacity onPress={() => setView('search')}
-                style={{ backgroundColor: c.surface, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: c.border }}
-              >
-                <Text style={{ color: c.textSecondary, fontSize: 14 }}>Search</Text>
-              </TouchableOpacity>
               <TouchableOpacity onPress={() => setShowTranslations(true)}
                 style={{ backgroundColor: c.accent, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7 }}
               >
@@ -146,67 +130,6 @@ export default function BibleScreen() {
           </View>
         </ScrollView>
         <TranslationModal />
-      </View>
-    );
-  }
-
-  // ── Search ───────────────────────────────────────────────
-  if (view === 'search') {
-    return (
-      <View style={{ flex: 1, backgroundColor: c.background }}>
-        <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: 12 }}>
-          <TouchableOpacity onPress={() => { setView('book'); setSearchResults([]); setSearchQuery(''); }} className="mb-3">
-            <Text style={{ color: c.textSecondary, fontSize: 16 }}>← Bible</Text>
-          </TouchableOpacity>
-          <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700', marginBottom: 12 }}>Search</Text>
-          <View className="flex-row gap-2">
-            <TextInput
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
-              placeholder="Search by keyword..."
-              placeholderTextColor={c.textSecondary}
-              returnKeyType="search"
-              style={{
-                flex: 1, backgroundColor: c.surface, color: c.textPrimary,
-                borderColor: c.border, borderWidth: 1, borderRadius: 12,
-                padding: 12, fontSize: 16,
-              }}
-            />
-            <TouchableOpacity onPress={handleSearch}
-              style={{ backgroundColor: c.accent, borderRadius: 12, paddingHorizontal: 16, justifyContent: 'center' }}
-            >
-              {searching
-                ? <ActivityIndicator color="#1A1A1A" size="small" />
-                : <Text style={{ color: '#1A1A1A', fontWeight: '600' }}>Go</Text>
-              }
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <FlatList
-          data={searchResults}
-          keyExtractor={(_, i) => String(i)}
-          contentContainerStyle={{ padding: 20, paddingTop: 8 }}
-          ListEmptyComponent={
-            !searching && searchQuery ? (
-              <Text style={{ color: c.textSecondary, textAlign: 'center', marginTop: 40 }}>
-                No results found.
-              </Text>
-            ) : null
-          }
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => copyVerse(item.book, item.chapter, item.verse, item.text)}
-              style={{ backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: c.border, padding: 14, marginBottom: 10 }}
-            >
-              <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600', marginBottom: 4 }}>
-                {item.book} {item.chapter}:{item.verse}
-              </Text>
-              <Text style={{ color: c.textPrimary, fontSize: 15, lineHeight: 22 }}>{item.text}</Text>
-            </TouchableOpacity>
-          )}
-        />
       </View>
     );
   }
