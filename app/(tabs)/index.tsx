@@ -33,10 +33,10 @@ export default function HomeScreen() {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
 
-  const { passage, todaysDevotion, loading, error, getVerseText, setTodaysDevotion } = usePassage();
+  const { passage, todaysDevotion, loading, error, setTodaysDevotion } = usePassage();
 
   const [translation, setTranslation] = useState<Translation>('NIV');
-  const [passageText, setPassageText] = useState<string>('');
+  const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);
   const [reflection, setReflection] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('friends');
   const [posting, setPosting] = useState(false);
@@ -47,16 +47,33 @@ export default function HomeScreen() {
   const [editVisibility, setEditVisibility] = useState<Visibility>('friends');
   const [saving, setSaving] = useState(false);
 
-  // Load passage text for selected translation
+  // Load passage verses (with numbers) for selected translation
   useEffect(() => {
     if (!passage) return;
-    if (translation === 'NIV') {
-      setPassageText(passage.text);
-      return;
-    }
-    getVerseText(passage.reference, translation).then(text => {
-      setPassageText(text ?? passage.text); // fallback to NIV if not found
-    });
+    const match = passage.reference.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?/);
+    if (!match) return;
+    const book = match[1];
+    const chapter = parseInt(match[2]);
+    const verseStart = parseInt(match[3]);
+    const verseEnd = match[4] ? parseInt(match[4]) : verseStart;
+
+    supabase
+      .from('bible_verses')
+      .select('verse, text')
+      .eq('translation', translation)
+      .eq('book', book)
+      .eq('chapter', chapter)
+      .gte('verse', verseStart)
+      .lte('verse', verseEnd)
+      .order('verse')
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setPassageVerses(data);
+        } else {
+          // fallback: show NIV text as a single block with no verse numbers
+          setPassageVerses([{ verse: 0, text: passage.text }]);
+        }
+      });
   }, [passage, translation]);
 
   // Recompute streak whenever today's devotion is known (covers existing devotionals on mount)
@@ -261,9 +278,14 @@ export default function HomeScreen() {
                 {passage.reference}
               </Text>
               <View style={{ backgroundColor: c.surface, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: c.border, marginBottom: 20 }}>
-                <Text style={{ color: c.textPrimary, fontSize: 15, lineHeight: 24 }}>
-                  {passageText}
-                </Text>
+                {passageVerses.map((v, i) => (
+                  v.verse === 0
+                    ? <Text key={i} style={{ color: c.textPrimary, fontSize: 15, lineHeight: 24 }}>{v.text}</Text>
+                    : <View key={v.verse} className="flex-row gap-2 mb-1">
+                        <Text style={{ color: c.accent, fontSize: 11, fontWeight: '700', width: 18, paddingTop: 3 }}>{v.verse}</Text>
+                        <Text style={{ flex: 1, color: c.textPrimary, fontSize: 15, lineHeight: 24 }}>{v.text}</Text>
+                      </View>
+                ))}
               </View>
 
               <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>YOUR REFLECTION</Text>
@@ -386,13 +408,21 @@ export default function HomeScreen() {
 
         {/* Passage text */}
         <View style={{ backgroundColor: c.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: c.border, marginBottom: 16 }}>
-          <Text style={{ color: c.textPrimary, fontSize: 16, lineHeight: 26 }}>
-            {passageText}
-          </Text>
+          {passageVerses.map((v, i) => (
+            v.verse === 0
+              ? <Text key={i} style={{ color: c.textPrimary, fontSize: 16, lineHeight: 26 }}>{v.text}</Text>
+              : <View key={v.verse} className="flex-row gap-2 mb-1">
+                  <Text style={{ color: c.accent, fontSize: 12, fontWeight: '700', width: 20, paddingTop: 3 }}>{v.verse}</Text>
+                  <Text style={{ flex: 1, color: c.textPrimary, fontSize: 16, lineHeight: 26 }}>{v.text}</Text>
+                </View>
+          ))}
         </View>
 
         {/* Reflection prompt */}
         <View style={{ backgroundColor: c.accent + '22', borderRadius: 12, padding: 14, marginBottom: 16 }}>
+          <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 6 }}>
+            Something To Think About
+          </Text>
           <Text style={{ color: c.textPrimary, fontSize: 15, lineHeight: 22, fontStyle: 'italic' }}>
             "{passage.prompt}"
           </Text>
