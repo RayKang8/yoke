@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity,
-  ActivityIndicator, useColorScheme, Alert, KeyboardAvoidingView, Platform,
+  ActivityIndicator, useColorScheme, Alert, KeyboardAvoidingView, Platform, Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
@@ -23,6 +23,11 @@ function dayOfYear(dateStr: string): number {
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
+function todayLocalDate(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function HomeScreen() {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -36,6 +41,12 @@ export default function HomeScreen() {
   const [visibility, setVisibility] = useState<Visibility>('friends');
   const [posting, setPosting] = useState(false);
 
+  // Edit state
+  const [editVisible, setEditVisible] = useState(false);
+  const [editContent, setEditContent] = useState('');
+  const [editVisibility, setEditVisibility] = useState<Visibility>('friends');
+  const [saving, setSaving] = useState(false);
+
   // Load passage text for selected translation
   useEffect(() => {
     if (!passage) return;
@@ -47,6 +58,46 @@ export default function HomeScreen() {
       setPassageText(text ?? passage.text); // fallback to NIV if not found
     });
   }, [passage, translation]);
+
+  async function computeAndUpdateStreak(userId: string) {
+    // Fetch all devotional passage dates for this user, newest first
+    const { data } = await supabase
+      .from('devotionals')
+      .select('passages(date)')
+      .eq('user_id', userId);
+
+    const dates: string[] = [];
+    (data ?? []).forEach((row: any) => {
+      const d = row.passages?.date;
+      if (d && !dates.includes(d)) dates.push(d);
+    });
+    dates.sort().reverse(); // descending
+
+    let streak = 0;
+    let expected = todayLocalDate();
+    for (const date of dates) {
+      if (date === expected) {
+        streak++;
+        const d = new Date(expected + 'T12:00:00');
+        d.setDate(d.getDate() - 1);
+        expected = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      } else {
+        break;
+      }
+    }
+
+    const { data: userData } = await supabase
+      .from('users')
+      .select('longest_streak')
+      .eq('id', userId)
+      .single();
+
+    const longestStreak = Math.max(userData?.longest_streak ?? 0, streak);
+    await supabase
+      .from('users')
+      .update({ streak, longest_streak: longestStreak })
+      .eq('id', userId);
+  }
 
   async function handlePost() {
     if (!reflection.trim()) {
@@ -79,6 +130,37 @@ export default function HomeScreen() {
 
     haptics.success();
     setTodaysDevotion(data);
+    computeAndUpdateStreak(user.id);
+  }
+
+  function openEdit() {
+    if (!todaysDevotion) return;
+    setEditContent(todaysDevotion.content);
+    setEditVisibility(todaysDevotion.visibility);
+    setEditVisible(true);
+  }
+
+  async function handleSaveEdit() {
+    if (!editContent.trim() || !todaysDevotion) return;
+    setSaving(true);
+
+    const { data, error } = await supabase
+      .from('devotionals')
+      .update({ content: editContent.trim(), visibility: editVisibility })
+      .eq('id', todaysDevotion.id)
+      .select()
+      .single();
+
+    setSaving(false);
+
+    if (error) {
+      Alert.alert('Error', error.message);
+      return;
+    }
+
+    haptics.success();
+    setTodaysDevotion(data);
+    setEditVisible(false);
   }
 
   // ── Loading state ──────────────────────────────────────────
@@ -138,9 +220,17 @@ export default function HomeScreen() {
 
         {/* Posted reflection */}
         <View style={{ backgroundColor: c.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: c.border, marginBottom: 20 }}>
-          <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>
-            YOUR REFLECTION
-          </Text>
+          <View className="flex-row items-center justify-between mb-2">
+            <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600' }}>
+              YOUR REFLECTION
+            </Text>
+            <TouchableOpacity
+              onPress={openEdit}
+              style={{ backgroundColor: c.accent + '22', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: c.accent + '44' }}
+            >
+              <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600' }}>Edit</Text>
+            </TouchableOpacity>
+          </View>
           <Text style={{ color: c.textPrimary, fontSize: 16, lineHeight: 24 }}>
             {todaysDevotion.content}
           </Text>
@@ -155,6 +245,83 @@ export default function HomeScreen() {
             Come back tomorrow to see the next passage.
           </Text>
         </View>
+
+        {/* Edit Modal */}
+        <Modal visible={editVisible} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditVisible(false)}>
+          <KeyboardAvoidingView
+            style={{ flex: 1, backgroundColor: c.background }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          >
+            <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 32 }} keyboardShouldPersistTaps="handled">
+              <View className="flex-row items-center justify-between mb-6">
+                <Text style={{ color: c.textPrimary, fontSize: 22, fontWeight: '700' }}>Edit Reflection</Text>
+                <TouchableOpacity onPress={() => setEditVisible(false)}>
+                  <Text style={{ color: c.textSecondary, fontSize: 16 }}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>YOUR REFLECTION</Text>
+              <TextInput
+                value={editContent}
+                onChangeText={setEditContent}
+                placeholder="Write your reflection..."
+                placeholderTextColor={c.textSecondary}
+                multiline
+                style={{
+                  backgroundColor: c.surface,
+                  color: c.textPrimary,
+                  borderColor: c.border,
+                  borderWidth: 1,
+                  borderRadius: 14,
+                  padding: 14,
+                  fontSize: 16,
+                  lineHeight: 24,
+                  minHeight: 160,
+                  textAlignVertical: 'top',
+                  marginBottom: 16,
+                }}
+              />
+
+              <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>VISIBILITY</Text>
+              <View className="flex-row gap-2 mb-6">
+                {VISIBILITIES.map(v => (
+                  <TouchableOpacity
+                    key={v.value}
+                    onPress={() => setEditVisibility(v.value)}
+                    style={{
+                      backgroundColor: editVisibility === v.value ? c.accent + '22' : c.surface,
+                      borderColor: editVisibility === v.value ? c.accent : c.border,
+                      borderWidth: 1,
+                      borderRadius: 10,
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                    }}
+                  >
+                    <Text style={{
+                      color: editVisibility === v.value ? c.accent : c.textSecondary,
+                      fontWeight: editVisibility === v.value ? '600' : '400',
+                      fontSize: 14,
+                    }}>
+                      {v.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <TouchableOpacity
+                onPress={handleSaveEdit}
+                disabled={saving || !editContent.trim()}
+                style={{ backgroundColor: editContent.trim() ? c.accent : c.border, borderRadius: 14 }}
+                className="py-4 items-center"
+              >
+                {saving
+                  ? <ActivityIndicator color="#1A1A1A" />
+                  : <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>Save Changes</Text>
+                }
+              </TouchableOpacity>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </Modal>
       </ScrollView>
     );
   }
