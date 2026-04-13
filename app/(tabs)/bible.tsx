@@ -215,6 +215,18 @@ export default function BibleScreen() {
   const prevChapter = selectedChapter > 1 ? selectedChapter - 1 : null;
   const nextChapter = selectedChapter < currentBook.chapters ? selectedChapter + 1 : null;
 
+  const ATTRIBUTION: Record<Translation, string> = {
+    NIV:  'Holy Bible, New International Version®, NIV® © 1973, 1978, 1984, 2011 Biblica, Inc.®',
+    ESV:  'The Holy Bible, English Standard Version® © 2001 Crossway, a publishing ministry of Good News Publishers.',
+    KJV:  'King James Version (KJV) — Public Domain.',
+    NLT:  'Holy Bible, New Living Translation © 1996, 2004, 2015 Tyndale House Foundation.',
+    NKJV: 'New King James Version® © 1982 Thomas Nelson. All rights reserved.',
+    BSB:  'Berean Standard Bible © 2016–2024 Bible Hub. Used by permission. All rights reserved.',
+    ASV:  'American Standard Version (ASV) — Public Domain.',
+    WEB:  'World English Bible (WEB) — Public Domain.',
+    YLT:  "Young's Literal Translation (YLT) — Public Domain.",
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
       {/* Header */}
@@ -300,6 +312,17 @@ export default function BibleScreen() {
               </TouchableOpacity>
             )}
           </View>
+
+          <Text style={{
+            color: c.textSecondary,
+            fontSize: 11,
+            lineHeight: 16,
+            textAlign: 'center',
+            marginTop: 24,
+            opacity: 0.6,
+          }}>
+            {ATTRIBUTION[translation]}
+          </Text>
         </ScrollView>
       )}
 

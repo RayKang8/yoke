@@ -77,6 +77,7 @@ function parseVerse(rawText) {
   }
 
   const text = rawText
+    .replace(/<S>\d+<\/S>/gi, '')  // strip Strong's concordance numbers (KJV/ASV)
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
