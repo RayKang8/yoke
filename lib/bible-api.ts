@@ -4,6 +4,7 @@ import { Translation } from '../types';
 export interface Verse {
   verse: number;
   text: string;
+  heading?: string | null;
 }
 
 export async function getChapter(
@@ -13,7 +14,7 @@ export async function getChapter(
 ): Promise<Verse[]> {
   const { data, error } = await supabase
     .from('bible_verses')
-    .select('verse, text')
+    .select('verse, text, heading')
     .eq('translation', translation)
     .eq('book', book)
     .eq('chapter', chapter)

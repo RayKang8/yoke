@@ -1,10 +1,12 @@
 /**
  * seed-bible-api.js
- * Seeds NIV, ESV, NLT, NKJV, KJV from the bolls.life free Bible API.
+ * Seeds all 9 Bible translations from the bolls.life free API.
  * No API key required.
  *
+ * Translations: NIV, ESV, KJV, NLT, NKJV, BSB, ASV, WEB, YLT
+ *
  * Usage:
- *   node scripts/seed-bible-api.js           # seeds all 5
+ *   node scripts/seed-bible-api.js           # seeds all 9
  *   node scripts/seed-bible-api.js NIV ESV   # seeds specific translations
  *
  * Requires .env.local with EXPO_PUBLIC_SUPABASE_URL and
@@ -20,7 +22,7 @@ const supabase = createClient(
 );
 
 // bolls.life translation slugs
-const TRANSLATIONS = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV'];
+const TRANSLATIONS = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
 
 // Book names in order (index+1 = bolls.life book number)
 const BOOK_NAMES = [
@@ -42,17 +44,50 @@ const CHAPTER_COUNTS = [
   1,13,5,5,3,5,1,1,1,22,
 ];
 
-function stripHtml(text) {
-  return text
-    .replace(/<[^>]+>/g, ' ')   // replace tags with a space so words don't concatenate
+// Section headings in bolls.life are prepended to verse text separated by <br/>.
+// A heading is title-cased (all words ≥4 chars start uppercase) and has no trailing punctuation.
+// We strip all leading heading segments before extracting the actual verse text.
+function isHeading(segment) {
+  const s = segment.trim();
+  if (!s) return false;
+  // If it ends with sentence punctuation it's likely verse content, not a heading
+  if (/[.,;?!]$/.test(s)) return false;
+  // All words with 4+ characters must start with an uppercase letter (title case)
+  const significantWords = s.replace(/[^a-zA-Z ]/g, ' ').split(/\s+/).filter(w => w.length >= 4);
+  if (significantWords.length === 0) return false;
+  return significantWords.every(w => /^[A-Z]/.test(w));
+}
+
+// Returns { heading: string|null, text: string }
+function parseVerse(rawText) {
+  const parts = rawText.split('<br/>');
+  let heading = null;
+
+  if (parts.length > 1) {
+    const headingParts = [];
+    let i = 0;
+    while (i < parts.length - 1 && isHeading(parts[i])) {
+      headingParts.push(parts[i].trim());
+      i++;
+    }
+    if (headingParts.length > 0) {
+      heading = headingParts.join(' · ');
+      rawText = parts.slice(i).join('<br/>');
+    }
+  }
+
+  const text = rawText
+    .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&apos;/g, "'")
     .replace(/&quot;/g, '"')
-    .replace(/\s+/g, ' ')       // collapse any runs of whitespace
+    .replace(/\s+/g, ' ')
     .trim();
+
+  return { heading, text };
 }
 
 function sleep(ms) {
@@ -92,12 +127,14 @@ async function seedTranslation(translation) {
     for (let chapter = 1; chapter <= numChapters; chapter++) {
       const verses = await fetchChapter(translation, bookNum, chapter);
       for (const v of verses) {
+        const { heading, text } = parseVerse(v.text);
         rows.push({
           translation,
           book: bookName,
           chapter,
           verse: v.verse,
-          text: stripHtml(v.text),
+          heading,
+          text,
         });
       }
       chaptersDone++;

@@ -10,7 +10,7 @@ import { colors } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
 import { Translation, Visibility } from '../../types';
 
-const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'BBE', 'AKJV'];
+const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
 const VISIBILITIES: { value: Visibility; label: string }[] = [
   { value: 'friends', label: 'Friends Only' },
   { value: 'public', label: 'Public' },

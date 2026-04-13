@@ -10,7 +10,7 @@ import { BIBLE_BOOKS } from '../../constants/bible-books';
 import { colors } from '../../constants/theme';
 import { Translation } from '../../types';
 
-const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'BBE', 'AKJV'];
+const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
 type View = 'book' | 'chapter' | 'reader' | 'search';
 
 export default function BibleScreen() {
@@ -250,19 +250,33 @@ export default function BibleScreen() {
       ) : (
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
           {verses.map(v => (
-            <TouchableOpacity
-              key={v.verse}
-              onPress={() => copyVerse(selectedBook, selectedChapter, v.verse, v.text)}
-              className="flex-row gap-3 mb-4"
-              activeOpacity={0.6}
-            >
-              <Text style={{ color: c.accent, fontSize: 13, fontWeight: '700', width: 24, paddingTop: 2 }}>
-                {v.verse}
-              </Text>
-              <Text style={{ flex: 1, color: c.textPrimary, fontSize: 17, lineHeight: 28 }}>
-                {v.text}
-              </Text>
-            </TouchableOpacity>
+            <View key={v.verse}>
+              {v.heading && (
+                <Text style={{
+                  color: c.textSecondary,
+                  fontSize: 11,
+                  fontWeight: '700',
+                  letterSpacing: 0.8,
+                  textTransform: 'uppercase',
+                  marginTop: 20,
+                  marginBottom: 6,
+                }}>
+                  {v.heading}
+                </Text>
+              )}
+              <TouchableOpacity
+                onPress={() => copyVerse(selectedBook, selectedChapter, v.verse, v.text)}
+                className="flex-row gap-3 mb-4"
+                activeOpacity={0.6}
+              >
+                <Text style={{ color: c.accent, fontSize: 13, fontWeight: '700', width: 24, paddingTop: 2 }}>
+                  {v.verse}
+                </Text>
+                <Text style={{ flex: 1, color: c.textPrimary, fontSize: 17, lineHeight: 28 }}>
+                  {v.text}
+                </Text>
+              </TouchableOpacity>
+            </View>
           ))}
 
           {/* Prev / Next chapter */}
