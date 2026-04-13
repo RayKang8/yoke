@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '../../constants/theme';
+import YokeLogo from '../../components/YokeLogo';
 
 export default function WelcomeScreen() {
   const scheme = useColorScheme();
@@ -9,19 +10,8 @@ export default function WelcomeScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: c.background }} className="items-center justify-between px-8 pt-24 pb-16">
       {/* Logo area */}
-      <View className="items-center flex-1 justify-center gap-4">
-        <View
-          style={{ backgroundColor: c.accent, width: 80, height: 80, borderRadius: 24 }}
-          className="items-center justify-center"
-        >
-          <Text style={{ fontSize: 36 }}>✝</Text>
-        </View>
-        <Text style={{ color: c.textPrimary, fontSize: 42, fontWeight: '700', letterSpacing: -1 }}>
-          Yoke
-        </Text>
-        <Text style={{ color: c.textSecondary, fontSize: 17, textAlign: 'center' }}>
-          Faith is better together.
-        </Text>
+      <View className="items-center flex-1 justify-center">
+        <YokeLogo size={200} />
       </View>
 
       {/* Buttons */}
