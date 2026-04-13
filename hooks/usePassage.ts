@@ -49,11 +49,13 @@ export function usePassage() {
   }
 
   async function getVerseText(reference: string, translation: Translation): Promise<string | null> {
-    // Parse reference like "John 1:1-14" → book=John, chapter=1
-    const match = reference.match(/^(.+?)\s+(\d+):/);
+    // Parse reference like "John 3:16-17" or "Romans 8:18-25" or "John 3:16"
+    const match = reference.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?/);
     if (!match) return null;
     const book = match[1];
     const chapter = parseInt(match[2]);
+    const verseStart = parseInt(match[3]);
+    const verseEnd = match[4] ? parseInt(match[4]) : verseStart;
 
     const { data } = await supabase
       .from('bible_verses')
@@ -61,10 +63,12 @@ export function usePassage() {
       .eq('translation', translation)
       .eq('book', book)
       .eq('chapter', chapter)
+      .gte('verse', verseStart)
+      .lte('verse', verseEnd)
       .order('verse');
 
     if (!data || data.length === 0) return null;
-    return data.map((v: { verse: number; text: string }) => `${v.verse} ${v.text}`).join(' ');
+    return data.map((v: { verse: number; text: string }) => v.text).join(' ');
   }
 
   useEffect(() => {
