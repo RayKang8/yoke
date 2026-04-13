@@ -9,29 +9,10 @@ export default function VerifyEmailScreen() {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const [resending, setResending] = useState(false);
-  const [checking, setChecking] = useState(false);
 
   async function handleCheckConfirmed() {
-    setChecking(true);
-    // Try to refresh session — works if user has an unconfirmed session
-    const { data: refreshData } = await supabase.auth.refreshSession();
-    if (refreshData.session?.user?.email_confirmed_at) {
-      setChecking(false);
-      router.replace('/(auth)/onboarding');
-      return;
-    }
-    // No session at all (signUp returned null session) — prompt them to log in
-    const { data: sessionData } = await supabase.auth.getSession();
-    setChecking(false);
-    if (!sessionData.session) {
-      Alert.alert(
-        'Not confirmed yet',
-        'Once you tap the link in your email, come back and log in.',
-        [{ text: 'Go to Login', onPress: () => router.replace('/(auth)/login') }]
-      );
-      return;
-    }
-    Alert.alert('Not confirmed yet', 'Tap the link in your email, then try again.');
+    await supabase.auth.signOut();
+    router.replace('/(auth)/login');
   }
 
   async function handleResend() {
@@ -59,14 +40,10 @@ export default function VerifyEmailScreen() {
 
       <TouchableOpacity
         onPress={handleCheckConfirmed}
-        disabled={checking}
         style={{ backgroundColor: c.accent, borderRadius: 14, width: '100%' }}
         className="py-4 items-center mb-4"
       >
-        {checking
-          ? <ActivityIndicator color="#1A1A1A" />
-          : <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>I've confirmed my email</Text>
-        }
+        <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>I've confirmed my email</Text>
       </TouchableOpacity>
 
       <TouchableOpacity

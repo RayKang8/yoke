@@ -5,7 +5,6 @@ import {
   useColorScheme, Alert, ScrollView,
 } from 'react-native';
 import { router } from 'expo-router';
-import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
@@ -34,10 +33,7 @@ export default function SignUpScreen() {
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: {
-        data: { name: name.trim() },
-        emailRedirectTo: Linking.createURL('/'),
-      },
+      options: { data: { name: name.trim() } },
     });
     setLoading(false);
 
