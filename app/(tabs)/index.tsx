@@ -59,19 +59,21 @@ export default function HomeScreen() {
     });
   }, [passage, translation]);
 
+  // Recompute streak whenever today's devotion is known (covers existing devotionals on mount)
+  useEffect(() => {
+    if (!todaysDevotion) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) computeAndUpdateStreak(user.id);
+    });
+  }, [todaysDevotion?.id]);
+
   async function computeAndUpdateStreak(userId: string) {
-    // Fetch all devotional passage dates for this user, newest first
     const { data } = await supabase
       .from('devotionals')
-      .select('passages(date)')
+      .select('created_at')
       .eq('user_id', userId);
 
-    const dates: string[] = [];
-    (data ?? []).forEach((row: any) => {
-      const d = row.passages?.date;
-      if (d && !dates.includes(d)) dates.push(d);
-    });
-    dates.sort().reverse(); // descending
+    const dates = [...new Set((data ?? []).map((r: any) => r.created_at?.slice(0, 10)).filter(Boolean))].sort().reverse();
 
     let streak = 0;
     let expected = todayLocalDate();
@@ -86,17 +88,9 @@ export default function HomeScreen() {
       }
     }
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('longest_streak')
-      .eq('id', userId)
-      .single();
-
+    const { data: userData } = await supabase.from('users').select('longest_streak').eq('id', userId).single();
     const longestStreak = Math.max(userData?.longest_streak ?? 0, streak);
-    await supabase
-      .from('users')
-      .update({ streak, longest_streak: longestStreak })
-      .eq('id', userId);
+    await supabase.from('users').update({ streak, longest_streak: longestStreak }).eq('id', userId);
   }
 
   async function handlePost() {
@@ -130,7 +124,6 @@ export default function HomeScreen() {
 
     haptics.success();
     setTodaysDevotion(data);
-    computeAndUpdateStreak(user.id);
   }
 
   function openEdit() {
@@ -258,6 +251,19 @@ export default function HomeScreen() {
                 <TouchableOpacity onPress={() => setEditVisible(false)}>
                   <Text style={{ color: c.textSecondary, fontSize: 16 }}>Cancel</Text>
                 </TouchableOpacity>
+              </View>
+
+              {/* Passage context */}
+              <Text style={{ color: c.textPrimary, fontSize: 18, fontWeight: '700', marginBottom: 2 }}>
+                {passage.title}
+              </Text>
+              <Text style={{ color: c.accent, fontSize: 14, fontWeight: '600', marginBottom: 12 }}>
+                {passage.reference}
+              </Text>
+              <View style={{ backgroundColor: c.surface, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: c.border, marginBottom: 20 }}>
+                <Text style={{ color: c.textPrimary, fontSize: 15, lineHeight: 24 }}>
+                  {passageText}
+                </Text>
               </View>
 
               <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>YOUR REFLECTION</Text>

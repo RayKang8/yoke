@@ -33,6 +33,25 @@ export default function CalendarScreen() {
   const [isPremium, setIsPremium] = useState(false);
   const [streak, setStreak] = useState(0);
 
+  function computeStreak(dates: Set<string>): number {
+    const t = new Date();
+    const todayStr = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+    const sorted = [...dates].sort().reverse();
+    let s = 0;
+    let expected = todayStr;
+    for (const date of sorted) {
+      if (date === expected) {
+        s++;
+        const d = new Date(expected + 'T12:00:00');
+        d.setDate(d.getDate() - 1);
+        expected = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      } else {
+        break;
+      }
+    }
+    return s;
+  }
+
   const [selectedDay, setSelectedDay] = useState<DevotionalDay | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -51,7 +70,7 @@ export default function CalendarScreen() {
     if (!user) { setLoading(false); return; }
 
     const [{ data: profile }, { data: devos }] = await Promise.all([
-      supabase.from('users').select('is_premium, trial_ends_at, streak').eq('id', user.id).single(),
+      supabase.from('users').select('is_premium, trial_ends_at').eq('id', user.id).single(),
       supabase
         .from('devotionals')
         .select('id, content, created_at, passage:passages!passage_id(reference, text), reactions(type)')
@@ -61,7 +80,6 @@ export default function CalendarScreen() {
 
     const premium = profile?.is_premium || (profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date());
     setIsPremium(!!premium);
-    setStreak(profile?.streak ?? 0);
 
     const dates = new Set<string>();
     const map: Record<string, DevotionalDay> = {};
@@ -80,6 +98,7 @@ export default function CalendarScreen() {
 
     setCompletedDates(dates);
     setDevotionalMap(map);
+    setStreak(computeStreak(dates));
     setLoading(false);
   }
 
