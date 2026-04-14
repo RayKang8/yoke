@@ -37,16 +37,19 @@ export default function CalendarScreen() {
   function computeStreak(dates: Set<string>): number {
     const t = new Date();
     const todayStr = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+    const yest = new Date(); yest.setDate(yest.getDate() - 1);
+    const yesterdayStr = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
     const sorted = [...dates].sort().reverse();
+    const startStr = dates.has(todayStr) ? todayStr : yesterdayStr;
     let s = 0;
-    let expected = todayStr;
+    let expected = startStr;
     for (const date of sorted) {
       if (date === expected) {
         s++;
         const d = new Date(expected + 'T12:00:00');
         d.setDate(d.getDate() - 1);
         expected = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      } else {
+      } else if (date < expected) {
         break;
       }
     }

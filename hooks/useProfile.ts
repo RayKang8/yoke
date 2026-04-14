@@ -2,19 +2,30 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { User } from '../types';
 
+function localDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function computeStreak(dates: string[]): number {
-  const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const unique = [...new Set(dates)].sort().reverse();
+  const todayStr = localDateStr(new Date());
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = localDateStr(yesterday);
+
+  // If today is done count from today, otherwise count from yesterday
+  // (don't penalise users who haven't done today's devo yet)
+  const startStr = unique.includes(todayStr) ? todayStr : yesterdayStr;
+
   let streak = 0;
-  let expected = todayStr;
+  let expected = startStr;
   for (const date of unique) {
     if (date === expected) {
       streak++;
       const d = new Date(expected + 'T12:00:00');
       d.setDate(d.getDate() - 1);
-      expected = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    } else {
+      expected = localDateStr(d);
+    } else if (date < expected) {
       break;
     }
   }

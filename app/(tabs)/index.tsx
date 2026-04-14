@@ -97,15 +97,21 @@ export default function HomeScreen() {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }).filter(Boolean))].sort().reverse();
 
+    const todayStr = todayLocalDate();
+    const yest = new Date();
+    yest.setDate(yest.getDate() - 1);
+    const yesterdayStr = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
+    const startStr = dates.includes(todayStr) ? todayStr : yesterdayStr;
+
     let streak = 0;
-    let expected = todayLocalDate();
+    let expected = startStr;
     for (const date of dates) {
       if (date === expected) {
         streak++;
         const d = new Date(expected + 'T12:00:00');
         d.setDate(d.getDate() - 1);
         expected = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      } else {
+      } else if (date < expected) {
         break;
       }
     }
