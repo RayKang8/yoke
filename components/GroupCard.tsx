@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { colors } from '../constants/theme';
 import { GroupSummary } from '../hooks/useGroups';
+import { GroupsIcon } from './icons';
 
 interface Props {
   group: GroupSummary;
@@ -25,9 +26,12 @@ export function GroupCard({ group, onPress }: Props) {
       </View>
 
       <View className="flex-row items-center gap-4">
-        <Text style={{ color: c.textSecondary, fontSize: 13 }}>
-          👥 {group.member_count} member{group.member_count !== 1 ? 's' : ''}
-        </Text>
+        <View className="flex-row items-center gap-1">
+          <GroupsIcon active={false} size={14} />
+          <Text style={{ color: c.textSecondary, fontSize: 13 }}>
+            {group.member_count} member{group.member_count !== 1 ? 's' : ''}
+          </Text>
+        </View>
         <Text style={{ color: group.posted_today > 0 ? c.accent : c.textSecondary, fontSize: 13, fontWeight: group.posted_today > 0 ? '600' : '400' }}>
           {group.posted_today}/{group.member_count} posted today
         </Text>

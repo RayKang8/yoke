@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { DevotionalCard } from '../../components/DevotionalCard';
 import { colors } from '../../constants/theme';
+import { GroupsIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
 
 interface Member {
@@ -129,9 +130,12 @@ export default function GroupDetailScreen() {
       <Text style={{ color: c.textPrimary, fontSize: 26, fontWeight: '700', marginBottom: 4 }}>
         {group.name}
       </Text>
-      <Text style={{ color: c.textSecondary, fontSize: 14, marginBottom: 20 }}>
-        {members.length} member{members.length !== 1 ? 's' : ''}
-      </Text>
+      <View className="flex-row items-center gap-1" style={{ marginBottom: 20 }}>
+        <GroupsIcon active={false} size={15} />
+        <Text style={{ color: c.textSecondary, fontSize: 14 }}>
+          {members.length} member{members.length !== 1 ? 's' : ''}
+        </Text>
+      </View>
 
       {/* Invite code */}
       <TouchableOpacity
