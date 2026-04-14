@@ -8,7 +8,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useProfile } from '../../hooks/useProfile';
 import { colors } from '../../constants/theme';
-import { CalendarIcon, FriendsIcon, SettingsIcon } from '../../components/icons';
+import { CalendarIcon, FriendsIcon, SettingsIcon, ChurchIcon } from '../../components/icons';
 
 export default function ProfileScreen() {
   const scheme = useColorScheme();
@@ -102,7 +102,10 @@ export default function ProfileScreen() {
           </Text>
         )}
         {profile?.church && (
-          <Text style={{ color: c.textSecondary, fontSize: 13 }}>⛪ {profile.church}</Text>
+          <View className="flex-row items-center gap-1" style={{ marginTop: 2 }}>
+            <ChurchIcon size={14} color={c.textSecondary} />
+            <Text style={{ color: c.textSecondary, fontSize: 13 }}>{profile.church}</Text>
+          </View>
         )}
 
         <TouchableOpacity onPress={openEdit}

@@ -226,7 +226,7 @@ export default function HomeScreen() {
 
         {/* Streak */}
         <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 20 }} className="flex-row items-center gap-3">
-          <StreakIcon size={28} color="#1A1A1A" />
+          <StreakIcon size={28} />
           <View>
             <Text style={{ color: '#1A1A1A', fontSize: 18, fontWeight: '700' }}>Keep it up!</Text>
             <Text style={{ color: '#1A1A1A', fontSize: 14 }}>You posted today's devotional.</Text>

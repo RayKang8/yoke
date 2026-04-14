@@ -1,6 +1,7 @@
 import Svg, { Path, Circle, Rect, Line, G } from 'react-native-svg';
 
 const GOLD = '#F5C842';
+const FLAME = '#FF8F00';
 const INACTIVE = '#9A9A9A';
 
 // ─── Tab bar icons ────────────────────────────────────────────────────────────
@@ -143,7 +144,7 @@ export function AmenIcon({ size = 20, color = GOLD }: IconProps) {
 }
 
 // Flame
-export function HitIcon({ size = 20, color = GOLD }: IconProps) {
+export function HitIcon({ size = 20, color = FLAME }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
@@ -163,7 +164,7 @@ export function HitIcon({ size = 20, color = GOLD }: IconProps) {
 // ─── UI icons ─────────────────────────────────────────────────────────────────
 
 // Flame (alias for streak display)
-export function StreakIcon({ size = 24, color = GOLD }: IconProps) {
+export function StreakIcon({ size = 24, color = FLAME }: IconProps) {
   return <HitIcon size={size} color={color} />;
 }
 
@@ -222,6 +223,25 @@ export function CalendarIcon({ size = 20, color = GOLD }: IconProps) {
       <Circle cx="16" cy="14" r="1" fill={color} />
       <Circle cx="8"  cy="18" r="1" fill={color} />
       <Circle cx="12" cy="18" r="1" fill={color} />
+    </Svg>
+  );
+}
+
+// Church building with cross
+export function ChurchIcon({ size = 20, color = GOLD }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Cross on top */}
+      <Line x1="12" y1="2"  x2="12" y2="7"  stroke={color} strokeWidth={2}   strokeLinecap="round" />
+      <Line x1="10" y1="4"  x2="14" y2="4"  stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      {/* Roof / steeple */}
+      <Path d="M8 9L12 7L16 9" stroke={color} strokeWidth={1.8} strokeLinejoin="round" />
+      {/* Building walls */}
+      <Rect x="7" y="9" width="10" height="12" rx="0.5" stroke={color} strokeWidth={1.8} />
+      {/* Door */}
+      <Path d="M10 21V16C10 15.4 10.9 15 12 15C13.1 15 14 15.4 14 16V21" stroke={color} strokeWidth={1.6} strokeLinejoin="round" />
+      {/* Window */}
+      <Rect x="10.5" y="11" width="3" height="2.5" rx="1.5" stroke={color} strokeWidth={1.4} />
     </Svg>
   );
 }

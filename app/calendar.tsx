@@ -145,7 +145,7 @@ export default function CalendarScreen() {
 
       {/* Streak */}
       <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 24 }} className="flex-row items-center gap-3">
-        <StreakIcon size={28} color="#1A1A1A" />
+        <StreakIcon size={28} />
         <View>
           <Text style={{ color: '#1A1A1A', fontSize: 20, fontWeight: '700' }}>{streak} day streak</Text>
           <Text style={{ color: '#1A1A1A', fontSize: 14 }}>Keep it going!</Text>
