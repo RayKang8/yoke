@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { CalendarGrid } from '../components/CalendarGrid';
 import { colors } from '../constants/theme';
+import { StreakIcon } from '../components/icons';
 
 interface DevotionalDay {
   date: string;
@@ -144,7 +145,7 @@ export default function CalendarScreen() {
 
       {/* Streak */}
       <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 24 }} className="flex-row items-center gap-3">
-        <Text style={{ fontSize: 28 }}>🔥</Text>
+        <StreakIcon size={28} color="#1A1A1A" />
         <View>
           <Text style={{ color: '#1A1A1A', fontSize: 20, fontWeight: '700' }}>{streak} day streak</Text>
           <Text style={{ color: '#1A1A1A', fontSize: 14 }}>Keep it going!</Text>

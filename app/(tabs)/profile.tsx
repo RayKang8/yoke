@@ -8,6 +8,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useProfile } from '../../hooks/useProfile';
 import { colors } from '../../constants/theme';
+import { CalendarIcon, FriendsIcon, SettingsIcon } from '../../components/icons';
 
 export default function ProfileScreen() {
   const scheme = useColorScheme();
@@ -133,16 +134,19 @@ export default function ProfileScreen() {
       </View>
 
       {/* Actions */}
-      {[
-        { label: '📅  View Calendar', route: '/calendar' },
-        { label: '👥  Friends', route: '/friends' },
-        { label: '⚙️  Settings', route: '/settings' },
-      ].map(item => (
-        <TouchableOpacity key={item.route} onPress={() => router.push(item.route as any)}
+      {([
+        { label: 'View Calendar', route: '/calendar',  Icon: CalendarIcon },
+        { label: 'Friends',       route: '/friends',   Icon: FriendsIcon  },
+        { label: 'Settings',      route: '/settings',  Icon: SettingsIcon },
+      ] as const).map(({ label, route, Icon }) => (
+        <TouchableOpacity key={route} onPress={() => router.push(route as any)}
           style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 10 }}
           className="flex-row items-center justify-between"
         >
-          <Text style={{ color: c.textPrimary, fontSize: 16 }}>{item.label}</Text>
+          <View className="flex-row items-center gap-3">
+            <Icon size={20} color={c.accent} />
+            <Text style={{ color: c.textPrimary, fontSize: 16 }}>{label}</Text>
+          </View>
           <Text style={{ color: c.textSecondary, fontSize: 18 }}>›</Text>
         </TouchableOpacity>
       ))}

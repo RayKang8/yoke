@@ -1,14 +1,16 @@
-import { View, Text, TouchableOpacity } from 'react-native';
-import { useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { colors } from '../constants/theme';
 import { haptics } from '../lib/haptics';
+import { PrayIcon, AmenIcon, HitIcon } from './icons';
+
+const GOLD = '#F5C842';
 
 const REACTIONS = [
-  { type: 'pray', label: '🙏 Pray' },
-  { type: 'amen', label: '✝ Amen' },
-  { type: 'hit',  label: '💛 This hit me' },
+  { type: 'pray', label: 'Pray',       Icon: PrayIcon },
+  { type: 'amen', label: 'Amen',       Icon: AmenIcon },
+  { type: 'hit',  label: 'This hit me', Icon: HitIcon  },
 ];
 
 interface Props {
@@ -34,10 +36,9 @@ export function ReactionBar({ devotionalId, reactions, currentUserId, onUpdate }
   async function toggle(type: string) {
     if (busy) return;
     setBusy(type);
-
     haptics.light();
+
     if (myReactions.has(type)) {
-      // remove
       await supabase
         .from('reactions')
         .delete()
@@ -46,7 +47,6 @@ export function ReactionBar({ devotionalId, reactions, currentUserId, onUpdate }
         .eq('type', type);
       onUpdate(reactions.filter(r => !(r.user_id === currentUserId && r.type === type)));
     } else {
-      // add
       await supabase
         .from('reactions')
         .insert({ devotional_id: devotionalId, user_id: currentUserId, type });
@@ -58,27 +58,31 @@ export function ReactionBar({ devotionalId, reactions, currentUserId, onUpdate }
 
   return (
     <View className="flex-row gap-2 flex-wrap">
-      {REACTIONS.map(r => {
-        const active = myReactions.has(r.type);
-        const count = countOf(r.type);
+      {REACTIONS.map(({ type, label, Icon }) => {
+        const active = myReactions.has(type);
+        const count = countOf(type);
+        const iconColor = active ? GOLD : c.textSecondary;
         return (
           <TouchableOpacity
-            key={r.type}
-            onPress={() => toggle(r.type)}
-            disabled={busy === r.type}
+            key={type}
+            onPress={() => toggle(type)}
+            disabled={busy === type}
             style={{
-              backgroundColor: active ? c.accent + '33' : c.surface,
+              backgroundColor: active ? c.accent + '22' : c.surface,
               borderColor: active ? c.accent : c.border,
               borderWidth: 1,
               borderRadius: 20,
-              paddingHorizontal: 12,
+              paddingHorizontal: 10,
               paddingVertical: 6,
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 4,
+              gap: 5,
             }}
           >
-            <Text style={{ fontSize: 13 }}>{r.label}</Text>
+            <Icon size={15} color={iconColor} />
+            <Text style={{ color: active ? c.accent : c.textSecondary, fontSize: 13, fontWeight: active ? '600' : '400' }}>
+              {label}
+            </Text>
             {count > 0 && (
               <Text style={{ color: active ? c.accent : c.textSecondary, fontSize: 12, fontWeight: '600' }}>
                 {count}

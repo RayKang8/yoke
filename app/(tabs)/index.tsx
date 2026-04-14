@@ -9,6 +9,7 @@ import { usePassage } from '../../hooks/usePassage';
 import { colors } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
 import { Translation, Visibility } from '../../types';
+import { StreakIcon } from '../../components/icons';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
 const VISIBILITIES: { value: Visibility; label: string }[] = [
@@ -225,7 +226,7 @@ export default function HomeScreen() {
 
         {/* Streak */}
         <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 20 }} className="flex-row items-center gap-3">
-          <Text style={{ fontSize: 28 }}>🔥</Text>
+          <StreakIcon size={28} color="#1A1A1A" />
           <View>
             <Text style={{ color: '#1A1A1A', fontSize: 18, fontWeight: '700' }}>Keep it up!</Text>
             <Text style={{ color: '#1A1A1A', fontSize: 14 }}>You posted today's devotional.</Text>

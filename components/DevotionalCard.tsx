@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { colors } from '../constants/theme';
 import { ReactionBar } from './ReactionBar';
 import { CommentThread } from './CommentThread';
+import { CommentIcon } from './icons';
 import { FeedItem } from '../hooks/useFeed';
 
 function timeAgo(dateStr: string) {
@@ -75,8 +76,9 @@ export function DevotionalCard({ item, currentUserId, onReactionUpdate }: Props)
         onPress={() => setShowComments(true)}
         className="flex-row items-center gap-1 mt-3"
       >
+        <CommentIcon size={16} color={c.textSecondary} />
         <Text style={{ color: c.textSecondary, fontSize: 13 }}>
-          💬 {commentCount > 0 ? `${commentCount} comment${commentCount === 1 ? '' : 's'}` : 'Comment'}
+          {commentCount > 0 ? `${commentCount} comment${commentCount === 1 ? '' : 's'}` : 'Comment'}
         </Text>
       </TouchableOpacity>
 
