@@ -57,6 +57,7 @@ export default function CalendarScreen() {
   }
 
   const [selectedDay, setSelectedDay] = useState<DevotionalDay | null>(null);
+  const [selectedVerses, setSelectedVerses] = useState<{ verse: number; text: string }[]>([]);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
   // Free tier: only last 30 days
@@ -107,10 +108,36 @@ export default function CalendarScreen() {
     setLoading(false);
   }
 
-  function handleDayPress(date: string) {
+  async function handleDayPress(date: string) {
     if (date === 'locked') { setShowUpgrade(true); return; }
     const devo = devotionalMap[date];
-    if (devo) setSelectedDay(devo);
+    if (!devo) return;
+
+    setSelectedDay(devo);
+    setSelectedVerses([]);
+
+    const match = devo.passage_reference.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?/);
+    if (!match) return;
+    const book = match[1];
+    const chapter = parseInt(match[2]);
+    const verseStart = parseInt(match[3]);
+    const verseEnd = match[4] ? parseInt(match[4]) : verseStart;
+
+    const { data } = await supabase
+      .from('bible_verses')
+      .select('verse, text')
+      .eq('translation', 'NIV')
+      .eq('book', book)
+      .eq('chapter', chapter)
+      .gte('verse', verseStart)
+      .lte('verse', verseEnd)
+      .order('verse');
+
+    if (data && data.length > 0) {
+      setSelectedVerses(data);
+    } else {
+      setSelectedVerses([{ verse: 0, text: devo.passage_text }]);
+    }
   }
 
   function prevMonth() {
@@ -196,14 +223,14 @@ export default function CalendarScreen() {
       )}
 
       {/* Devotional detail modal */}
-      <Modal visible={!!selectedDay} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setSelectedDay(null)}>
+      <Modal visible={!!selectedDay} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => { setSelectedDay(null); setSelectedVerses([]); }}>
         {selectedDay && (
           <View style={{ flex: 1, backgroundColor: c.background }}>
             <View style={{ borderBottomColor: c.border, borderBottomWidth: 1 }} className="flex-row items-center justify-between px-5 py-4">
               <Text style={{ color: c.textPrimary, fontSize: 17, fontWeight: '600' }}>
                 {new Date(selectedDay.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </Text>
-              <TouchableOpacity onPress={() => setSelectedDay(null)}>
+              <TouchableOpacity onPress={() => { setSelectedDay(null); setSelectedVerses([]); }}>
                 <Text style={{ color: c.textSecondary, fontSize: 16 }}>Done</Text>
               </TouchableOpacity>
             </View>
@@ -212,9 +239,16 @@ export default function CalendarScreen() {
                 <Text style={{ color: c.accent, fontWeight: '600', fontSize: 14, marginBottom: 8 }}>
                   {selectedDay.passage_reference}
                 </Text>
-                <Text style={{ color: c.textPrimary, fontSize: 15, lineHeight: 24 }}>
-                  {selectedDay.passage_text}
-                </Text>
+                {selectedVerses.length === 0 ? (
+                  <ActivityIndicator color={c.accent} size="small" />
+                ) : selectedVerses.map((v, i) => (
+                  v.verse === 0
+                    ? <Text key={i} style={{ color: c.textPrimary, fontSize: 15, lineHeight: 24 }}>{v.text}</Text>
+                    : <View key={v.verse} className="flex-row gap-2 mb-1">
+                        <Text style={{ color: c.accent, fontSize: 11, fontWeight: '700', width: 18, paddingTop: 3 }}>{v.verse}</Text>
+                        <Text style={{ flex: 1, color: c.textPrimary, fontSize: 15, lineHeight: 24 }}>{v.text}</Text>
+                      </View>
+                ))}
               </View>
               <View style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16 }}>
                 <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>YOUR REFLECTION</Text>
