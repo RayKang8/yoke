@@ -74,7 +74,7 @@ export default function ProfileScreen() {
         <TouchableOpacity onPress={() => router.push('/settings')}
           style={{ backgroundColor: c.surface, borderRadius: 10, padding: 8, borderWidth: 1, borderColor: c.border }}
         >
-          <Text style={{ fontSize: 18 }}>⚙️</Text>
+          <SettingsIcon size={20} color={c.accent} />
         </TouchableOpacity>
       </View>
 
