@@ -5,11 +5,11 @@
     "scheme": "yoke",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/Yoke.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/Yoke.png",
       "resizeMode": "contain",
       "backgroundColor": "#FAFAF7"
     },
@@ -19,15 +19,15 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/Yoke.png",
+        "backgroundColor": "#F5C842"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.yoke.app"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/Yoke.png"
     },
     "plugins": [
       "expo-router",
