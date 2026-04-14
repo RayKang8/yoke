@@ -257,16 +257,6 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* Passage teaser for tomorrow */}
-        <View style={{ backgroundColor: c.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: c.border }}>
-          <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 6 }}>
-            TOMORROW'S PASSAGE
-          </Text>
-          <Text style={{ color: c.textSecondary, fontSize: 15, fontStyle: 'italic' }}>
-            Come back tomorrow to see the next passage.
-          </Text>
-        </View>
-
         {/* Edit Modal */}
         <Modal visible={editVisible} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditVisible(false)}>
           <KeyboardAvoidingView
