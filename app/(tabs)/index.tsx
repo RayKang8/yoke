@@ -17,12 +17,6 @@ const VISIBILITIES: { value: Visibility; label: string }[] = [
   { value: 'public', label: 'Public' },
 ];
 
-function dayOfYear(dateStr: string): number {
-  const date = new Date(dateStr);
-  const start = new Date(date.getFullYear(), 0, 0);
-  const diff = date.getTime() - start.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
-}
 
 function todayLocalDate(): string {
   const d = new Date();
@@ -210,7 +204,6 @@ export default function HomeScreen() {
   const dateLabel = new Date(passage.date + 'T12:00:00').toLocaleDateString('en-US', {
     weekday: 'long', month: 'long', day: 'numeric',
   });
-  const dayNum = dayOfYear(passage.date);
 
   // ── AFTER posting ─────────────────────────────────────────
   if (todaysDevotion) {
@@ -221,7 +214,7 @@ export default function HomeScreen() {
       >
         {/* Header */}
         <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: '500', marginBottom: 4 }}>
-          {dateLabel.toUpperCase()} · DAY {dayNum}
+          {dateLabel.toUpperCase()}
         </Text>
         <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700', marginBottom: 2 }}>
           {passage.title}
@@ -368,7 +361,7 @@ export default function HomeScreen() {
       >
         {/* Date + day */}
         <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: '500', marginBottom: 4 }}>
-          {dateLabel.toUpperCase()} · DAY {dayNum}
+          {dateLabel.toUpperCase()}
         </Text>
 
         {/* Title + reference */}
