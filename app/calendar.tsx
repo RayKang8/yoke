@@ -85,7 +85,8 @@ export default function CalendarScreen() {
     const map: Record<string, DevotionalDay> = {};
 
     for (const d of devos ?? []) {
-      const date = d.created_at.slice(0, 10);
+      const dt = new Date(d.created_at);
+      const date = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
       dates.add(date);
       map[date] = {
         date,

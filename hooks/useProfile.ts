@@ -41,7 +41,11 @@ export function useProfile() {
     ]);
 
     // Compute streak directly from devotional dates — don't trust the cached DB value
-    const dates = (devoRows ?? []).map((r: any) => r.created_at?.slice(0, 10)).filter(Boolean);
+    const dates = (devoRows ?? []).map((r: any) => {
+      if (!r.created_at) return null;
+      const d = new Date(r.created_at);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }).filter(Boolean);
     const streak = computeStreak(dates);
     const longestStreak = Math.max(profileData?.longest_streak ?? 0, streak);
 

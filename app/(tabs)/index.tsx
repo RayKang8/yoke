@@ -90,7 +90,11 @@ export default function HomeScreen() {
       .select('created_at')
       .eq('user_id', userId);
 
-    const dates = [...new Set((data ?? []).map((r: any) => r.created_at?.slice(0, 10)).filter(Boolean))].sort().reverse();
+    const dates = [...new Set((data ?? []).map((r: any) => {
+      if (!r.created_at) return null;
+      const d = new Date(r.created_at);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }).filter(Boolean))].sort().reverse();
 
     let streak = 0;
     let expected = todayLocalDate();
