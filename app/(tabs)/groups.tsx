@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Modal,
   TextInput, ActivityIndicator, Alert, useColorScheme,
   Share, RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useGroups } from '../../hooks/useGroups';
 import { haptics } from '../../lib/haptics';
@@ -17,6 +17,8 @@ export default function GroupsScreen() {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
   const { groups, loading, userId, refetch } = useGroups();
+
+  useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
   const [refreshing, setRefreshing] = useState(false);
 
   const [showCreate, setShowCreate] = useState(false);
