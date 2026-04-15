@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { DevotionalCard } from '../../components/DevotionalCard';
 import { colors } from '../../constants/theme';
+import { ChurchIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
 
 interface UserProfile {
@@ -191,7 +192,12 @@ export default function UserProfileScreen() {
         <Text style={{ color: c.textPrimary, fontSize: 22, fontWeight: '700', marginBottom: 2 }}>{profile.name}</Text>
         <Text style={{ color: c.accent, fontSize: 14, fontWeight: '600', marginBottom: 4 }}>{profile.yoke_code}</Text>
         {profile.bio && <Text style={{ color: c.textSecondary, fontSize: 14, textAlign: 'center', marginBottom: 4 }}>{profile.bio}</Text>}
-        {profile.church && <Text style={{ color: c.textSecondary, fontSize: 13 }}>⛪ {profile.church}</Text>}
+        {profile.church && (
+          <View className="flex-row items-center gap-1" style={{ marginTop: 2 }}>
+            <ChurchIcon size={14} color={c.textSecondary} />
+            <Text style={{ color: c.textSecondary, fontSize: 13 }}>{profile.church}</Text>
+          </View>
+        )}
       </View>
 
       {/* Stats */}
