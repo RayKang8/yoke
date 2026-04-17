@@ -5,6 +5,7 @@ import {
   Alert, Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getChapter, Verse } from '../../lib/bible-api';
 import { BIBLE_BOOKS } from '../../constants/bible-books';
 import { colors } from '../../constants/theme';
@@ -25,6 +26,20 @@ export default function BibleScreen() {
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loadingVerses, setLoadingVerses] = useState(false);
   const [showTranslations, setShowTranslations] = useState(false);
+
+  // Restore last position
+  useEffect(() => {
+    AsyncStorage.multiGet(['bibleBook', 'bibleChapter', 'bibleTranslation', 'defaultTranslation']).then(pairs => {
+      const book = pairs[0][1];
+      const chapter = pairs[1][1];
+      const bibleTrans = pairs[2][1];
+      const defaultTrans = pairs[3][1];
+      if (book) setSelectedBook(book);
+      if (chapter) setSelectedChapter(parseInt(chapter));
+      if (bibleTrans) setTranslation(bibleTrans as Translation);
+      else if (defaultTrans) setTranslation(defaultTrans as Translation);
+    });
+  }, []);
 
   const currentBook = BIBLE_BOOKS.find(b => b.name === selectedBook)!;
 
@@ -74,7 +89,7 @@ export default function BibleScreen() {
                 {section.books.map(book => (
                   <TouchableOpacity
                     key={book.name}
-                    onPress={() => { setSelectedBook(book.name); setSelectedChapter(1); setView('chapter'); }}
+                    onPress={() => { setSelectedBook(book.name); setSelectedChapter(1); setView('chapter'); AsyncStorage.setItem('bibleBook', book.name); }}
                     style={{
                       backgroundColor: selectedBook === book.name ? c.accent : c.surface,
                       borderColor: selectedBook === book.name ? c.accent : c.border,
@@ -117,7 +132,7 @@ export default function BibleScreen() {
             {chapterNums.map(ch => (
               <TouchableOpacity
                 key={ch}
-                onPress={() => { setSelectedChapter(ch); setView('reader'); }}
+                onPress={() => { setSelectedChapter(ch); setView('reader'); AsyncStorage.setItem('bibleChapter', String(ch)); }}
                 style={{
                   backgroundColor: selectedChapter === ch && view === 'reader' ? c.accent : c.surface,
                   borderColor: c.border, borderWidth: 1, borderRadius: 10,
@@ -218,7 +233,7 @@ export default function BibleScreen() {
           <View className="flex-row gap-3 mt-6">
             {prevChapter && (
               <TouchableOpacity
-                onPress={() => setSelectedChapter(prevChapter)}
+                onPress={() => { setSelectedChapter(prevChapter); AsyncStorage.setItem('bibleChapter', String(prevChapter)); }}
                 style={{ flex: 1, backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: c.border }}
                 className="py-3 items-center"
               >
@@ -227,7 +242,7 @@ export default function BibleScreen() {
             )}
             {nextChapter && (
               <TouchableOpacity
-                onPress={() => setSelectedChapter(nextChapter)}
+                onPress={() => { setSelectedChapter(nextChapter); AsyncStorage.setItem('bibleChapter', String(nextChapter)); }}
                 style={{ flex: 1, backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: c.border }}
                 className="py-3 items-center"
               >
@@ -261,7 +276,7 @@ export default function BibleScreen() {
             {TRANSLATIONS.map((t, i) => (
               <TouchableOpacity
                 key={t}
-                onPress={() => { setTranslation(t); setShowTranslations(false); }}
+                onPress={() => { setTranslation(t); setShowTranslations(false); AsyncStorage.setItem('bibleTranslation', t); }}
                 style={{ padding: 16, borderBottomWidth: i < TRANSLATIONS.length - 1 ? 1 : 0, borderBottomColor: c.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
               >
                 <Text style={{ color: c.textPrimary, fontSize: 16 }}>{t}</Text>

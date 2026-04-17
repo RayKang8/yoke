@@ -4,6 +4,7 @@ import {
   ActivityIndicator, useColorScheme, Alert, KeyboardAvoidingView, Platform, Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
 import { usePassage } from '../../hooks/usePassage';
 import { colors } from '../../constants/theme';
@@ -41,6 +42,16 @@ export default function HomeScreen() {
   const [editContent, setEditContent] = useState('');
   const [editVisibility, setEditVisibility] = useState<Visibility>('friends');
   const [saving, setSaving] = useState(false);
+
+  // Load saved defaults
+  useEffect(() => {
+    AsyncStorage.multiGet(['defaultTranslation', 'defaultVisibility']).then(pairs => {
+      const trans = pairs[0][1] as Translation | null;
+      const vis = pairs[1][1] as Visibility | null;
+      if (trans) setTranslation(trans);
+      if (vis) setVisibility(vis);
+    });
+  }, []);
 
   // Load passage verses (with numbers) for selected translation
   useEffect(() => {
@@ -449,7 +460,7 @@ export default function HomeScreen() {
           {VISIBILITIES.map(v => (
             <TouchableOpacity
               key={v.value}
-              onPress={() => setVisibility(v.value)}
+              onPress={() => { setVisibility(v.value); AsyncStorage.setItem('defaultVisibility', v.value); }}
               style={{
                 backgroundColor: visibility === v.value ? c.accent + '22' : c.surface,
                 borderColor: visibility === v.value ? c.accent : c.border,
