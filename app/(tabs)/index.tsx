@@ -247,17 +247,20 @@ export default function HomeScreen() {
         </Text>
 
         {/* Streak */}
-        <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 20 }} className="flex-row items-center gap-3">
-          <View style={{ width: 52, height: 52, alignItems: 'center', justifyContent: 'center' }}>
-            <StreakIcon size={52} />
-            <Text style={{ position: 'absolute', color: '#1A1A1A', fontSize: 15, fontWeight: '800', top: 22 }}>
+        <View style={{ backgroundColor: c.accent, borderRadius: 16, padding: 20, marginBottom: 20 }}>
+          <View className="flex-row items-end gap-2" style={{ marginBottom: 8 }}>
+            <StreakIcon size={38} />
+            <Text style={{ color: '#1A1A1A', fontSize: 52, fontWeight: '900', lineHeight: 54 }}>
               {streak}
             </Text>
+            <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '600', paddingBottom: 6, opacity: 0.6 }}>
+              {streak === 1 ? 'day' : 'days'}
+            </Text>
           </View>
-          <View>
-            <Text style={{ color: '#1A1A1A', fontSize: 18, fontWeight: '700' }}>Keep it up!</Text>
-            <Text style={{ color: '#1A1A1A', fontSize: 14 }}>You posted today's devotional.</Text>
-          </View>
+          <Text style={{ color: '#1A1A1A', fontSize: 18, fontWeight: '700' }}>Keep it up!</Text>
+          <Text style={{ color: '#1A1A1A', fontSize: 13, marginTop: 2, opacity: 0.65 }}>
+            You posted today's devotional.
+          </Text>
         </View>
 
         {/* Posted reflection */}
