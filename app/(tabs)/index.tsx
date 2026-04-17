@@ -36,6 +36,7 @@ export default function HomeScreen() {
   const [reflection, setReflection] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('friends');
   const [posting, setPosting] = useState(false);
+  const [streak, setStreak] = useState(0);
 
   // Edit state
   const [editVisible, setEditVisible] = useState(false);
@@ -87,6 +88,17 @@ export default function HomeScreen() {
     if (!todaysDevotion) return;
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) computeAndUpdateStreak(user.id);
+    });
+  }, [todaysDevotion?.id]);
+
+  // Load streak for display
+  useEffect(() => {
+    if (!todaysDevotion) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase.from('users').select('streak').eq('id', user.id).single().then(({ data }) => {
+        if (data) setStreak(data.streak ?? 0);
+      });
     });
   }, [todaysDevotion?.id]);
 
@@ -237,9 +249,13 @@ export default function HomeScreen() {
         {/* Streak */}
         <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 20 }} className="flex-row items-center gap-3">
           <StreakIcon size={28} />
-          <View>
+          <View className="flex-1">
             <Text style={{ color: '#1A1A1A', fontSize: 18, fontWeight: '700' }}>Keep it up!</Text>
             <Text style={{ color: '#1A1A1A', fontSize: 14 }}>You posted today's devotional.</Text>
+          </View>
+          <View className="items-center">
+            <Text style={{ color: '#1A1A1A', fontSize: 26, fontWeight: '800', lineHeight: 28 }}>{streak}</Text>
+            <Text style={{ color: '#1A1A1A', fontSize: 11, fontWeight: '600', opacity: 0.7 }}>DAY STREAK</Text>
           </View>
         </View>
 
