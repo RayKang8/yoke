@@ -250,7 +250,7 @@ export default function HomeScreen() {
         <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 20 }} className="flex-row items-center gap-3">
           <View style={{ width: 52, height: 52, alignItems: 'center', justifyContent: 'center' }}>
             <StreakIcon size={52} />
-            <Text style={{ position: 'absolute', color: '#1A1A1A', fontSize: 15, fontWeight: '800' }}>
+            <Text style={{ position: 'absolute', color: '#1A1A1A', fontSize: 15, fontWeight: '800', top: 22 }}>
               {streak}
             </Text>
           </View>
