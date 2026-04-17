@@ -248,14 +248,15 @@ export default function HomeScreen() {
 
         {/* Streak */}
         <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 20 }} className="flex-row items-center gap-3">
-          <StreakIcon size={28} />
-          <View className="flex-1">
+          <View style={{ width: 52, height: 52, alignItems: 'center', justifyContent: 'center' }}>
+            <StreakIcon size={52} />
+            <Text style={{ position: 'absolute', color: '#fff', fontSize: 15, fontWeight: '800' }}>
+              {streak}
+            </Text>
+          </View>
+          <View>
             <Text style={{ color: '#1A1A1A', fontSize: 18, fontWeight: '700' }}>Keep it up!</Text>
             <Text style={{ color: '#1A1A1A', fontSize: 14 }}>You posted today's devotional.</Text>
-          </View>
-          <View className="items-center">
-            <Text style={{ color: '#1A1A1A', fontSize: 26, fontWeight: '800', lineHeight: 28 }}>{streak}</Text>
-            <Text style={{ color: '#1A1A1A', fontSize: 11, fontWeight: '600', opacity: 0.7 }}>DAY STREAK</Text>
           </View>
         </View>
 
