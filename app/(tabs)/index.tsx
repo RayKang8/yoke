@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity,
   ActivityIndicator, useColorScheme, Alert, KeyboardAvoidingView, Platform, Modal,
@@ -6,6 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
+import { useFocusEffect } from 'expo-router';
 import { usePassage } from '../../hooks/usePassage';
 import { useProfile } from '../../hooks/useProfile';
 import { colors } from '../../constants/theme';
@@ -89,8 +90,8 @@ export default function HomeScreen() {
   }, [passage, translation]);
 
 
-  // Load reactions and comment count when today's devotion is set
-  useEffect(() => {
+  // Refetch reactions and comment count whenever home tab is focused
+  useFocusEffect(useCallback(() => {
     if (!todaysDevotion) return;
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setCurrentUserId(user.id);
@@ -105,7 +106,7 @@ export default function HomeScreen() {
       .select('*', { count: 'exact', head: true })
       .eq('devotional_id', todaysDevotion.id)
       .then(({ count }) => setCommentCount(count ?? 0));
-  }, [todaysDevotion?.id]);
+  }, [todaysDevotion?.id]));
 
   async function handlePost() {
     if (!reflection.trim()) {
