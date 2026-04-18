@@ -11,7 +11,9 @@ import { useProfile } from '../../hooks/useProfile';
 import { colors } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
 import { Translation, Visibility } from '../../types';
-import { StreakIcon } from '../../components/icons';
+import { StreakIcon, CommentIcon } from '../../components/icons';
+import { ReactionBar } from '../../components/ReactionBar';
+import { CommentThread } from '../../components/CommentThread';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
 const VISIBILITIES: { value: Visibility; label: string }[] = [
@@ -34,6 +36,12 @@ export default function HomeScreen() {
   const [reflection, setReflection] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('friends');
   const [posting, setPosting] = useState(false);
+
+  // Reactions + comments state
+  const [currentUserId, setCurrentUserId] = useState('');
+  const [reactions, setReactions] = useState<{ type: string; user_id: string }[]>([]);
+  const [commentCount, setCommentCount] = useState(0);
+  const [showComments, setShowComments] = useState(false);
 
   // Edit state
   const [editVisible, setEditVisible] = useState(false);
@@ -80,6 +88,24 @@ export default function HomeScreen() {
       });
   }, [passage, translation]);
 
+
+  // Load reactions and comment count when today's devotion is set
+  useEffect(() => {
+    if (!todaysDevotion) return;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id);
+    });
+    supabase
+      .from('reactions')
+      .select('type, user_id')
+      .eq('devotional_id', todaysDevotion.id)
+      .then(({ data }) => setReactions(data ?? []));
+    supabase
+      .from('comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('devotional_id', todaysDevotion.id)
+      .then(({ count }) => setCommentCount(count ?? 0));
+  }, [todaysDevotion?.id]);
 
   async function handlePost() {
     if (!reflection.trim()) {
@@ -218,6 +244,44 @@ export default function HomeScreen() {
             {todaysDevotion.content}
           </Text>
         </View>
+
+        {/* Reactions */}
+        {todaysDevotion && (
+          <View style={{ marginBottom: 12 }}>
+            <ReactionBar
+              devotionalId={todaysDevotion.id}
+              reactions={reactions}
+              currentUserId={currentUserId}
+              onUpdate={setReactions}
+            />
+          </View>
+        )}
+
+        {/* Comments button */}
+        {todaysDevotion && (
+          <TouchableOpacity
+            onPress={() => setShowComments(true)}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 24 }}
+          >
+            <CommentIcon size={18} color={c.textSecondary} />
+            <Text style={{ color: c.textSecondary, fontSize: 14 }}>
+              {commentCount > 0 ? `${commentCount} comment${commentCount === 1 ? '' : 's'}` : 'Add a comment'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Comment Thread */}
+        {todaysDevotion && (
+          <CommentThread
+            devotionalId={todaysDevotion.id}
+            authorId={currentUserId}
+            commentsDisabled={todaysDevotion.comments_disabled ?? false}
+            currentUserId={currentUserId}
+            visible={showComments}
+            onClose={() => setShowComments(false)}
+            onCountChange={setCommentCount}
+          />
+        )}
 
         {/* Edit Modal */}
         <Modal visible={editVisible} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditVisible(false)}>
