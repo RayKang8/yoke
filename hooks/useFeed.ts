@@ -60,13 +60,15 @@ export function useFeed(tab: 'public' | 'friends') {
       .order('created_at', { ascending: false })
       .limit(50);
 
-    if (tab === 'public') {
-      query = query.eq('visibility', 'public');
-    } else {
-      // friends: accepted friends' public + friends posts
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setLoading(false); setRefreshing(false); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setLoading(false); setRefreshing(false); return; }
 
+    if (tab === 'public') {
+      query = query
+        .eq('visibility', 'public')
+        .neq('user_id', user.id);
+    } else {
+      // friends: accepted friends' posts only (not own)
       const { data: friendships } = await supabase
         .from('friendships')
         .select('requester_id, addressee_id')
