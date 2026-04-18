@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
 import { usePassage } from '../../hooks/usePassage';
+import { useProfile } from '../../hooks/useProfile';
 import { colors } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
 import { Translation, Visibility } from '../../types';
@@ -19,10 +20,6 @@ const VISIBILITIES: { value: Visibility; label: string }[] = [
 ];
 
 
-function todayLocalDate(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
 
 export default function HomeScreen() {
   const scheme = useColorScheme();
@@ -30,13 +27,13 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
 
   const { passage, todaysDevotion, loading, error, setTodaysDevotion } = usePassage();
+  const { profile } = useProfile();
 
   const [translation, setTranslation] = useState<Translation>('NIV');
   const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);
   const [reflection, setReflection] = useState('');
   const [visibility, setVisibility] = useState<Visibility>('friends');
   const [posting, setPosting] = useState(false);
-  const [streak, setStreak] = useState(0);
 
   // Edit state
   const [editVisible, setEditVisible] = useState(false);
@@ -83,60 +80,6 @@ export default function HomeScreen() {
       });
   }, [passage, translation]);
 
-  // Recompute streak whenever today's devotion is known (covers existing devotionals on mount)
-  useEffect(() => {
-    if (!todaysDevotion) return;
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) computeAndUpdateStreak(user.id);
-    });
-  }, [todaysDevotion?.id]);
-
-  // Load streak for display
-  useEffect(() => {
-    if (!todaysDevotion) return;
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-      supabase.from('users').select('streak').eq('id', user.id).single().then(({ data }) => {
-        if (data) setStreak(data.streak ?? 0);
-      });
-    });
-  }, [todaysDevotion?.id]);
-
-  async function computeAndUpdateStreak(userId: string) {
-    const { data } = await supabase
-      .from('devotionals')
-      .select('created_at')
-      .eq('user_id', userId);
-
-    const dates = [...new Set((data ?? []).map((r: any) => {
-      if (!r.created_at) return null;
-      const d = new Date(r.created_at);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    }).filter(Boolean))].sort().reverse();
-
-    const todayStr = todayLocalDate();
-    const yest = new Date();
-    yest.setDate(yest.getDate() - 1);
-    const yesterdayStr = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
-    const startStr = dates.includes(todayStr) ? todayStr : yesterdayStr;
-
-    let streak = 0;
-    let expected = startStr;
-    for (const date of dates) {
-      if (date === expected) {
-        streak++;
-        const d = new Date(expected + 'T12:00:00');
-        d.setDate(d.getDate() - 1);
-        expected = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      } else if (date < expected) {
-        break;
-      }
-    }
-
-    const { data: userData } = await supabase.from('users').select('longest_streak').eq('id', userId).single();
-    const longestStreak = Math.max(userData?.longest_streak ?? 0, streak);
-    await supabase.from('users').update({ streak, longest_streak: longestStreak }).eq('id', userId);
-  }
 
   async function handlePost() {
     if (!reflection.trim()) {
@@ -253,7 +196,7 @@ export default function HomeScreen() {
             <Text style={{ color: '#1A1A1A', fontSize: 13, marginTop: 2, opacity: 0.65 }}>You posted today's devotional.</Text>
           </View>
           <View className="flex-row items-center gap-1">
-            <Text style={{ color: '#1A1A1A', fontSize: 22, fontWeight: '800' }}>{streak}</Text>
+            <Text style={{ color: '#1A1A1A', fontSize: 22, fontWeight: '800' }}>{profile?.streak ?? 0}</Text>
             <StreakIcon size={34} />
           </View>
         </View>
