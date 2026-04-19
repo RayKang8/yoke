@@ -30,7 +30,9 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
 
   const { passage, todaysDevotion, loading, error, setTodaysDevotion } = usePassage();
-  const { profile } = useProfile();
+  const { profile, refetch: refetchProfile } = useProfile();
+
+  useFocusEffect(useCallback(() => { refetchProfile(); }, [refetchProfile]));
 
   const [translation, setTranslation] = useState<Translation>('NIV');
   const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);
