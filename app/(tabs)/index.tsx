@@ -26,11 +26,11 @@ export default function HomeScreen() {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
 
-  const { passage, todaysDevotion, loading, error, setTodaysDevotion } = usePassage();
+  const { passage, todaysDevotion, loading, error, setTodaysDevotion, refetchDevotion } = usePassage();
   const { profile, refetch: refetchProfile } = useProfile();
   const { groups } = useGroups();
 
-  useFocusEffect(useCallback(() => { refetchProfile(); }, [refetchProfile]));
+  useFocusEffect(useCallback(() => { refetchProfile(); refetchDevotion(); }, [refetchProfile, refetchDevotion]));
 
   const [translation, setTranslation] = useState<Translation>('NIV');
   const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);

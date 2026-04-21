@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  ActivityIndicator, Modal, useColorScheme,
+  ActivityIndicator, Modal, Alert, useColorScheme,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -74,7 +74,7 @@ export default function CalendarScreen() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
 
-    const [{ data: profile }, { data: devos }] = await Promise.all([
+    const [{ data: profile }, { data: devos, error: devosError }] = await Promise.all([
       supabase.from('users').select('is_premium, trial_ends_at').eq('id', user.id).single(),
       supabase
         .from('devotionals')
@@ -82,6 +82,13 @@ export default function CalendarScreen() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false }),
     ]);
+
+    if (devosError) {
+      console.error('Calendar load error:', devosError);
+      Alert.alert('Error loading calendar', devosError.message);
+      setLoading(false);
+      return;
+    }
 
     const premium = profile?.is_premium || (profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date());
     setIsPremium(!!premium);

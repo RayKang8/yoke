@@ -88,6 +88,9 @@ export function usePassage() {
       setLoading(true);
       fetchPassage();
     },
+    refetchDevotion: () => {
+      if (passage) fetchTodaysDevotion(passage.id);
+    },
     getVerseText,
     setTodaysDevotion,
   };
