@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity,
   ActivityIndicator, useColorScheme, Alert, KeyboardAvoidingView, Platform, Modal,
@@ -30,7 +30,17 @@ export default function HomeScreen() {
   const { profile, refetch: refetchProfile } = useProfile();
   const { groups } = useGroups();
 
-  useFocusEffect(useCallback(() => { refetchProfile(); refetchDevotion(); }, [refetchProfile, refetchDevotion]));
+  // Only refetch on focus if it's been more than 30 seconds — avoids hitting
+  // the DB on every single tab switch
+  const lastFocusRefetch = useRef(0);
+  useFocusEffect(useCallback(() => {
+    const now = Date.now();
+    if (now - lastFocusRefetch.current > 30_000) {
+      lastFocusRefetch.current = now;
+      refetchProfile();
+      refetchDevotion();
+    }
+  }, [refetchProfile, refetchDevotion]));
 
   const [translation, setTranslation] = useState<Translation>('NIV');
   const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);
@@ -51,6 +61,21 @@ export default function HomeScreen() {
   const [editAudiences, setEditAudiences] = useState<Set<string>>(new Set(['friends']));
   const [editCommentsDisabled, setEditCommentsDisabled] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Pre-cached group shares so openEdit() needs no DB round-trip
+  const cachedGroupIds = useRef<string[]>([]);
+
+  // Pre-load group shares when todaysDevotion first arrives
+  useEffect(() => {
+    if (!todaysDevotion) { cachedGroupIds.current = []; return; }
+    supabase
+      .from('devotional_groups')
+      .select('group_id')
+      .eq('devotional_id', todaysDevotion.id)
+      .then(({ data }) => {
+        cachedGroupIds.current = (data ?? []).map((r: any) => r.group_id);
+      });
+  }, [todaysDevotion?.id]);
 
   // Load saved defaults
   useEffect(() => {
@@ -173,20 +198,16 @@ export default function HomeScreen() {
     setTodaysDevotion(data);
   }
 
-  async function openEdit() {
+  function openEdit() {
     if (!todaysDevotion) return;
     setEditContent(todaysDevotion.content);
     setEditCommentsDisabled(todaysDevotion.comments_disabled ?? false);
 
-    // Load current audiences from visibility + share_friends + devotional_groups
+    // Build audiences from cached data — no DB round-trip
     const initial = new Set<string>();
     if (todaysDevotion.visibility === 'public') initial.add('public');
     if ((todaysDevotion as any).share_friends) initial.add('friends');
-    const { data: dg } = await supabase
-      .from('devotional_groups')
-      .select('group_id')
-      .eq('devotional_id', todaysDevotion.id);
-    for (const row of dg ?? []) initial.add(row.group_id);
+    for (const gid of cachedGroupIds.current) initial.add(gid);
     setEditAudiences(initial);
 
     setEditVisible(true);
