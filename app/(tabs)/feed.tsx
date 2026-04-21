@@ -18,7 +18,7 @@ export default function FeedScreen() {
   const [tab, setTab] = useState<Tab>('public');
   const [currentUserId, setCurrentUserId] = useState('');
 
-  const { items, loading, refreshing, error, refresh } = useFeed(tab);
+  const { items, loading, refreshing, loadingMore, hasMore, error, refresh, loadMore } = useFeed(tab);
 
   // Mutate reactions locally so the UI updates instantly
   const [localItems, setLocalItems] = useState(items);
@@ -103,6 +103,8 @@ export default function FeedScreen() {
               </Text>
             </View>
           }
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.3}
           renderItem={({ item }) => (
             <DevotionalCard
               item={item}
@@ -110,6 +112,22 @@ export default function FeedScreen() {
               onReactionUpdate={handleReactionUpdate}
             />
           )}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator color={c.accent} style={{ marginVertical: 20 }} />
+            ) : hasMore ? (
+              <TouchableOpacity
+                onPress={loadMore}
+                style={{ alignItems: 'center', paddingVertical: 20 }}
+              >
+                <Text style={{ color: c.accent, fontWeight: '600', fontSize: 15 }}>Load more</Text>
+              </TouchableOpacity>
+            ) : items.length > 0 ? (
+              <Text style={{ color: c.textSecondary, textAlign: 'center', fontSize: 13, paddingVertical: 20 }}>
+                You're all caught up
+              </Text>
+            ) : null
+          }
         />
       )}
     </View>

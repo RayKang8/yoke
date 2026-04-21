@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 
 export interface FeedItem {
@@ -19,6 +19,8 @@ export interface FeedItem {
   reactions: { type: string; user_id: string }[];
   comment_count: number;
 }
+
+const PAGE_SIZE = 20;
 
 const FEED_SELECT = `
   id, content, visibility, created_at, comments_disabled,
@@ -48,27 +50,27 @@ export function useFeed(tab: 'public' | 'friends') {
   const [items, setItems] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const cursorRef = useRef<string | null>(null);
 
-  const fetch = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    else setRefreshing(true);
+  // Fetches a page of items. Returns data or null on error/no-user.
+  const fetchPage = useCallback(async (cursor: string | null): Promise<FeedItem[] | null> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
 
     let query = supabase
       .from('devotionals')
       .select(FEED_SELECT)
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(PAGE_SIZE);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); setRefreshing(false); return; }
+    if (cursor) query = query.lt('created_at', cursor);
 
     if (tab === 'public') {
-      query = query
-        .eq('visibility', 'public')
-        .neq('user_id', user.id);
+      query = query.eq('visibility', 'public').neq('user_id', user.id);
     } else {
-      // friends: accepted friends' posts only (not own)
       const { data: friendships } = await supabase
         .from('friendships')
         .select('requester_id, addressee_id')
@@ -79,31 +81,62 @@ export function useFeed(tab: 'public' | 'friends') {
         f.requester_id === user.id ? f.addressee_id : f.requester_id
       );
 
-      if (friendIds.length === 0) {
-        setItems([]);
-        setLoading(false);
-        setRefreshing(false);
-        return;
-      }
+      if (friendIds.length === 0) return [];
 
-      query = query
-        .in('user_id', friendIds)
-        .eq('share_friends', true);
+      query = query.in('user_id', friendIds).eq('share_friends', true);
     }
 
     const { data, error: fetchError } = await query;
-    if (fetchError) {
+    if (fetchError) return null;
+
+    const counts = await fetchCommentCounts((data ?? []).map((d: any) => d.id));
+    return attachCounts(data ?? [], counts);
+  }, [tab]);
+
+  const fetch = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    else setRefreshing(true);
+
+    cursorRef.current = null;
+    const data = await fetchPage(null);
+
+    if (data === null) {
       setError('Could not load feed. Pull to refresh.');
-    } else if (data) {
+    } else {
       setError(null);
-      const counts = await fetchCommentCounts(data.map((d: any) => d.id));
-      setItems(attachCounts(data, counts));
+      setItems(data);
+      setHasMore(data.length === PAGE_SIZE);
+      cursorRef.current = data.length > 0 ? data[data.length - 1].created_at : null;
     }
+
     setLoading(false);
     setRefreshing(false);
-  }, [tab]);
+  }, [fetchPage]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || !cursorRef.current) return;
+    setLoadingMore(true);
+
+    const data = await fetchPage(cursorRef.current);
+    if (data !== null) {
+      setItems(prev => [...prev, ...data]);
+      setHasMore(data.length === PAGE_SIZE);
+      cursorRef.current = data.length > 0 ? data[data.length - 1].created_at : null;
+    }
+
+    setLoadingMore(false);
+  }, [fetchPage, loadingMore, hasMore]);
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  return { items, loading, refreshing, error, refresh: () => fetch(true) };
+  return {
+    items,
+    loading,
+    refreshing,
+    loadingMore,
+    hasMore,
+    error,
+    refresh: () => fetch(true),
+    loadMore,
+  };
 }
