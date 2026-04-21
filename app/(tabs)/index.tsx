@@ -163,7 +163,6 @@ export default function HomeScreen() {
   function openEdit() {
     if (!todaysDevotion) return;
     setEditContent(todaysDevotion.content);
-    setEditVisibility(todaysDevotion.visibility);
     setEditVisible(true);
   }
 
