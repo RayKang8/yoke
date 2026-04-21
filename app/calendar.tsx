@@ -78,7 +78,7 @@ export default function CalendarScreen() {
       supabase.from('users').select('is_premium, trial_ends_at').eq('id', user.id).single(),
       supabase
         .from('devotionals')
-        .select('id, content, created_at, passage:passages!passage_id(reference, text), reactions(type)')
+        .select('id, content, created_at, passage:passages!passage_id(date, reference, text), reactions(type)')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false }),
     ]);
@@ -90,8 +90,11 @@ export default function CalendarScreen() {
     const map: Record<string, DevotionalDay> = {};
 
     for (const d of devos ?? []) {
-      const dt = new Date(d.created_at);
-      const date = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+      // Use passage date as the canonical day — avoids timezone skew from created_at
+      const date: string = (d.passage as any)?.date ?? (() => {
+        const dt = new Date(d.created_at);
+        return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+      })();
       dates.add(date);
       map[date] = {
         date,

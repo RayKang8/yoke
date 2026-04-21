@@ -45,18 +45,14 @@ export function useProfile() {
 
     const [{ data: profileData }, { data: devoRows }, { count: friends }] = await Promise.all([
       supabase.from('users').select('*').eq('id', user.id).single(),
-      supabase.from('devotionals').select('created_at').eq('user_id', user.id),
+      supabase.from('devotionals').select('passage:passages!passage_id(date)').eq('user_id', user.id),
       supabase.from('friendships').select('*', { count: 'exact', head: true })
         .eq('status', 'accepted')
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
     ]);
 
-    // Compute streak directly from devotional dates — don't trust the cached DB value
-    const dates = (devoRows ?? []).map((r: any) => {
-      if (!r.created_at) return null;
-      const d = new Date(r.created_at);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    }).filter(Boolean);
+    // Compute streak from passage date — avoids timezone skew from created_at
+    const dates = (devoRows ?? []).map((r: any) => (r.passage as any)?.date ?? null).filter(Boolean);
     const streak = computeStreak(dates);
     const longestStreak = Math.max(profileData?.longest_streak ?? 0, streak);
 
