@@ -7,16 +7,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useProfile } from '../../hooks/useProfile';
+import { useNotifications } from '../../hooks/useNotifications';
 import { colors } from '../../constants/theme';
-import { CalendarIcon, FriendsIcon, SettingsIcon, ChurchIcon } from '../../components/icons';
+import { CalendarIcon, FriendsIcon, SettingsIcon, ChurchIcon, BellIcon } from '../../components/icons';
 
 export default function ProfileScreen() {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
   const { profile, devoCount, friendCount, loading, refetch, updateProfile } = useProfile();
+  const { unreadCount, fetch: fetchNotifications } = useNotifications();
 
-  useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
+  useFocusEffect(useCallback(() => { refetch(); fetchNotifications(); }, [refetch, fetchNotifications]));
 
   const [editVisible, setEditVisible] = useState(false);
   const [editName, setEditName] = useState('');
@@ -71,11 +73,30 @@ export default function ProfileScreen() {
       {/* Header row */}
       <View className="flex-row items-center justify-between mb-6">
         <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700' }}>Profile</Text>
-        <TouchableOpacity onPress={() => router.push('/settings')}
-          style={{ backgroundColor: c.surface, borderRadius: 10, padding: 8, borderWidth: 1, borderColor: c.border }}
-        >
-          <SettingsIcon size={20} color={c.accent} />
-        </TouchableOpacity>
+        <View className="flex-row gap-2">
+          {/* Bell with unread badge */}
+          <TouchableOpacity onPress={() => router.push('/notifications')}
+            style={{ backgroundColor: c.surface, borderRadius: 10, padding: 8, borderWidth: 1, borderColor: c.border }}
+          >
+            <BellIcon size={20} color={c.accent} />
+            {unreadCount > 0 && (
+              <View style={{
+                position: 'absolute', top: 4, right: 4,
+                backgroundColor: '#FF4444', borderRadius: 6,
+                minWidth: 14, height: 14, alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/settings')}
+            style={{ backgroundColor: c.surface, borderRadius: 10, padding: 8, borderWidth: 1, borderColor: c.border }}
+          >
+            <SettingsIcon size={20} color={c.accent} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Avatar + name */}
