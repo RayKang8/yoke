@@ -45,6 +45,7 @@ export interface Devotional {
   passage_id: string;
   content: string;
   visibility: Visibility;
+  share_friends: boolean;
   group_id: string | null;
   comments_disabled: boolean;
   created_at: string;

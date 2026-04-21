@@ -6,6 +6,7 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
+import { localDateStr } from '../../lib/utils';
 import { DevotionalCard } from '../../components/DevotionalCard';
 import { colors } from '../../constants/theme';
 import { GroupsIcon, StreakIcon } from '../../components/icons';
@@ -22,11 +23,6 @@ interface GroupDetail {
   invite_code: string;
   streak: number;
   created_by: string;
-}
-
-function todayLocalDate() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export default function GroupDetailScreen() {
@@ -58,7 +54,7 @@ export default function GroupDetailScreen() {
 
     // Today's devotionals from group members
     const { data: todayPassage } = await supabase
-      .from('passages').select('id').eq('date', todayLocalDate()).maybeSingle();
+      .from('passages').select('id').eq('date', localDateStr()).maybeSingle();
 
     if (todayPassage) {
       const { data: dgRows } = await supabase

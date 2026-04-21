@@ -1,14 +1,11 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { User } from '../types';
-
-function localDateStr(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+import { localDateStr } from '../lib/utils';
 
 function computeStreak(dates: string[]): number {
   const unique = [...new Set(dates)].sort().reverse();
-  const todayStr = localDateStr(new Date());
+  const todayStr = localDateStr();
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = localDateStr(yesterday);
@@ -22,9 +19,9 @@ function computeStreak(dates: string[]): number {
   for (const date of unique) {
     if (date === expected) {
       streak++;
-      const d = new Date(expected + 'T12:00:00');
-      d.setDate(d.getDate() - 1);
-      expected = localDateStr(d);
+      const prev = new Date(expected + 'T12:00:00');
+      prev.setDate(prev.getDate() - 1);
+      expected = localDateStr(prev);
     } else if (date < expected) {
       break;
     }
@@ -56,9 +53,9 @@ export function useProfile() {
     const streak = computeStreak(dates);
     const longestStreak = Math.max(profileData?.longest_streak ?? 0, streak);
 
-    // Sync back to DB if stale
+    // Sync back to DB if stale (fire-and-forget — non-critical background update)
     if (profileData && (profileData.streak !== streak || profileData.longest_streak !== longestStreak)) {
-      supabase.from('users').update({ streak, longest_streak: longestStreak }).eq('id', user.id);
+      void supabase.from('users').update({ streak, longest_streak: longestStreak }).eq('id', user.id);
     }
 
     setProfile(profileData ? { ...profileData, streak, longest_streak: longestStreak } : null);

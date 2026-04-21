@@ -1,18 +1,11 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { colors } from '../constants/theme';
+import { timeAgo } from '../lib/utils';
 import { ReactionBar } from './ReactionBar';
 import { CommentThread } from './CommentThread';
 import { CommentIcon } from './icons';
 import { FeedItem } from '../hooks/useFeed';
-
-function timeAgo(dateStr: string) {
-  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
-}
 
 interface Props {
   item: FeedItem;

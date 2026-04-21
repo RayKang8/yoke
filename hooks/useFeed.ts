@@ -54,6 +54,9 @@ export function useFeed(tab: 'public' | 'friends') {
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cursorRef = useRef<string | null>(null);
+  // Refs mirror state so loadMore closure doesn't go stale between renders
+  const loadingMoreRef = useRef(false);
+  const hasMoreRef = useRef(false);
 
   // Fetches a page of items. Returns data or null on error/no-user.
   const fetchPage = useCallback(async (cursor: string | null): Promise<FeedItem[] | null> => {
@@ -105,7 +108,8 @@ export function useFeed(tab: 'public' | 'friends') {
     } else {
       setError(null);
       setItems(data);
-      setHasMore(data.length === PAGE_SIZE);
+      hasMoreRef.current = data.length === PAGE_SIZE;
+      setHasMore(hasMoreRef.current);
       cursorRef.current = data.length > 0 ? data[data.length - 1].created_at : null;
     }
 
@@ -114,18 +118,21 @@ export function useFeed(tab: 'public' | 'friends') {
   }, [fetchPage]);
 
   const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore || !cursorRef.current) return;
+    if (loadingMoreRef.current || !hasMoreRef.current || !cursorRef.current) return;
+    loadingMoreRef.current = true;
     setLoadingMore(true);
 
     const data = await fetchPage(cursorRef.current);
     if (data !== null) {
       setItems(prev => [...prev, ...data]);
-      setHasMore(data.length === PAGE_SIZE);
+      hasMoreRef.current = data.length === PAGE_SIZE;
+      setHasMore(hasMoreRef.current);
       cursorRef.current = data.length > 0 ? data[data.length - 1].created_at : null;
     }
 
+    loadingMoreRef.current = false;
     setLoadingMore(false);
-  }, [fetchPage, loadingMore, hasMore]);
+  }, [fetchPage]);
 
   useEffect(() => { fetch(); }, [fetch]);
 

@@ -206,7 +206,7 @@ export default function HomeScreen() {
     // Build audiences from cached data — no DB round-trip
     const initial = new Set<string>();
     if (todaysDevotion.visibility === 'public') initial.add('public');
-    if ((todaysDevotion as any).share_friends) initial.add('friends');
+    if (todaysDevotion.share_friends) initial.add('friends');
     for (const gid of cachedGroupIds.current) initial.add(gid);
     setEditAudiences(initial);
 

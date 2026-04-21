@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
+import { timeAgo } from '../lib/utils';
 import { colors } from '../constants/theme';
 
 interface Comment {
@@ -24,14 +25,6 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   onCountChange: (count: number) => void;
-}
-
-function timeAgo(dateStr: string) {
-  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  return `${Math.floor(diff / 86400)}d`;
 }
 
 export function CommentThread({ devotionalId, authorId, commentsDisabled, currentUserId, visible, onClose, onCountChange }: Props) {
@@ -137,7 +130,7 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
                         {item.user?.name}
                       </Text>
                       <Text style={{ color: c.textSecondary, fontSize: 12 }}>
-                        {timeAgo(item.created_at)}
+                        {timeAgo(item.created_at, true)}
                       </Text>
                     </View>
                     <Text style={{ color: c.textPrimary, fontSize: 15, lineHeight: 21 }}>

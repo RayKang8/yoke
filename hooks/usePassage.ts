@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Passage, Devotional, Translation } from '../types';
-
-function todayLocalDate(): string {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
-}
+import { localDateStr } from '../lib/utils';
 
 export function usePassage() {
   const [passage, setPassage] = useState<Passage | null>(null);
@@ -16,7 +9,7 @@ export function usePassage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const today = todayLocalDate();
+  const today = localDateStr();
 
   async function fetchPassage() {
     const { data, error } = await supabase

@@ -6,15 +6,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { colors } from '../constants/theme';
+import { timeAgo } from '../lib/utils';
 import { useNotifications, AppNotification } from '../hooks/useNotifications';
-
-function timeAgo(dateStr: string) {
-  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
-}
 
 function notificationText(n: AppNotification): string {
   const name = n.actor?.name ?? 'Someone';

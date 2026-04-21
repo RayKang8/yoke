@@ -6,6 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
+import { localDateStr } from '../lib/utils';
 import { CalendarGrid } from '../components/CalendarGrid';
 import { colors } from '../constants/theme';
 import { StreakIcon } from '../components/icons';
@@ -35,10 +36,9 @@ export default function CalendarScreen() {
   const [streak, setStreak] = useState(0);
 
   function computeStreak(dates: Set<string>): number {
-    const t = new Date();
-    const todayStr = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+    const todayStr = localDateStr();
     const yest = new Date(); yest.setDate(yest.getDate() - 1);
-    const yesterdayStr = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
+    const yesterdayStr = localDateStr(yest);
     const sorted = [...dates].sort().reverse();
     const startStr = dates.has(todayStr) ? todayStr : yesterdayStr;
     let s = 0;
@@ -46,9 +46,9 @@ export default function CalendarScreen() {
     for (const date of sorted) {
       if (date === expected) {
         s++;
-        const d = new Date(expected + 'T12:00:00');
-        d.setDate(d.getDate() - 1);
-        expected = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const prev = new Date(expected + 'T12:00:00');
+        prev.setDate(prev.getDate() - 1);
+        expected = localDateStr(prev);
       } else if (date < expected) {
         break;
       }

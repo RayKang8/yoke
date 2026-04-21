@@ -12,7 +12,7 @@ import { colors } from '../../constants/theme';
 import { Translation } from '../../types';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
-type View = 'book' | 'chapter' | 'reader';
+type BibleView = 'book' | 'chapter' | 'reader';
 
 export default function BibleScreen() {
   const scheme = useColorScheme();
@@ -20,7 +20,7 @@ export default function BibleScreen() {
   const insets = useSafeAreaInsets();
 
   const [translation, setTranslation] = useState<Translation>('NIV');
-  const [view, setView] = useState<View>('book');
+  const [view, setView] = useState<BibleView>('book');
   const [selectedBook, setSelectedBook] = useState('John');
   const [selectedChapter, setSelectedChapter] = useState(1);
   const [verses, setVerses] = useState<Verse[]>([]);

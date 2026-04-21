@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { localDateStr } from '../lib/utils';
 
 export interface GroupSummary {
   id: string;
@@ -8,11 +9,6 @@ export interface GroupSummary {
   streak: number;
   member_count: number;
   posted_today: number;
-}
-
-function todayLocalDate(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export function useGroups() {
@@ -57,7 +53,7 @@ export function useGroups() {
     const { data: todayPassage } = await supabase
       .from('passages')
       .select('id')
-      .eq('date', todayLocalDate())
+      .eq('date', localDateStr())
       .maybeSingle();
 
     // Get which members shared today's passage to each group (via devotional_groups)
