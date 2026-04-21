@@ -209,12 +209,26 @@ export default function HomeScreen() {
     }
 
     // Sync group shares: delete all then re-insert selected
-    await supabase.from('devotional_groups').delete().eq('devotional_id', todaysDevotion.id);
+    const { error: deleteError } = await supabase
+      .from('devotional_groups')
+      .delete()
+      .eq('devotional_id', todaysDevotion.id);
+    if (deleteError) {
+      setSaving(false);
+      Alert.alert('Error', 'Could not update group shares: ' + deleteError.message);
+      return;
+    }
+
     const groupIds = [...editAudiences].filter(a => a !== 'public' && a !== 'friends');
     if (groupIds.length > 0) {
-      await supabase.from('devotional_groups').insert(
-        groupIds.map(group_id => ({ devotional_id: todaysDevotion.id, group_id }))
-      );
+      const { error: insertError } = await supabase
+        .from('devotional_groups')
+        .insert(groupIds.map(group_id => ({ devotional_id: todaysDevotion.id, group_id })));
+      if (insertError) {
+        setSaving(false);
+        Alert.alert('Error', 'Could not save group shares: ' + insertError.message);
+        return;
+      }
     }
 
     setSaving(false);
