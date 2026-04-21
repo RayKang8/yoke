@@ -48,6 +48,7 @@ export default function HomeScreen() {
   // Edit state
   const [editVisible, setEditVisible] = useState(false);
   const [editContent, setEditContent] = useState('');
+  const [editAudiences, setEditAudiences] = useState<Set<string>>(new Set(['friends']));
   const [saving, setSaving] = useState(false);
 
   // Load saved defaults
@@ -160,9 +161,21 @@ export default function HomeScreen() {
     setTodaysDevotion(data);
   }
 
-  function openEdit() {
+  async function openEdit() {
     if (!todaysDevotion) return;
     setEditContent(todaysDevotion.content);
+
+    // Load current audiences from visibility + devotional_groups
+    const initial = new Set<string>();
+    if (todaysDevotion.visibility === 'public') initial.add('public');
+    if (todaysDevotion.visibility === 'friends' || todaysDevotion.visibility === 'public') initial.add('friends');
+    const { data: dg } = await supabase
+      .from('devotional_groups')
+      .select('group_id')
+      .eq('devotional_id', todaysDevotion.id);
+    for (const row of dg ?? []) initial.add(row.group_id);
+    setEditAudiences(initial);
+
     setEditVisible(true);
   }
 
@@ -170,20 +183,33 @@ export default function HomeScreen() {
     if (!editContent.trim() || !todaysDevotion) return;
     setSaving(true);
 
+    const visibility = editAudiences.has('public') ? 'public'
+      : editAudiences.has('friends') ? 'friends'
+      : 'private';
+
     const { data, error } = await supabase
       .from('devotionals')
-      .update({ content: editContent.trim() })
+      .update({ content: editContent.trim(), visibility })
       .eq('id', todaysDevotion.id)
       .select()
       .single();
 
-    setSaving(false);
-
     if (error) {
+      setSaving(false);
       Alert.alert('Error', error.message);
       return;
     }
 
+    // Sync group shares: delete all then re-insert selected
+    await supabase.from('devotional_groups').delete().eq('devotional_id', todaysDevotion.id);
+    const groupIds = [...editAudiences].filter(a => a !== 'public' && a !== 'friends');
+    if (groupIds.length > 0) {
+      await supabase.from('devotional_groups').insert(
+        groupIds.map(group_id => ({ devotional_id: todaysDevotion.id, group_id }))
+      );
+    }
+
+    setSaving(false);
     haptics.success();
     setTodaysDevotion(data);
     setEditVisible(false);
@@ -355,6 +381,48 @@ export default function HomeScreen() {
                   marginBottom: 16,
                 }}
               />
+
+              <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>POST TO</Text>
+              <View className="flex-row flex-wrap gap-2 mb-6">
+                {[{ key: 'friends', label: 'Friends' }, { key: 'public', label: 'Public' }].map(({ key, label }) => {
+                  const active = editAudiences.has(key);
+                  return (
+                    <TouchableOpacity
+                      key={key}
+                      onPress={() => setEditAudiences(prev => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; })}
+                      style={{
+                        backgroundColor: active ? c.accent + '22' : c.surface,
+                        borderColor: active ? c.accent : c.border,
+                        borderWidth: 1, borderRadius: 20,
+                        paddingHorizontal: 14, paddingVertical: 8,
+                        flexDirection: 'row', alignItems: 'center', gap: 6,
+                      }}
+                    >
+                      {active && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                      <Text style={{ color: active ? c.accent : c.textSecondary, fontWeight: active ? '600' : '400', fontSize: 14 }}>{label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+                {groups.map(g => {
+                  const active = editAudiences.has(g.id);
+                  return (
+                    <TouchableOpacity
+                      key={g.id}
+                      onPress={() => setEditAudiences(prev => { const n = new Set(prev); n.has(g.id) ? n.delete(g.id) : n.add(g.id); return n; })}
+                      style={{
+                        backgroundColor: active ? c.accent + '22' : c.surface,
+                        borderColor: active ? c.accent : c.border,
+                        borderWidth: 1, borderRadius: 20,
+                        paddingHorizontal: 14, paddingVertical: 8,
+                        flexDirection: 'row', alignItems: 'center', gap: 6,
+                      }}
+                    >
+                      {active && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                      <Text style={{ color: active ? c.accent : c.textSecondary, fontWeight: active ? '600' : '400', fontSize: 14 }}>{g.name}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
 
               <TouchableOpacity
                 onPress={handleSaveEdit}
