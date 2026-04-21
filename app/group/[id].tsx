@@ -60,17 +60,18 @@ export default function GroupDetailScreen() {
     const { data: todayPassage } = await supabase
       .from('passages').select('id').eq('date', todayLocalDate()).maybeSingle();
 
-    if (todayPassage && memberData) {
-      const memberIds = memberData.map((m: any) => m.user_id);
-      const { data: devos } = await supabase
-        .from('devotionals')
-        .select('id, content, visibility, created_at, comments_disabled, user:users!user_id(id, name, yoke_code), passage:passages!passage_id(reference, title), reactions(type, user_id)')
-        .eq('passage_id', todayPassage.id)
-        .in('user_id', memberIds)
-        .order('created_at', { ascending: false });
+    if (todayPassage) {
+      const { data: dgRows } = await supabase
+        .from('devotional_groups')
+        .select('devotional:devotionals!devotional_id(id, content, visibility, created_at, comments_disabled, passage_id, user:users!user_id(id, name, yoke_code), passage:passages!passage_id(reference, title), reactions(type, user_id))')
+        .eq('group_id', id);
+
+      const todayDevos = (dgRows ?? [])
+        .map((r: any) => r.devotional)
+        .filter((d: any) => d && d.passage_id === todayPassage.id);
 
       setTodayFeed(
-        (devos ?? []).map((d: any) => ({ ...d, comment_count: 0 })) as FeedItem[]
+        todayDevos.map((d: any) => ({ ...d, comment_count: 0 })) as FeedItem[]
       );
     }
 

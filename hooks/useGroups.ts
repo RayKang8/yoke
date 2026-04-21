@@ -60,21 +60,24 @@ export function useGroups() {
       .eq('date', todayLocalDate())
       .maybeSingle();
 
-    // Get which members posted today's passage
-    const postedTodayIds = new Set<string>();
+    // Get which members shared today's passage to each group (via devotional_groups)
+    const postedToGroupIds = new Set<string>(); // "groupId:userId"
     if (todayPassage) {
-      const memberUserIds = [...new Set((allMembers ?? []).map(m => m.user_id))];
-      const { data: todayDevotionals } = await supabase
-        .from('devotionals')
-        .select('user_id')
-        .eq('passage_id', todayPassage.id)
-        .in('user_id', memberUserIds);
-      for (const d of todayDevotionals ?? []) postedTodayIds.add(d.user_id);
+      const { data: dg } = await supabase
+        .from('devotional_groups')
+        .select('group_id, devotional:devotionals!devotional_id(user_id, passage_id)')
+        .in('group_id', groupIds);
+      for (const row of dg ?? []) {
+        const d = row.devotional as any;
+        if (d?.passage_id === todayPassage.id) {
+          postedToGroupIds.add(`${row.group_id}:${d.user_id}`);
+        }
+      }
     }
 
     const summaries: GroupSummary[] = groupsData.map(g => {
       const members = (allMembers ?? []).filter(m => m.group_id === g.id);
-      const posted = members.filter(m => postedTodayIds.has(m.user_id));
+      const posted = members.filter(m => postedToGroupIds.has(`${g.id}:${m.user_id}`));
       return {
         ...g,
         member_count: members.length,

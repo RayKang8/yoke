@@ -1,5 +1,5 @@
 export type Translation = 'NIV' | 'ESV' | 'KJV' | 'NLT' | 'NKJV' | 'BSB' | 'ASV' | 'WEB' | 'YLT';
-export type Visibility = 'public' | 'friends' | 'group';
+export type Visibility = 'public' | 'friends' | 'private';
 export type ReactionType = 'pray' | 'amen' | 'hit';
 export type Theme =
   | 'faith'

@@ -9,18 +9,15 @@ import { supabase } from '../../lib/supabase';
 import { useFocusEffect } from 'expo-router';
 import { usePassage } from '../../hooks/usePassage';
 import { useProfile } from '../../hooks/useProfile';
+import { useGroups } from '../../hooks/useGroups';
 import { colors } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
-import { Translation, Visibility } from '../../types';
+import { Translation } from '../../types';
 import { StreakIcon, CommentIcon } from '../../components/icons';
 import { ReactionBar } from '../../components/ReactionBar';
 import { CommentThread } from '../../components/CommentThread';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
-const VISIBILITIES: { value: Visibility; label: string }[] = [
-  { value: 'friends', label: 'Friends Only' },
-  { value: 'public', label: 'Public' },
-];
 
 
 
@@ -31,13 +28,15 @@ export default function HomeScreen() {
 
   const { passage, todaysDevotion, loading, error, setTodaysDevotion } = usePassage();
   const { profile, refetch: refetchProfile } = useProfile();
+  const { groups } = useGroups();
 
   useFocusEffect(useCallback(() => { refetchProfile(); }, [refetchProfile]));
 
   const [translation, setTranslation] = useState<Translation>('NIV');
   const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);
   const [reflection, setReflection] = useState('');
-  const [visibility, setVisibility] = useState<Visibility>('friends');
+  // selectedAudiences: Set of 'friends' | 'public' | <groupId>
+  const [selectedAudiences, setSelectedAudiences] = useState<Set<string>>(new Set(['friends']));
   const [posting, setPosting] = useState(false);
 
   // Reactions + comments state
@@ -49,16 +48,17 @@ export default function HomeScreen() {
   // Edit state
   const [editVisible, setEditVisible] = useState(false);
   const [editContent, setEditContent] = useState('');
-  const [editVisibility, setEditVisibility] = useState<Visibility>('friends');
   const [saving, setSaving] = useState(false);
 
   // Load saved defaults
   useEffect(() => {
-    AsyncStorage.multiGet(['defaultTranslation', 'defaultVisibility']).then(pairs => {
+    AsyncStorage.multiGet(['defaultTranslation', 'postAudiences']).then(pairs => {
       const trans = pairs[0][1] as Translation | null;
-      const vis = pairs[1][1] as Visibility | null;
+      const audiences = pairs[1][1];
       if (trans) setTranslation(trans);
-      if (vis) setVisibility(vis);
+      if (audiences) {
+        try { setSelectedAudiences(new Set(JSON.parse(audiences))); } catch {}
+      }
     });
   }, []);
 
@@ -110,6 +110,15 @@ export default function HomeScreen() {
       .then(({ count }) => setCommentCount(count ?? 0));
   }, [todaysDevotion?.id]));
 
+  function toggleAudience(key: string) {
+    setSelectedAudiences(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) { next.delete(key); } else { next.add(key); }
+      AsyncStorage.setItem('postAudiences', JSON.stringify([...next]));
+      return next;
+    });
+  }
+
   async function handlePost() {
     if (!reflection.trim()) {
       Alert.alert('Empty reflection', 'Write something before posting.');
@@ -121,14 +130,14 @@ export default function HomeScreen() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setPosting(false); return; }
 
+    // Derive visibility from selected audiences
+    const visibility = selectedAudiences.has('public') ? 'public'
+      : selectedAudiences.has('friends') ? 'friends'
+      : 'private';
+
     const { data, error } = await supabase
       .from('devotionals')
-      .insert({
-        user_id: user.id,
-        passage_id: passage.id,
-        content: reflection.trim(),
-        visibility,
-      })
+      .insert({ user_id: user.id, passage_id: passage.id, content: reflection.trim(), visibility })
       .select()
       .single();
 
@@ -137,6 +146,14 @@ export default function HomeScreen() {
     if (error) {
       Alert.alert('Error', error.message);
       return;
+    }
+
+    // Share to selected groups
+    const groupIds = [...selectedAudiences].filter(a => a !== 'public' && a !== 'friends');
+    if (groupIds.length > 0) {
+      await supabase.from('devotional_groups').insert(
+        groupIds.map(group_id => ({ devotional_id: data.id, group_id }))
+      );
     }
 
     haptics.success();
@@ -156,7 +173,7 @@ export default function HomeScreen() {
 
     const { data, error } = await supabase
       .from('devotionals')
-      .update({ content: editContent.trim(), visibility: editVisibility })
+      .update({ content: editContent.trim() })
       .eq('id', todaysDevotion.id)
       .select()
       .single();
@@ -340,32 +357,6 @@ export default function HomeScreen() {
                 }}
               />
 
-              <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>VISIBILITY</Text>
-              <View className="flex-row gap-2 mb-6">
-                {VISIBILITIES.map(v => (
-                  <TouchableOpacity
-                    key={v.value}
-                    onPress={() => setEditVisibility(v.value)}
-                    style={{
-                      backgroundColor: editVisibility === v.value ? c.accent + '22' : c.surface,
-                      borderColor: editVisibility === v.value ? c.accent : c.border,
-                      borderWidth: 1,
-                      borderRadius: 10,
-                      paddingHorizontal: 14,
-                      paddingVertical: 8,
-                    }}
-                  >
-                    <Text style={{
-                      color: editVisibility === v.value ? c.accent : c.textSecondary,
-                      fontWeight: editVisibility === v.value ? '600' : '400',
-                      fontSize: 14,
-                    }}>
-                      {v.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
               <TouchableOpacity
                 onPress={handleSaveEdit}
                 disabled={saving || !editContent.trim()}
@@ -480,30 +471,51 @@ export default function HomeScreen() {
           }}
         />
 
-        {/* Visibility selector */}
-        <View className="flex-row gap-2 mb-5">
-          {VISIBILITIES.map(v => (
-            <TouchableOpacity
-              key={v.value}
-              onPress={() => { setVisibility(v.value); AsyncStorage.setItem('defaultVisibility', v.value); }}
-              style={{
-                backgroundColor: visibility === v.value ? c.accent + '22' : c.surface,
-                borderColor: visibility === v.value ? c.accent : c.border,
-                borderWidth: 1,
-                borderRadius: 10,
-                paddingHorizontal: 14,
-                paddingVertical: 8,
-              }}
-            >
-              <Text style={{
-                color: visibility === v.value ? c.accent : c.textSecondary,
-                fontWeight: visibility === v.value ? '600' : '400',
-                fontSize: 14,
-              }}>
-                {v.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        {/* Audience selector */}
+        <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>POST TO</Text>
+        <View className="flex-row flex-wrap gap-2 mb-5">
+          {[{ key: 'friends', label: 'Friends' }, { key: 'public', label: 'Public' }].map(({ key, label }) => {
+            const active = selectedAudiences.has(key);
+            return (
+              <TouchableOpacity
+                key={key}
+                onPress={() => toggleAudience(key)}
+                style={{
+                  backgroundColor: active ? c.accent + '22' : c.surface,
+                  borderColor: active ? c.accent : c.border,
+                  borderWidth: 1, borderRadius: 20,
+                  paddingHorizontal: 14, paddingVertical: 8,
+                  flexDirection: 'row', alignItems: 'center', gap: 6,
+                }}
+              >
+                {active && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                <Text style={{ color: active ? c.accent : c.textSecondary, fontWeight: active ? '600' : '400', fontSize: 14 }}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+          {groups.map(g => {
+            const active = selectedAudiences.has(g.id);
+            return (
+              <TouchableOpacity
+                key={g.id}
+                onPress={() => toggleAudience(g.id)}
+                style={{
+                  backgroundColor: active ? c.accent + '22' : c.surface,
+                  borderColor: active ? c.accent : c.border,
+                  borderWidth: 1, borderRadius: 20,
+                  paddingHorizontal: 14, paddingVertical: 8,
+                  flexDirection: 'row', alignItems: 'center', gap: 6,
+                }}
+              >
+                {active && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                <Text style={{ color: active ? c.accent : c.textSecondary, fontWeight: active ? '600' : '400', fontSize: 14 }}>
+                  {g.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Post button */}
