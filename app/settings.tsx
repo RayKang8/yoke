@@ -9,15 +9,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { scheduleDailyReminder } from '../lib/notifications';
 import { colors } from '../constants/theme';
-import { Translation, Visibility } from '../types';
+import { Translation } from '../types';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { usePremium } from '../hooks/usePremium';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
-const VISIBILITIES: { value: Visibility; label: string }[] = [
-  { value: 'friends', label: 'Friends Only' },
-  { value: 'public', label: 'Public' },
-];
 const REMINDER_TIMES = ['6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '12:00 PM', '6:00 PM', '8:00 PM'];
 
 export default function SettingsScreen() {
@@ -27,21 +23,23 @@ export default function SettingsScreen() {
 
   const [reminderTime, setReminderTime] = useState('8:00 AM');
   const [defaultTranslation, setDefaultTranslation] = useState<Translation>('NIV');
-  const [defaultVisibility, setDefaultVisibility] = useState<Visibility>('friends');
+  const [defaultAudiences, setDefaultAudiences] = useState<Set<string>>(new Set(['friends']));
   const [showPaywall, setShowPaywall] = useState(false);
   const { isPremium, isTrialActive, trialDaysLeft, recheck } = usePremium();
 
   useEffect(() => { load(); }, []);
 
   async function load() {
-    const [time, trans, vis] = await Promise.all([
+    const [time, trans, audiences] = await Promise.all([
       AsyncStorage.getItem('reminderTime'),
       AsyncStorage.getItem('defaultTranslation'),
-      AsyncStorage.getItem('defaultVisibility'),
+      AsyncStorage.getItem('postAudiences'),
     ]);
     if (time) setReminderTime(time);
     if (trans) setDefaultTranslation(trans as Translation);
-    if (vis) setDefaultVisibility(vis as Visibility);
+    if (audiences) {
+      try { setDefaultAudiences(new Set(JSON.parse(audiences))); } catch {}
+    }
   }
 
   async function setSetting(key: string, value: string) {
@@ -158,11 +156,18 @@ export default function SettingsScreen() {
         />
       ))}
 
-      {/* Default visibility */}
-      <SectionHeader label="DEFAULT POST VISIBILITY" />
-      {VISIBILITIES.map(v => (
-        <OptionRow key={v.value} label={v.label} selected={defaultVisibility === v.value}
-          onPress={() => { setDefaultVisibility(v.value); setSetting('defaultVisibility', v.value); }}
+      {/* Default post audiences */}
+      <SectionHeader label="DEFAULT POST TO" />
+      {[{ key: 'friends', label: 'Friends' }, { key: 'public', label: 'Public' }].map(({ key, label }) => (
+        <OptionRow key={key} label={label} selected={defaultAudiences.has(key)}
+          onPress={() => {
+            setDefaultAudiences(prev => {
+              const next = new Set(prev);
+              next.has(key) ? next.delete(key) : next.add(key);
+              AsyncStorage.setItem('postAudiences', JSON.stringify([...next]));
+              return next;
+            });
+          }}
         />
       ))}
 
