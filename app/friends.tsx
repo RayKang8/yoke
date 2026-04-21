@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity,
   ActivityIndicator, Alert, useColorScheme, RefreshControl,
@@ -11,15 +11,26 @@ import { sendPushToUser } from '../lib/notifications';
 import { haptics } from '../lib/haptics';
 import { colors } from '../constants/theme';
 
+interface SearchResult {
+  id: string;
+  name: string;
+  yoke_code: string;
+  church: string | null;
+  friendStatus: 'none' | 'friends' | 'pending_sent' | 'pending_received';
+}
+
 export default function FriendsScreen() {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
   const { friends, received, sent, loading, currentUserId, refetch } = useFriends();
 
-  const [code, setCode] = useState('');
+  const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const [addingId, setAddingId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   async function handleRefresh() {
     setRefreshing(true);
@@ -27,60 +38,62 @@ export default function FriendsScreen() {
     setRefreshing(false);
   }
 
-  async function sendRequest() {
-    const yokeCode = code.trim().toUpperCase();
-    if (!yokeCode) return;
+  function handleQueryChange(text: string) {
+    setQuery(text);
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    if (!text.trim()) { setSearchResults([]); return; }
+    searchTimer.current = setTimeout(() => runSearch(text.trim()), 300);
+  }
+
+  async function runSearch(q: string) {
     setSearching(true);
-
-    const { data: target } = await supabase
+    const { data: users } = await supabase
       .from('users')
-      .select('id, name, yoke_code')
-      .eq('yoke_code', yokeCode)
-      .maybeSingle();
+      .select('id, name, yoke_code, church')
+      .or(`name.ilike.%${q}%,yoke_code.ilike.%${q}%`)
+      .neq('id', currentUserId)
+      .limit(10);
 
-    if (!target) {
-      Alert.alert('Not found', 'No user found with that Yoke code.');
-      setSearching(false);
-      return;
-    }
+    if (!users) { setSearching(false); return; }
 
-    if (target.id === currentUserId) {
-      Alert.alert('That\'s you!', 'You can\'t add yourself as a friend.');
-      setSearching(false);
-      return;
-    }
-
-    // Check if friendship already exists
-    const { data: existing } = await supabase
+    // Fetch friendship statuses for results
+    const ids = users.map(u => u.id);
+    const { data: fships } = await supabase
       .from('friendships')
-      .select('id, status')
-      .or(`and(requester_id.eq.${currentUserId},addressee_id.eq.${target.id}),and(requester_id.eq.${target.id},addressee_id.eq.${currentUserId})`)
-      .maybeSingle();
+      .select('requester_id, addressee_id, status')
+      .or(ids.map(id => `and(requester_id.eq.${currentUserId},addressee_id.eq.${id}),and(requester_id.eq.${id},addressee_id.eq.${currentUserId})`).join(','));
 
-    if (existing) {
-      Alert.alert(
-        existing.status === 'accepted' ? 'Already friends' : 'Request already sent',
-        existing.status === 'accepted'
-          ? `You and ${target.name} are already friends.`
-          : `A friend request with ${target.name} is already pending.`
+    const results: SearchResult[] = users.map(u => {
+      const f = (fships ?? []).find(fs =>
+        (fs.requester_id === currentUserId && fs.addressee_id === u.id) ||
+        (fs.requester_id === u.id && fs.addressee_id === currentUserId)
       );
-      setSearching(false);
-      return;
-    }
+      let friendStatus: SearchResult['friendStatus'] = 'none';
+      if (f) {
+        if (f.status === 'accepted') friendStatus = 'friends';
+        else if (f.requester_id === currentUserId) friendStatus = 'pending_sent';
+        else friendStatus = 'pending_received';
+      }
+      return { ...u, friendStatus };
+    });
 
+    setSearchResults(results);
+    setSearching(false);
+  }
+
+  async function sendRequest(target: SearchResult) {
+    setAddingId(target.id);
     const { error } = await supabase
       .from('friendships')
       .insert({ requester_id: currentUserId, addressee_id: target.id });
 
-    setSearching(false);
-    if (error) { Alert.alert('Error', error.message); return; }
+    if (error) { Alert.alert('Error', error.message); setAddingId(null); return; }
 
-    setCode('');
     haptics.success();
-    // Notify the other user
+    setSearchResults(prev => prev.map(r => r.id === target.id ? { ...r, friendStatus: 'pending_sent' } : r));
     const { data: me } = await supabase.from('users').select('name').eq('id', currentUserId).single();
     await sendPushToUser(target.id, 'New Friend Request', `${me?.name ?? 'Someone'} wants to be Yoke friends.`, { screen: 'profile', userId: currentUserId });
-    Alert.alert('Request sent!', `Friend request sent to ${target.name}.`);
+    setAddingId(null);
     refetch();
   }
 
@@ -123,33 +136,71 @@ export default function FriendsScreen() {
 
       <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700', marginBottom: 24 }}>Friends</Text>
 
-      {/* Add by Yoke code */}
-      <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: '600', marginBottom: 8 }}>ADD BY YOKE CODE</Text>
-      <View className="flex-row gap-2 mb-8">
+      {/* Search */}
+      <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: '600', marginBottom: 8 }}>FIND PEOPLE</Text>
+      <View style={{ position: 'relative', marginBottom: searchResults.length > 0 ? 0 : 24 }}>
         <TextInput
-          value={code}
-          onChangeText={setCode}
-          placeholder="YOKE-XXXX"
+          value={query}
+          onChangeText={handleQueryChange}
+          placeholder="Search by name or Yoke code..."
           placeholderTextColor={c.textSecondary}
-          autoCapitalize="characters"
           style={{
-            flex: 1,
             backgroundColor: c.surface, color: c.textPrimary,
             borderColor: c.border, borderWidth: 1, borderRadius: 12,
-            padding: 13, fontSize: 16, fontFamily: 'monospace',
+            padding: 13, fontSize: 16,
           }}
         />
-        <TouchableOpacity
-          onPress={sendRequest}
-          disabled={searching || !code.trim()}
-          style={{ backgroundColor: code.trim() ? c.accent : c.border, borderRadius: 12, paddingHorizontal: 18, justifyContent: 'center' }}
-        >
-          {searching
-            ? <ActivityIndicator color="#1A1A1A" size="small" />
-            : <Text style={{ color: '#1A1A1A', fontWeight: '600', fontSize: 15 }}>Add</Text>
-          }
-        </TouchableOpacity>
+        {searching && (
+          <ActivityIndicator
+            color={c.accent} size="small"
+            style={{ position: 'absolute', right: 14, top: 14 }}
+          />
+        )}
       </View>
+
+      {/* Search results */}
+      {searchResults.length > 0 && (
+        <View style={{ backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: c.border, marginBottom: 24, overflow: 'hidden' }}>
+          {searchResults.map((result, i) => (
+            <View
+              key={result.id}
+              style={{ padding: 14, borderBottomWidth: i < searchResults.length - 1 ? 1 : 0, borderBottomColor: c.border, flexDirection: 'row', alignItems: 'center', gap: 12 }}
+            >
+              <TouchableOpacity className="flex-row items-center gap-3 flex-1" onPress={() => router.push(`/user/${result.id}`)}>
+                <View style={{ backgroundColor: c.accent, width: 38, height: 38, borderRadius: 19 }} className="items-center justify-center">
+                  <Text style={{ color: '#1A1A1A', fontWeight: '700' }}>{result.name[0]?.toUpperCase()}</Text>
+                </View>
+                <View>
+                  <Text style={{ color: c.textPrimary, fontWeight: '600', fontSize: 15 }}>{result.name}</Text>
+                  <Text style={{ color: c.textSecondary, fontSize: 12 }}>{result.yoke_code}</Text>
+                </View>
+              </TouchableOpacity>
+
+              {result.friendStatus === 'none' && (
+                <TouchableOpacity
+                  onPress={() => sendRequest(result)}
+                  disabled={addingId === result.id}
+                  style={{ backgroundColor: c.accent, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 7 }}
+                >
+                  {addingId === result.id
+                    ? <ActivityIndicator color="#1A1A1A" size="small" />
+                    : <Text style={{ color: '#1A1A1A', fontWeight: '600', fontSize: 13 }}>Add</Text>
+                  }
+                </TouchableOpacity>
+              )}
+              {result.friendStatus === 'pending_sent' && (
+                <Text style={{ color: c.textSecondary, fontSize: 13 }}>Sent</Text>
+              )}
+              {result.friendStatus === 'pending_received' && (
+                <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600' }}>Wants to add you</Text>
+              )}
+              {result.friendStatus === 'friends' && (
+                <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600' }}>Friends ✓</Text>
+              )}
+            </View>
+          ))}
+        </View>
+      )}
 
       {loading ? (
         <ActivityIndicator color={c.accent} style={{ marginTop: 20 }} />
