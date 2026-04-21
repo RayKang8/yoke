@@ -392,6 +392,24 @@ export default function HomeScreen() {
 
               <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>POST TO</Text>
               <View className="flex-row flex-wrap gap-2 mb-6">
+                {(() => {
+                  const onlyMe = editAudiences.size === 0;
+                  return (
+                    <TouchableOpacity
+                      onPress={() => setEditAudiences(new Set())}
+                      style={{
+                        backgroundColor: onlyMe ? c.accent + '22' : c.surface,
+                        borderColor: onlyMe ? c.accent : c.border,
+                        borderWidth: 1, borderRadius: 20,
+                        paddingHorizontal: 14, paddingVertical: 8,
+                        flexDirection: 'row', alignItems: 'center', gap: 6,
+                      }}
+                    >
+                      {onlyMe && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                      <Text style={{ color: onlyMe ? c.accent : c.textSecondary, fontWeight: onlyMe ? '600' : '400', fontSize: 14 }}>Only Me</Text>
+                    </TouchableOpacity>
+                  );
+                })()}
                 {[{ key: 'friends', label: 'Friends' }, { key: 'public', label: 'Public' }].map(({ key, label }) => {
                   const active = editAudiences.has(key);
                   return (
@@ -569,6 +587,30 @@ export default function HomeScreen() {
         {/* Audience selector */}
         <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>POST TO</Text>
         <View className="flex-row flex-wrap gap-2 mb-5">
+          {/* Only Me — active when nothing else is selected */}
+          {(() => {
+            const onlyMe = selectedAudiences.size === 0;
+            return (
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedAudiences(new Set());
+                  AsyncStorage.setItem('postAudiences', JSON.stringify([]));
+                }}
+                style={{
+                  backgroundColor: onlyMe ? c.accent + '22' : c.surface,
+                  borderColor: onlyMe ? c.accent : c.border,
+                  borderWidth: 1, borderRadius: 20,
+                  paddingHorizontal: 14, paddingVertical: 8,
+                  flexDirection: 'row', alignItems: 'center', gap: 6,
+                }}
+              >
+                {onlyMe && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                <Text style={{ color: onlyMe ? c.accent : c.textSecondary, fontWeight: onlyMe ? '600' : '400', fontSize: 14 }}>
+                  Only Me
+                </Text>
+              </TouchableOpacity>
+            );
+          })()}
           {[{ key: 'friends', label: 'Friends' }, { key: 'public', label: 'Public' }].map(({ key, label }) => {
             const active = selectedAudiences.has(key);
             return (

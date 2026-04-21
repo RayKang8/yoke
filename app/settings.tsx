@@ -158,6 +158,11 @@ export default function SettingsScreen() {
 
       {/* Default post audiences */}
       <SectionHeader label="DEFAULT POST TO" />
+      <OptionRow
+        label="Only Me"
+        selected={defaultAudiences.size === 0}
+        onPress={() => { setDefaultAudiences(new Set()); AsyncStorage.setItem('postAudiences', JSON.stringify([])); }}
+      />
       {[{ key: 'friends', label: 'Friends' }, { key: 'public', label: 'Public' }].map(({ key, label }) => (
         <OptionRow key={key} label={label} selected={defaultAudiences.has(key)}
           onPress={() => {
