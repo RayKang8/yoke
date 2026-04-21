@@ -49,6 +49,7 @@ export default function HomeScreen() {
   const [editVisible, setEditVisible] = useState(false);
   const [editContent, setEditContent] = useState('');
   const [editAudiences, setEditAudiences] = useState<Set<string>>(new Set(['friends']));
+  const [editCommentsDisabled, setEditCommentsDisabled] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // Load saved defaults
@@ -170,6 +171,7 @@ export default function HomeScreen() {
   async function openEdit() {
     if (!todaysDevotion) return;
     setEditContent(todaysDevotion.content);
+    setEditCommentsDisabled(todaysDevotion.comments_disabled ?? false);
 
     // Load current audiences from visibility + share_friends + devotional_groups
     const initial = new Set<string>();
@@ -195,7 +197,7 @@ export default function HomeScreen() {
 
     const { data, error } = await supabase
       .from('devotionals')
-      .update({ content: editContent.trim(), visibility, share_friends: editAudiences.has('friends') })
+      .update({ content: editContent.trim(), visibility, share_friends: editAudiences.has('friends'), comments_disabled: editCommentsDisabled })
       .eq('id', todaysDevotion.id)
       .select()
       .single();
@@ -429,6 +431,26 @@ export default function HomeScreen() {
                   );
                 })}
               </View>
+
+              {/* Comments toggle */}
+              <TouchableOpacity
+                onPress={() => setEditCommentsDisabled(prev => !prev)}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, paddingVertical: 4 }}
+              >
+                <Text style={{ color: c.textPrimary, fontSize: 15 }}>Disable comments</Text>
+                <View style={{
+                  width: 44, height: 26, borderRadius: 13,
+                  backgroundColor: editCommentsDisabled ? c.accent : c.border,
+                  justifyContent: 'center',
+                  paddingHorizontal: 2,
+                }}>
+                  <View style={{
+                    width: 22, height: 22, borderRadius: 11,
+                    backgroundColor: '#fff',
+                    alignSelf: editCommentsDisabled ? 'flex-end' : 'flex-start',
+                  }} />
+                </View>
+              </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handleSaveEdit}
