@@ -135,7 +135,7 @@ export default function HomeScreen() {
     // Derive visibility from selected audiences
     const visibility = selectedAudiences.has('public') ? 'public'
       : selectedAudiences.has('friends') ? 'friends'
-      : 'private';
+      : 'private'; // allowed by devotionals_visibility_check
 
     const { data, error } = await supabase
       .from('devotionals')
@@ -199,13 +199,15 @@ export default function HomeScreen() {
     try {
       const visibility = editAudiences.has('public') ? 'public'
         : editAudiences.has('friends') ? 'friends'
-        : 'private';
+        : 'private'; // allowed by devotionals_visibility_check
 
       // Update the devotional (no .select() to avoid RLS post-fetch issues)
+      console.log('[save] step 1: update devotional', { visibility });
       const { error: updateError } = await supabase
         .from('devotionals')
         .update({ content: editContent.trim(), visibility, share_friends: editAudiences.has('friends'), comments_disabled: editCommentsDisabled })
         .eq('id', todaysDevotion.id);
+      console.log('[save] step 1 done', { updateError });
 
       if (updateError) {
         Alert.alert('Error', updateError.message);
@@ -213,10 +215,12 @@ export default function HomeScreen() {
       }
 
       // Sync group shares: delete all then re-insert selected
+      console.log('[save] step 2: delete group shares');
       const { error: deleteError } = await supabase
         .from('devotional_groups')
         .delete()
         .eq('devotional_id', todaysDevotion.id);
+      console.log('[save] step 2 done', { deleteError });
       if (deleteError) {
         Alert.alert('Error', 'Could not update group shares: ' + deleteError.message);
         return;
@@ -224,9 +228,11 @@ export default function HomeScreen() {
 
       const groupIds = [...editAudiences].filter(a => a !== 'public' && a !== 'friends');
       if (groupIds.length > 0) {
+        console.log('[save] step 3: insert group shares', groupIds);
         const { error: insertError } = await supabase
           .from('devotional_groups')
           .insert(groupIds.map(group_id => ({ devotional_id: todaysDevotion.id, group_id })));
+        console.log('[save] step 3 done', { insertError });
         if (insertError) {
           Alert.alert('Error', 'Could not save group shares: ' + insertError.message);
           return;
