@@ -199,47 +199,24 @@ export default function HomeScreen() {
     try {
       const visibility = editAudiences.has('public') ? 'public'
         : editAudiences.has('friends') ? 'friends'
-        : 'private'; // allowed by devotionals_visibility_check
-
-      // Update the devotional (no .select() to avoid RLS post-fetch issues)
-      console.log('[save] step 1: update devotional', { visibility });
-      const { error: updateError } = await supabase
-        .from('devotionals')
-        .update({ content: editContent.trim(), visibility, share_friends: editAudiences.has('friends'), comments_disabled: editCommentsDisabled })
-        .eq('id', todaysDevotion.id);
-      console.log('[save] step 1 done', { updateError });
-
-      if (updateError) {
-        Alert.alert('Error', updateError.message);
-        return;
-      }
-
-      // Sync group shares: delete all then re-insert selected
-      console.log('[save] step 2: delete group shares');
-      const { error: deleteError } = await supabase
-        .from('devotional_groups')
-        .delete()
-        .eq('devotional_id', todaysDevotion.id);
-      console.log('[save] step 2 done', { deleteError });
-      if (deleteError) {
-        Alert.alert('Error', 'Could not update group shares: ' + deleteError.message);
-        return;
-      }
+        : 'private';
 
       const groupIds = [...editAudiences].filter(a => a !== 'public' && a !== 'friends');
-      if (groupIds.length > 0) {
-        console.log('[save] step 3: insert group shares', groupIds);
-        const { error: insertError } = await supabase
-          .from('devotional_groups')
-          .insert(groupIds.map(group_id => ({ devotional_id: todaysDevotion.id, group_id })));
-        console.log('[save] step 3 done', { insertError });
-        if (insertError) {
-          Alert.alert('Error', 'Could not save group shares: ' + insertError.message);
-          return;
-        }
+
+      const { error } = await supabase.rpc('save_devotional_edit', {
+        p_devotional_id:     todaysDevotion.id,
+        p_content:           editContent.trim(),
+        p_visibility:        visibility,
+        p_share_friends:     editAudiences.has('friends'),
+        p_comments_disabled: editCommentsDisabled,
+        p_group_ids:         groupIds,
+      });
+
+      if (error) {
+        Alert.alert('Error', error.message);
+        return;
       }
 
-      // Update local state directly — avoids a re-fetch through the RLS chain
       setTodaysDevotion({
         ...todaysDevotion,
         content: editContent.trim(),
