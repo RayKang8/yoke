@@ -138,7 +138,13 @@ export default function HomeScreen() {
 
     const { data, error } = await supabase
       .from('devotionals')
-      .insert({ user_id: user.id, passage_id: passage.id, content: reflection.trim(), visibility })
+      .insert({
+        user_id: user.id,
+        passage_id: passage.id,
+        content: reflection.trim(),
+        visibility,
+        share_friends: selectedAudiences.has('friends'),
+      })
       .select()
       .single();
 
@@ -165,10 +171,10 @@ export default function HomeScreen() {
     if (!todaysDevotion) return;
     setEditContent(todaysDevotion.content);
 
-    // Load current audiences from visibility + devotional_groups
+    // Load current audiences from visibility + share_friends + devotional_groups
     const initial = new Set<string>();
     if (todaysDevotion.visibility === 'public') initial.add('public');
-    if (todaysDevotion.visibility === 'friends' || todaysDevotion.visibility === 'public') initial.add('friends');
+    if ((todaysDevotion as any).share_friends) initial.add('friends');
     const { data: dg } = await supabase
       .from('devotional_groups')
       .select('group_id')
@@ -189,7 +195,7 @@ export default function HomeScreen() {
 
     const { data, error } = await supabase
       .from('devotionals')
-      .update({ content: editContent.trim(), visibility })
+      .update({ content: editContent.trim(), visibility, share_friends: editAudiences.has('friends') })
       .eq('id', todaysDevotion.id)
       .select()
       .single();

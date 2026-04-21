@@ -88,7 +88,7 @@ export function useFeed(tab: 'public' | 'friends') {
 
       query = query
         .in('user_id', friendIds)
-        .in('visibility', ['public', 'friends']);
+        .eq('share_friends', true);
     }
 
     const { data, error: fetchError } = await query;
