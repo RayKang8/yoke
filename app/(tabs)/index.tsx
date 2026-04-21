@@ -196,50 +196,59 @@ export default function HomeScreen() {
     if (!editContent.trim() || !todaysDevotion) return;
     setSaving(true);
 
-    const visibility = editAudiences.has('public') ? 'public'
-      : editAudiences.has('friends') ? 'friends'
-      : 'private';
+    try {
+      const visibility = editAudiences.has('public') ? 'public'
+        : editAudiences.has('friends') ? 'friends'
+        : 'private';
 
-    const { data, error } = await supabase
-      .from('devotionals')
-      .update({ content: editContent.trim(), visibility, share_friends: editAudiences.has('friends'), comments_disabled: editCommentsDisabled })
-      .eq('id', todaysDevotion.id)
-      .select()
-      .single();
+      // Update the devotional (no .select() to avoid RLS post-fetch issues)
+      const { error: updateError } = await supabase
+        .from('devotionals')
+        .update({ content: editContent.trim(), visibility, share_friends: editAudiences.has('friends'), comments_disabled: editCommentsDisabled })
+        .eq('id', todaysDevotion.id);
 
-    if (error) {
-      setSaving(false);
-      Alert.alert('Error', error.message);
-      return;
-    }
-
-    // Sync group shares: delete all then re-insert selected
-    const { error: deleteError } = await supabase
-      .from('devotional_groups')
-      .delete()
-      .eq('devotional_id', todaysDevotion.id);
-    if (deleteError) {
-      setSaving(false);
-      Alert.alert('Error', 'Could not update group shares: ' + deleteError.message);
-      return;
-    }
-
-    const groupIds = [...editAudiences].filter(a => a !== 'public' && a !== 'friends');
-    if (groupIds.length > 0) {
-      const { error: insertError } = await supabase
-        .from('devotional_groups')
-        .insert(groupIds.map(group_id => ({ devotional_id: todaysDevotion.id, group_id })));
-      if (insertError) {
-        setSaving(false);
-        Alert.alert('Error', 'Could not save group shares: ' + insertError.message);
+      if (updateError) {
+        Alert.alert('Error', updateError.message);
         return;
       }
-    }
 
-    setSaving(false);
-    haptics.success();
-    setTodaysDevotion(data);
-    setEditVisible(false);
+      // Sync group shares: delete all then re-insert selected
+      const { error: deleteError } = await supabase
+        .from('devotional_groups')
+        .delete()
+        .eq('devotional_id', todaysDevotion.id);
+      if (deleteError) {
+        Alert.alert('Error', 'Could not update group shares: ' + deleteError.message);
+        return;
+      }
+
+      const groupIds = [...editAudiences].filter(a => a !== 'public' && a !== 'friends');
+      if (groupIds.length > 0) {
+        const { error: insertError } = await supabase
+          .from('devotional_groups')
+          .insert(groupIds.map(group_id => ({ devotional_id: todaysDevotion.id, group_id })));
+        if (insertError) {
+          Alert.alert('Error', 'Could not save group shares: ' + insertError.message);
+          return;
+        }
+      }
+
+      // Update local state directly — avoids a re-fetch through the RLS chain
+      setTodaysDevotion({
+        ...todaysDevotion,
+        content: editContent.trim(),
+        visibility,
+        share_friends: editAudiences.has('friends'),
+        comments_disabled: editCommentsDisabled,
+      } as any);
+
+      haptics.success();
+      setEditVisible(false);
+    } catch (e: any) {
+      Alert.alert('Error', e?.message ?? 'Something went wrong');
+    } finally {
+      setSaving(false);
+    }
   }
 
   // ── Loading state ──────────────────────────────────────────
