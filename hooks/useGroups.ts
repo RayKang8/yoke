@@ -61,16 +61,27 @@ export function useGroups() {
       .maybeSingle();
 
     // Get which members shared today's passage to each group (via devotional_groups)
+    // Two-step query to avoid nested RLS join chains
     const postedToGroupIds = new Set<string>(); // "groupId:userId"
     if (todayPassage) {
       const { data: dg } = await supabase
         .from('devotional_groups')
-        .select('group_id, devotional:devotionals!devotional_id(user_id, passage_id)')
+        .select('group_id, devotional_id')
         .in('group_id', groupIds);
-      for (const row of dg ?? []) {
-        const d = row.devotional as any;
-        if (d?.passage_id === todayPassage.id) {
-          postedToGroupIds.add(`${row.group_id}:${d.user_id}`);
+
+      if (dg && dg.length > 0) {
+        const devotionalIds = [...new Set(dg.map((r: any) => r.devotional_id))];
+        const { data: devos } = await supabase
+          .from('devotionals')
+          .select('id, user_id')
+          .in('id', devotionalIds)
+          .eq('passage_id', todayPassage.id);
+
+        for (const d of devos ?? []) {
+          const groups = dg.filter((r: any) => r.devotional_id === d.id);
+          for (const g of groups) {
+            postedToGroupIds.add(`${g.group_id}:${d.user_id}`);
+          }
         }
       }
     }

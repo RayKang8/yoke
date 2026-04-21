@@ -35,7 +35,7 @@ export function usePassage() {
 
   async function fetchTodaysDevotion(passageId: string) {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
 
     const { data } = await supabase
       .from('devotionals')

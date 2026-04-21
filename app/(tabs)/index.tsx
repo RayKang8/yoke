@@ -152,6 +152,11 @@ export default function HomeScreen() {
     setPosting(false);
 
     if (error) {
+      // Duplicate key means devotional already exists — just surface it
+      if (error.code === '23505') {
+        refetchDevotion();
+        return;
+      }
       Alert.alert('Error', error.message);
       return;
     }
