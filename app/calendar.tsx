@@ -6,7 +6,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
-import { localDateStr } from '../lib/utils';
 import { CalendarGrid } from '../components/CalendarGrid';
 import { colors } from '../constants/theme';
 import { StreakIcon } from '../components/icons';
@@ -35,27 +34,6 @@ export default function CalendarScreen() {
   const [isPremium, setIsPremium] = useState(false);
   const [streak, setStreak] = useState(0);
 
-  function computeStreak(dates: Set<string>): number {
-    const todayStr = localDateStr();
-    const yest = new Date(); yest.setDate(yest.getDate() - 1);
-    const yesterdayStr = localDateStr(yest);
-    const sorted = [...dates].sort().reverse();
-    const startStr = dates.has(todayStr) ? todayStr : yesterdayStr;
-    let s = 0;
-    let expected = startStr;
-    for (const date of sorted) {
-      if (date === expected) {
-        s++;
-        const prev = new Date(expected + 'T12:00:00');
-        prev.setDate(prev.getDate() - 1);
-        expected = localDateStr(prev);
-      } else if (date < expected) {
-        break;
-      }
-    }
-    return s;
-  }
-
   const [selectedDay, setSelectedDay] = useState<DevotionalDay | null>(null);
   const [selectedVerses, setSelectedVerses] = useState<{ verse: number; text: string }[]>([]);
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -75,7 +53,7 @@ export default function CalendarScreen() {
     if (!user) { setLoading(false); return; }
 
     const [{ data: profile }, { data: devos, error: devosError }] = await Promise.all([
-      supabase.from('users').select('is_premium, trial_ends_at').eq('id', user.id).single(),
+      supabase.from('users').select('is_premium, trial_ends_at, streak').eq('id', user.id).single(),
       supabase
         .from('devotionals')
         .select('id, content, created_at, passage:passages!passage_id(date, reference, text), reactions(type)')
@@ -114,7 +92,7 @@ export default function CalendarScreen() {
 
     setCompletedDates(dates);
     setDevotionalMap(map);
-    setStreak(computeStreak(dates));
+    setStreak(profile?.streak ?? 0);
     setLoading(false);
   }
 

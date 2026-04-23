@@ -115,6 +115,11 @@ export default function FriendsScreen() {
     refetch();
   }
 
+  async function cancelRequest(friendshipId: string) {
+    await supabase.from('friendships').delete().eq('id', friendshipId);
+    refetch();
+  }
+
   async function removeFriend(friendId: string) {
     Alert.alert('Remove friend', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
@@ -308,7 +313,12 @@ export default function FriendsScreen() {
                     <Text style={{ color: c.textPrimary, fontSize: 15 }}>{req.other_user?.name}</Text>
                     <Text style={{ color: c.textSecondary, fontSize: 12 }}>{req.other_user?.yoke_code}</Text>
                   </View>
-                  <Text style={{ color: c.textSecondary, fontSize: 13 }}>Pending</Text>
+                  <TouchableOpacity
+                    onPress={() => cancelRequest(req.id)}
+                    style={{ backgroundColor: c.surface, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7, borderWidth: 1, borderColor: c.border }}
+                  >
+                    <Text style={{ color: c.textSecondary, fontSize: 13 }}>Cancel</Text>
+                  </TouchableOpacity>
                 </View>
               ))}
             </>

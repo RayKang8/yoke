@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
+import { router } from 'expo-router';
 import { colors } from '../constants/theme';
 import { timeAgo } from '../lib/utils';
 import { ReactionBar } from './ReactionBar';
@@ -25,7 +26,7 @@ export function DevotionalCard({ item, currentUserId, onReactionUpdate }: Props)
   return (
     <View style={{ backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 12 }}>
       {/* Author row */}
-      <View className="flex-row items-center gap-3 mb-3">
+      <TouchableOpacity className="flex-row items-center gap-3 mb-3" onPress={() => router.push(`/user/${item.user.id}` as any)} activeOpacity={0.7}>
         <View style={{ backgroundColor: c.accent, width: 40, height: 40, borderRadius: 20 }} className="items-center justify-center">
           <Text style={{ color: '#1A1A1A', fontWeight: '700', fontSize: 15 }}>{initials}</Text>
         </View>
@@ -34,7 +35,7 @@ export function DevotionalCard({ item, currentUserId, onReactionUpdate }: Props)
           <Text style={{ color: c.textSecondary, fontSize: 12 }}>{item.user.yoke_code}</Text>
         </View>
         <Text style={{ color: c.textSecondary, fontSize: 12 }}>{timeAgo(item.created_at)}</Text>
-      </View>
+      </TouchableOpacity>
 
       {/* Passage reference */}
       <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600', marginBottom: 6 }}>

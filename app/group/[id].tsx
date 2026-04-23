@@ -171,7 +171,10 @@ export default function GroupDetailScreen() {
       <Text style={{ color: c.textPrimary, fontSize: 17, fontWeight: '600', marginBottom: 12 }}>Members</Text>
       <View style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, marginBottom: 24, overflow: 'hidden' }}>
         {members.map((m, i) => (
-          <View key={m.user_id}
+          <TouchableOpacity
+            key={m.user_id}
+            onPress={() => m.user_id !== currentUserId && router.push(`/user/${m.user_id}` as any)}
+            activeOpacity={m.user_id === currentUserId ? 1 : 0.7}
             style={{ padding: 14, borderBottomWidth: i < members.length - 1 ? 1 : 0, borderBottomColor: c.border }}
             className="flex-row items-center gap-3"
           >
@@ -187,7 +190,7 @@ export default function GroupDetailScreen() {
             {m.user_id === currentUserId && (
               <Text style={{ color: c.textSecondary, fontSize: 12, marginLeft: 'auto' }}>You</Text>
             )}
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
 
