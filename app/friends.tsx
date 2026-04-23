@@ -100,6 +100,13 @@ export default function FriendsScreen() {
   async function acceptRequest(friendshipId: string) {
     await supabase.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId);
     haptics.success();
+
+    const req = received.find(r => r.id === friendshipId);
+    if (req?.other_user) {
+      const { data: me } = await supabase.from('users').select('name').eq('id', currentUserId).single();
+      await sendPushToUser(req.other_user.id, 'Friend Request Accepted', `${me?.name ?? 'Someone'} accepted your Yoke friend request.`, { screen: 'profile' });
+    }
+
     refetch();
   }
 

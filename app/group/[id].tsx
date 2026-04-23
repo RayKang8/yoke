@@ -66,8 +66,20 @@ export default function GroupDetailScreen() {
         .map((r: any) => r.devotional)
         .filter((d: any) => d && d.passage_id === todayPassage.id);
 
+      const devoIds = todayDevos.map((d: any) => d.id);
+      let commentCounts: Record<string, number> = {};
+      if (devoIds.length > 0) {
+        const { data: comments } = await supabase
+          .from('comments')
+          .select('devotional_id')
+          .in('devotional_id', devoIds);
+        for (const c of comments ?? []) {
+          commentCounts[c.devotional_id] = (commentCounts[c.devotional_id] ?? 0) + 1;
+        }
+      }
+
       setTodayFeed(
-        todayDevos.map((d: any) => ({ ...d, comment_count: 0 })) as FeedItem[]
+        todayDevos.map((d: any) => ({ ...d, comment_count: commentCounts[d.id] ?? 0 })) as FeedItem[]
       );
     }
 

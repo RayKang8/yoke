@@ -84,6 +84,16 @@ export default function GroupsScreen() {
   async function handleJoin() {
     const code = inviteCode.trim().toUpperCase();
     if (!code) return;
+
+    if (groups.length >= 1) {
+      Alert.alert(
+        'Upgrade to Premium',
+        'Free accounts can be in 1 group. Upgrade to Yoke Premium for unlimited groups.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     setBusy(true);
 
     const { data: { user } } = await supabase.auth.getUser();

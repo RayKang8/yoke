@@ -30,7 +30,7 @@ export default function NotificationsScreen() {
 
   function handlePress(n: AppNotification) {
     if (!n.read) markRead(n.id);
-    if ((n.type === 'friend_request' || n.type === 'friend_accepted') && n.actor?.id) {
+    if (n.actor?.id) {
       router.push(`/user/${n.actor.id}`);
     }
   }

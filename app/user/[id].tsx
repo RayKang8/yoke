@@ -103,6 +103,10 @@ export default function UserProfileScreen() {
     await supabase.from('friendships').update({ status: 'accepted' }).eq('id', friendshipId);
     setBusy(false);
     setFriendStatus('friends');
+
+    const { data: me } = await supabase.from('users').select('name').eq('id', currentUserId).single();
+    const { sendPushToUser } = await import('../../lib/notifications');
+    await sendPushToUser(id as string, 'Friend Request Accepted', `${me?.name ?? 'Someone'} accepted your Yoke friend request.`, { screen: 'profile' });
   }
 
   async function handleRemove() {

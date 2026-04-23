@@ -134,7 +134,7 @@ export default function BibleScreen() {
                 key={ch}
                 onPress={() => { setSelectedChapter(ch); setView('reader'); AsyncStorage.setItem('bibleChapter', String(ch)); }}
                 style={{
-                  backgroundColor: selectedChapter === ch && view === 'reader' ? c.accent : c.surface,
+                  backgroundColor: selectedChapter === ch ? c.accent : c.surface,
                   borderColor: c.border, borderWidth: 1, borderRadius: 10,
                   width: 52, height: 52, alignItems: 'center', justifyContent: 'center',
                 }}
