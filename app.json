@@ -37,8 +37,7 @@
       ["expo-notifications", {
         "icon": "./assets/Yoke-Icon.png",
         "color": "#F5C842"
-      }],
-      "expo-clipboard"
+      }]
     ]
   }
 }
