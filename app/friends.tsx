@@ -31,6 +31,7 @@ export default function FriendsScreen() {
   const [addingId, setAddingId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchSeq = useRef(0);
 
   async function handleRefresh() {
     setRefreshing(true);
@@ -46,6 +47,7 @@ export default function FriendsScreen() {
   }
 
   async function runSearch(q: string) {
+    const seq = ++searchSeq.current;
     setSearching(true);
     const { data: users } = await supabase
       .from('users')
@@ -54,6 +56,7 @@ export default function FriendsScreen() {
       .neq('id', currentUserId)
       .limit(10);
 
+    if (seq !== searchSeq.current) return;
     if (!users) { setSearching(false); return; }
 
     // Fetch friendship statuses for results
@@ -77,6 +80,7 @@ export default function FriendsScreen() {
       return { ...u, friendStatus };
     });
 
+    if (seq !== searchSeq.current) return;
     setSearchResults(results);
     setSearching(false);
   }

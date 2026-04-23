@@ -41,54 +41,59 @@ export default function UserProfileScreen() {
 
   const PAGE_SIZE = 15;
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    let cancelled = false;
+    load().catch(() => {});
+    return () => { cancelled = true; };
 
-  async function load() {
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) setCurrentUserId(user.id);
+    async function load() {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (user) setCurrentUserId(user.id);
 
-    const [{ data: profileData }, { data: devos }, { data: friendship }] = await Promise.all([
-      supabase.from('users').select('id, name, yoke_code, bio, church, streak').eq('id', id).single(),
-      supabase
-        .from('devotionals')
-        .select('id, content, visibility, created_at, comments_disabled, user:users!user_id(id, name, yoke_code), passage:passages!passage_id(reference, title), reactions(type, user_id)')
-        .eq('user_id', id)
-        .eq('visibility', 'public')
-        .order('created_at', { ascending: false })
-        .limit(PAGE_SIZE + 1),
-      supabase
-        .from('friendships')
-        .select('id, requester_id, addressee_id, status')
-        .or(`and(requester_id.eq.${user?.id},addressee_id.eq.${id}),and(requester_id.eq.${id},addressee_id.eq.${user?.id})`)
-        .maybeSingle(),
-    ]);
+      const [{ data: profileData }, { data: devos }, { data: friendship }] = await Promise.all([
+        supabase.from('users').select('id, name, yoke_code, bio, church, streak').eq('id', id).single(),
+        supabase
+          .from('devotionals')
+          .select('id, content, visibility, created_at, comments_disabled, user:users!user_id(id, name, yoke_code), passage:passages!passage_id(reference, title), reactions(type, user_id)')
+          .eq('user_id', id)
+          .eq('visibility', 'public')
+          .order('created_at', { ascending: false })
+          .limit(PAGE_SIZE + 1),
+        supabase
+          .from('friendships')
+          .select('id, requester_id, addressee_id, status')
+          .or(`and(requester_id.eq.${user?.id},addressee_id.eq.${id}),and(requester_id.eq.${id},addressee_id.eq.${user?.id})`)
+          .maybeSingle(),
+      ]);
 
-    setProfile(profileData);
-    const page = devos ?? [];
-    setHasMoreDevos(page.length > PAGE_SIZE);
-    setPublicDevos(page.slice(0, PAGE_SIZE).map((d: any) => ({ ...d, comment_count: 0 })) as FeedItem[]);
+      if (cancelled) return;
+      setProfile(profileData);
+      const page = devos ?? [];
+      setHasMoreDevos(page.length > PAGE_SIZE);
+      setPublicDevos(page.slice(0, PAGE_SIZE).map((d: any) => ({ ...d, comment_count: 0 })) as FeedItem[]);
 
-    if (friendship) {
-      setFriendshipId(friendship.id);
-      if (friendship.status === 'accepted') {
-        setFriendStatus('friends');
-      } else if (friendship.requester_id === user?.id) {
-        setFriendStatus('pending_sent');
-      } else {
-        setFriendStatus('pending_received');
+      if (friendship) {
+        setFriendshipId(friendship.id);
+        if (friendship.status === 'accepted') {
+          setFriendStatus('friends');
+        } else if (friendship.requester_id === user?.id) {
+          setFriendStatus('pending_sent');
+        } else {
+          setFriendStatus('pending_received');
+        }
       }
+
+      const { count } = await supabase
+        .from('devotionals')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', id);
+      if (cancelled) return;
+      setDevoCount(count ?? 0);
+      setLoading(false);
     }
-
-    // Count total devotionals
-    const { count } = await supabase
-      .from('devotionals')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', id);
-    setDevoCount(count ?? 0);
-
-    setLoading(false);
-  }
+  }, [id]);
 
   async function handleAddFriend() {
     setBusy(true);

@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/theme';
+import type { Offerings } from 'react-native-purchases';
 import { getOfferings, purchasePackage, restorePurchases } from '../lib/revenuecat';
 
 interface Props {
@@ -26,7 +27,7 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
 
-  const [offerings, setOfferings] = useState<import('react-native-purchases').Offerings | null>(null);
+  const [offerings, setOfferings] = useState<Offerings | null>(null);
   const [selected, setSelected] = useState<'monthly' | 'annual'>('annual');
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);

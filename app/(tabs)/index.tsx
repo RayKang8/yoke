@@ -120,8 +120,13 @@ export default function HomeScreen() {
 
 
   // Refetch reactions and comment count whenever home tab is focused
+  // (same 30s throttle as the profile/devotion refetch above)
+  const lastReactionRefetch = useRef(0);
   useFocusEffect(useCallback(() => {
     if (!todaysDevotion) return;
+    const now = Date.now();
+    if (now - lastReactionRefetch.current < 30_000) return;
+    lastReactionRefetch.current = now;
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setCurrentUserId(user.id);
     });

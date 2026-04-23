@@ -115,14 +115,6 @@ export function ReactionBar({ devotionalId, reactions, currentUserId, isPremium 
           );
         })}
 
-        {isPremium && reactions.length > 0 && (
-          <TouchableOpacity
-            onPress={() => showDetail(reactions[0].type)}
-            style={{ paddingHorizontal: 8, paddingVertical: 6, justifyContent: 'center' }}
-          >
-            <Text style={{ color: c.textSecondary, fontSize: 12 }}>See who →</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       <Modal

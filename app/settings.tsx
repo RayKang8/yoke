@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  useColorScheme, Alert,
+  useColorScheme, Alert, Linking, Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -44,6 +44,13 @@ export default function SettingsScreen() {
 
   async function setSetting(key: string, value: string) {
     await AsyncStorage.setItem(key, value);
+  }
+
+  function handleManageSubscription() {
+    const url = Platform.OS === 'ios'
+      ? 'itms-apps://apps.apple.com/account/subscriptions'
+      : 'https://play.google.com/store/account/subscriptions?sku=yoke_premium_monthly&package=com.yoke.app';
+    Linking.openURL(url);
   }
 
   async function handleDeleteAccount() {
@@ -103,9 +110,16 @@ export default function SettingsScreen() {
       <SectionHeader label="SUBSCRIPTION" />
       <View style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 8 }}>
         {isPremium && !isTrialActive ? (
-          <View>
-            <Text style={{ color: c.accent, fontWeight: '700', fontSize: 16 }}>Yoke Premium ✓</Text>
-            <Text style={{ color: c.textSecondary, fontSize: 14, marginTop: 2 }}>Active subscription</Text>
+          <View className="flex-row items-center justify-between">
+            <View>
+              <Text style={{ color: c.accent, fontWeight: '700', fontSize: 16 }}>Yoke Premium ✓</Text>
+              <Text style={{ color: c.textSecondary, fontSize: 14, marginTop: 2 }}>Active subscription</Text>
+            </View>
+            <TouchableOpacity onPress={handleManageSubscription}
+              style={{ borderWidth: 1, borderColor: c.border, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 7 }}
+            >
+              <Text style={{ color: c.textSecondary, fontSize: 13 }}>Manage</Text>
+            </TouchableOpacity>
           </View>
         ) : isTrialActive ? (
           <View className="flex-row items-center justify-between">

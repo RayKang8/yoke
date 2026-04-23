@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { colors } from '../constants/theme';
 
@@ -13,7 +14,7 @@ const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function pad(n: number) { return String(n).padStart(2, '0'); }
 
-export function CalendarGrid({ year, month, completedDates, lockedBefore, onDayPress }: Props) {
+export const CalendarGrid = memo(function CalendarGrid({ year, month, completedDates, lockedBefore, onDayPress }: Props) {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
 
@@ -94,4 +95,4 @@ export function CalendarGrid({ year, month, completedDates, lockedBefore, onDayP
       ))}
     </View>
   );
-}
+});
