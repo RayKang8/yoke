@@ -1,4 +1,5 @@
-export type Translation = 'NIV' | 'ESV' | 'KJV' | 'NLT' | 'NKJV' | 'BSB' | 'ASV' | 'WEB' | 'YLT';
+// NIV, NLT, NKJV omitted — require commercial licenses not yet obtained
+export type Translation = 'KJV' | 'ESV' | 'BSB' | 'ASV' | 'WEB' | 'YLT';
 export type Visibility = 'public' | 'friends' | 'private';
 export type ReactionType = 'pray' | 'amen' | 'hit';
 export type Theme =

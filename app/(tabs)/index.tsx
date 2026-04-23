@@ -17,7 +17,7 @@ import { StreakIcon, CommentIcon } from '../../components/icons';
 import { ReactionBar } from '../../components/ReactionBar';
 import { CommentThread } from '../../components/CommentThread';
 
-const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
+const TRANSLATIONS: Translation[] = ['KJV', 'ESV', 'BSB', 'ASV', 'WEB', 'YLT'];
 
 
 
@@ -42,7 +42,7 @@ export default function HomeScreen() {
     }
   }, [refetchProfile, refetchDevotion]));
 
-  const [translation, setTranslation] = useState<Translation>('NIV');
+  const [translation, setTranslation] = useState<Translation>('KJV');
   const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);
   const [reflection, setReflection] = useState('');
   // selectedAudiences: Set of 'friends' | 'public' | <groupId>
@@ -82,7 +82,7 @@ export default function HomeScreen() {
     AsyncStorage.multiGet(['defaultTranslation', 'postAudiences']).then(pairs => {
       const trans = pairs[0][1] as Translation | null;
       const audiences = pairs[1][1];
-      if (trans) setTranslation(trans);
+      if (trans && (TRANSLATIONS as string[]).includes(trans)) setTranslation(trans);
       if (audiences) {
         try { setSelectedAudiences(new Set(JSON.parse(audiences))); } catch {}
       }

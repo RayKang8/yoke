@@ -13,7 +13,7 @@ import { Translation } from '../types';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { usePremium } from '../hooks/usePremium';
 
-const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
+const TRANSLATIONS: Translation[] = ['KJV', 'ESV', 'BSB', 'ASV', 'WEB', 'YLT'];
 const REMINDER_TIMES = ['6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '12:00 PM', '6:00 PM', '8:00 PM'];
 
 export default function SettingsScreen() {
@@ -36,7 +36,7 @@ export default function SettingsScreen() {
       AsyncStorage.getItem('postAudiences'),
     ]);
     if (time) setReminderTime(time);
-    if (trans) setDefaultTranslation(trans as Translation);
+    if (trans && (TRANSLATIONS as string[]).includes(trans)) setDefaultTranslation(trans as Translation);
     if (audiences) {
       try { setDefaultAudiences(new Set(JSON.parse(audiences))); } catch {}
     }
