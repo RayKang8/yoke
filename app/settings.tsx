@@ -7,6 +7,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
+
+const PRIVACY_URL = 'https://yokefaith.com/privacy';
+const TERMS_URL   = 'https://yokefaith.com/terms';
 import { scheduleDailyReminder } from '../lib/notifications';
 import { colors } from '../constants/theme';
 import { Translation } from '../types';
@@ -189,6 +192,23 @@ export default function SettingsScreen() {
           }}
         />
       ))}
+
+      {/* Legal */}
+      <SectionHeader label="LEGAL" />
+      <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)}
+        style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 10 }}
+        className="flex-row items-center justify-between"
+      >
+        <Text style={{ color: c.textPrimary, fontSize: 16 }}>Privacy Policy</Text>
+        <Text style={{ color: c.textSecondary, fontSize: 18 }}>›</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL)}
+        style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 10 }}
+        className="flex-row items-center justify-between"
+      >
+        <Text style={{ color: c.textPrimary, fontSize: 16 }}>Terms of Service</Text>
+        <Text style={{ color: c.textSecondary, fontSize: 18 }}>›</Text>
+      </TouchableOpacity>
 
       {/* Account */}
       <SectionHeader label="ACCOUNT" />

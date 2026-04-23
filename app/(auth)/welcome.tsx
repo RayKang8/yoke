@@ -1,6 +1,9 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Linking } from 'react-native';
 import { router } from 'expo-router';
 import YokeLogo from '../../components/YokeLogo';
+
+const PRIVACY_URL = 'https://yokefaith.com/privacy';
+const TERMS_URL   = 'https://yokefaith.com/terms';
 
 const BG = '#FDD72D';
 
@@ -32,6 +35,13 @@ export default function WelcomeScreen() {
             I already have an account
           </Text>
         </TouchableOpacity>
+
+        <Text style={{ color: '#1A1A1A', fontSize: 12, opacity: 0.45, textAlign: 'center', marginTop: 8, lineHeight: 18 }}>
+          By continuing you agree to our{' '}
+          <Text style={{ textDecorationLine: 'underline' }} onPress={() => Linking.openURL(TERMS_URL)}>Terms of Service</Text>
+          {' '}and{' '}
+          <Text style={{ textDecorationLine: 'underline' }} onPress={() => Linking.openURL(PRIVACY_URL)}>Privacy Policy</Text>
+        </Text>
       </View>
     </View>
   );

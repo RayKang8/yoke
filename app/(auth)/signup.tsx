@@ -2,9 +2,12 @@ import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ActivityIndicator,
-  useColorScheme, Alert, ScrollView,
+  useColorScheme, Alert, ScrollView, Linking,
 } from 'react-native';
 import { router } from 'expo-router';
+
+const PRIVACY_URL = 'https://yokefaith.com/privacy';
+const TERMS_URL   = 'https://yokefaith.com/terms';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
@@ -152,7 +155,14 @@ export default function SignUpScreen() {
             }
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.push('/(auth)/login')} className="mt-6 items-center">
+          <Text style={{ color: c.textSecondary, fontSize: 12, textAlign: 'center', marginTop: 14, lineHeight: 18 }}>
+            By creating an account you agree to our{' '}
+            <Text style={{ textDecorationLine: 'underline' }} onPress={() => Linking.openURL(TERMS_URL)}>Terms of Service</Text>
+            {' '}and{' '}
+            <Text style={{ textDecorationLine: 'underline' }} onPress={() => Linking.openURL(PRIVACY_URL)}>Privacy Policy</Text>
+          </Text>
+
+          <TouchableOpacity onPress={() => router.push('/(auth)/login')} className="mt-4 items-center">
             <Text style={{ color: c.textSecondary, fontSize: 15 }}>
               Already have an account? <Text style={{ color: c.accent, fontWeight: '600' }}>Log in</Text>
             </Text>
