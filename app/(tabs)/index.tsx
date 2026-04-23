@@ -392,9 +392,30 @@ export default function HomeScreen() {
               <Text style={{ color: c.textPrimary, fontSize: 18, fontWeight: '700', marginBottom: 2 }}>
                 {passage.title}
               </Text>
-              <Text style={{ color: c.accent, fontSize: 14, fontWeight: '600', marginBottom: 12 }}>
+              <Text style={{ color: c.accent, fontSize: 14, fontWeight: '600', marginBottom: 10 }}>
                 {passage.reference}
               </Text>
+
+              {/* Translation selector */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+                <View className="flex-row gap-2">
+                  {TRANSLATIONS.map(t => (
+                    <TouchableOpacity
+                      key={t}
+                      onPress={() => setTranslation(t)}
+                      style={{
+                        backgroundColor: translation === t ? c.accent : c.surface,
+                        borderColor: translation === t ? c.accent : c.border,
+                        borderWidth: 1, borderRadius: 8,
+                        paddingHorizontal: 12, paddingVertical: 6,
+                      }}
+                    >
+                      <Text style={{ color: translation === t ? '#1A1A1A' : c.textSecondary, fontWeight: translation === t ? '600' : '400', fontSize: 13 }}>{t}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+
               <View style={{ backgroundColor: c.surface, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: c.border, marginBottom: 20 }}>
                 {passageVerses.map((v, i) => (
                   v.verse === 0
