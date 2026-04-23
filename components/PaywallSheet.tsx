@@ -216,7 +216,11 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
           </TouchableOpacity>
 
           <Text style={{ color: c.textSecondary, fontSize: 11, textAlign: 'center', marginTop: 12, lineHeight: 16 }}>
-            Payment charged to your App Store / Google Play account. Cancel anytime in your account settings.
+            {selected === 'annual'
+              ? `${annualPrice}/year, auto-renews annually.`
+              : `${monthlyPrice}/month, auto-renews monthly.`
+            }
+            {' '}Payment charged to your Apple ID or Google Play account at confirmation. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage or cancel in your device's account settings.
           </Text>
         </ScrollView>
       </View>
