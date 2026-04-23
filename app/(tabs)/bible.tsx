@@ -12,7 +12,7 @@ import { BIBLE_BOOKS } from '../../constants/bible-books';
 import { colors } from '../../constants/theme';
 import { Translation } from '../../types';
 
-const TRANSLATIONS: Translation[] = ['KJV', 'ESV', 'BSB', 'ASV', 'WEB', 'YLT'];
+const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
 type BibleView = 'book' | 'chapter' | 'reader';
 
 export default function BibleScreen() {
@@ -20,7 +20,7 @@ export default function BibleScreen() {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
 
-  const [translation, setTranslation] = useState<Translation>('KJV');
+  const [translation, setTranslation] = useState<Translation>('NIV');
   const [view, setView] = useState<BibleView>('book');
   const [selectedBook, setSelectedBook] = useState('John');
   const [selectedChapter, setSelectedChapter] = useState(1);
@@ -37,9 +37,8 @@ export default function BibleScreen() {
       const defaultTrans = pairs[3][1];
       if (book) setSelectedBook(book);
       if (chapter) setSelectedChapter(parseInt(chapter));
-      const allowed = TRANSLATIONS as string[];
-      if (bibleTrans && allowed.includes(bibleTrans)) setTranslation(bibleTrans as Translation);
-      else if (defaultTrans && allowed.includes(defaultTrans)) setTranslation(defaultTrans as Translation);
+      if (bibleTrans) setTranslation(bibleTrans as Translation);
+      else if (defaultTrans) setTranslation(defaultTrans as Translation);
     });
   }, []);
 
@@ -156,12 +155,15 @@ export default function BibleScreen() {
   const nextChapter = selectedChapter < currentBook.chapters ? selectedChapter + 1 : null;
 
   const ATTRIBUTION: Record<Translation, string> = {
-    KJV: 'King James Version (KJV) — Public Domain.',
-    ESV: 'The Holy Bible, English Standard Version® © 2001 Crossway, a publishing ministry of Good News Publishers.',
-    BSB: 'Berean Standard Bible © 2016–2024 Bible Hub. Used by permission. All rights reserved.',
-    ASV: 'American Standard Version (ASV) — Public Domain.',
-    WEB: 'World English Bible (WEB) — Public Domain.',
-    YLT: "Young's Literal Translation (YLT) — Public Domain.",
+    NIV:  'Holy Bible, New International Version®, NIV® © 1973, 1978, 1984, 2011 Biblica, Inc.®',
+    ESV:  'The Holy Bible, English Standard Version® © 2001 Crossway, a publishing ministry of Good News Publishers.',
+    KJV:  'King James Version (KJV) — Public Domain.',
+    NLT:  'Holy Bible, New Living Translation © 1996, 2004, 2015 Tyndale House Foundation.',
+    NKJV: 'New King James Version® © 1982 Thomas Nelson. All rights reserved.',
+    BSB:  'Berean Standard Bible © 2016–2024 Bible Hub. Used by permission. All rights reserved.',
+    ASV:  'American Standard Version (ASV) — Public Domain.',
+    WEB:  'World English Bible (WEB) — Public Domain.',
+    YLT:  "Young's Literal Translation (YLT) — Public Domain.",
   };
 
   return (
