@@ -15,6 +15,7 @@ export interface FeedItem {
   passage: {
     reference: string;
     title: string;
+    date?: string;
   };
   reactions: { type: string; user_id: string }[];
   comment_count: number;
