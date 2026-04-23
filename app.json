@@ -14,8 +14,11 @@
       "backgroundColor": "#FAFAF7"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.yoke.app"
+      "supportsTablet": false,
+      "bundleIdentifier": "com.yoke.app",
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "Yoke sends a daily reminder for your devotional and notifies you when friends react to or comment on your posts."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -31,7 +34,11 @@
     },
     "plugins": [
       "expo-router",
-      "expo-notifications"
+      ["expo-notifications", {
+        "icon": "./assets/Yoke-Icon.png",
+        "color": "#F5C842"
+      }],
+      "expo-clipboard"
     ]
   }
 }
