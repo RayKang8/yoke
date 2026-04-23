@@ -12,7 +12,8 @@ import { BIBLE_BOOKS } from '../../constants/bible-books';
 import { colors } from '../../constants/theme';
 import { Translation } from '../../types';
 
-const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
+const FREE_TRANSLATIONS: Translation[] = ['KJV', 'BSB', 'ASV', 'WEB', 'YLT'];
+const COMING_SOON_TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'NLT', 'NKJV'];
 type BibleView = 'book' | 'chapter' | 'reader';
 
 export default function BibleScreen() {
@@ -20,7 +21,7 @@ export default function BibleScreen() {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
 
-  const [translation, setTranslation] = useState<Translation>('NIV');
+  const [translation, setTranslation] = useState<Translation>('KJV');
   const [view, setView] = useState<BibleView>('book');
   const [selectedBook, setSelectedBook] = useState('John');
   const [selectedChapter, setSelectedChapter] = useState(1);
@@ -37,8 +38,10 @@ export default function BibleScreen() {
       const defaultTrans = pairs[3][1];
       if (book) setSelectedBook(book);
       if (chapter) setSelectedChapter(parseInt(chapter));
-      if (bibleTrans) setTranslation(bibleTrans as Translation);
-      else if (defaultTrans) setTranslation(defaultTrans as Translation);
+      const resolvedTrans = (bibleTrans || defaultTrans) as Translation | null;
+      if (resolvedTrans && FREE_TRANSLATIONS.includes(resolvedTrans)) {
+        setTranslation(resolvedTrans);
+      }
     });
   }, []);
 
@@ -270,18 +273,27 @@ export default function BibleScreen() {
   );
 
   function TranslationModal() {
+    const allRows = [
+      ...FREE_TRANSLATIONS.map(t => ({ t, free: true })),
+      ...COMING_SOON_TRANSLATIONS.map(t => ({ t, free: false })),
+    ];
     return (
       <Modal visible={showTranslations} transparent animationType="fade" onRequestClose={() => setShowTranslations(false)}>
         <TouchableOpacity style={{ flex: 1, backgroundColor: '#00000066' }} onPress={() => setShowTranslations(false)} activeOpacity={1}>
           <View style={{ position: 'absolute', bottom: insets.bottom + 20, left: 20, right: 20, backgroundColor: c.surface, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: c.border }}>
-            {TRANSLATIONS.map((t, i) => (
+            {allRows.map(({ t, free }, i) => (
               <TouchableOpacity
                 key={t}
-                onPress={() => { setTranslation(t); setShowTranslations(false); AsyncStorage.setItem('bibleTranslation', t); }}
-                style={{ padding: 16, borderBottomWidth: i < TRANSLATIONS.length - 1 ? 1 : 0, borderBottomColor: c.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+                onPress={() => { if (!free) return; setTranslation(t); setShowTranslations(false); AsyncStorage.setItem('bibleTranslation', t); }}
+                activeOpacity={free ? 0.6 : 1}
+                style={{ padding: 16, borderBottomWidth: i < allRows.length - 1 ? 1 : 0, borderBottomColor: c.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', opacity: free ? 1 : 0.4 }}
               >
                 <Text style={{ color: c.textPrimary, fontSize: 16 }}>{t}</Text>
-                {translation === t && <Text style={{ color: c.accent, fontWeight: '700' }}>✓</Text>}
+                {free && translation === t
+                  ? <Text style={{ color: c.accent, fontWeight: '700' }}>✓</Text>
+                  : !free
+                  ? <Text style={{ color: c.textSecondary, fontSize: 12 }}>Coming soon</Text>
+                  : null}
               </TouchableOpacity>
             ))}
           </View>
