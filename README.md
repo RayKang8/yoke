@@ -68,5 +68,3 @@ eas submit --platform android
 ```
 
 ---
-
-## License
