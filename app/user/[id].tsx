@@ -33,9 +33,13 @@ export default function UserProfileScreen() {
   const [friendStatus, setFriendStatus] = useState<FriendStatus>('none');
   const [friendshipId, setFriendshipId] = useState<string | null>(null);
   const [devoCount, setDevoCount] = useState(0);
+  const [hasMoreDevos, setHasMoreDevos] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState('');
   const [busy, setBusy] = useState(false);
+
+  const PAGE_SIZE = 15;
 
   useEffect(() => { load(); }, [id]);
 
@@ -52,7 +56,7 @@ export default function UserProfileScreen() {
         .eq('user_id', id)
         .eq('visibility', 'public')
         .order('created_at', { ascending: false })
-        .limit(10),
+        .limit(PAGE_SIZE + 1),
       supabase
         .from('friendships')
         .select('id, requester_id, addressee_id, status')
@@ -61,7 +65,9 @@ export default function UserProfileScreen() {
     ]);
 
     setProfile(profileData);
-    setPublicDevos((devos ?? []).map((d: any) => ({ ...d, comment_count: 0 })) as FeedItem[]);
+    const page = devos ?? [];
+    setHasMoreDevos(page.length > PAGE_SIZE);
+    setPublicDevos(page.slice(0, PAGE_SIZE).map((d: any) => ({ ...d, comment_count: 0 })) as FeedItem[]);
 
     if (friendship) {
       setFriendshipId(friendship.id);
@@ -107,6 +113,24 @@ export default function UserProfileScreen() {
     const { data: me } = await supabase.from('users').select('name').eq('id', currentUserId).single();
     const { sendPushToUser } = await import('../../lib/notifications');
     await sendPushToUser(id as string, 'Friend Request Accepted', `${me?.name ?? 'Someone'} accepted your Yoke friend request.`, { screen: 'profile' });
+  }
+
+  async function loadMoreDevos() {
+    if (loadingMore || !hasMoreDevos || publicDevos.length === 0) return;
+    setLoadingMore(true);
+    const cursor = publicDevos[publicDevos.length - 1].created_at;
+    const { data } = await supabase
+      .from('devotionals')
+      .select('id, content, visibility, created_at, comments_disabled, user:users!user_id(id, name, yoke_code), passage:passages!passage_id(reference, title), reactions(type, user_id)')
+      .eq('user_id', id)
+      .eq('visibility', 'public')
+      .lt('created_at', cursor)
+      .order('created_at', { ascending: false })
+      .limit(PAGE_SIZE + 1);
+    const page = data ?? [];
+    setHasMoreDevos(page.length > PAGE_SIZE);
+    setPublicDevos(prev => [...prev, ...page.slice(0, PAGE_SIZE).map((d: any) => ({ ...d, comment_count: 0 })) as FeedItem[]]);
+    setLoadingMore(false);
   }
 
   async function handleRemove() {
@@ -231,16 +255,25 @@ export default function UserProfileScreen() {
       {publicDevos.length === 0 ? (
         <Text style={{ color: c.textSecondary, fontSize: 15 }}>No public posts yet.</Text>
       ) : (
-        publicDevos.map(item => (
-          <DevotionalCard
-            key={item.id}
-            item={item}
-            currentUserId={currentUserId}
-            onReactionUpdate={(devId, reactions) =>
-              setPublicDevos(prev => prev.map(d => d.id === devId ? { ...d, reactions } : d))
-            }
-          />
-        ))
+        <>
+          {publicDevos.map(item => (
+            <DevotionalCard
+              key={item.id}
+              item={item}
+              currentUserId={currentUserId}
+              onReactionUpdate={(devId, reactions) =>
+                setPublicDevos(prev => prev.map(d => d.id === devId ? { ...d, reactions } : d))
+              }
+            />
+          ))}
+          {loadingMore ? (
+            <ActivityIndicator color={c.accent} style={{ marginVertical: 16 }} />
+          ) : hasMoreDevos ? (
+            <TouchableOpacity onPress={loadMoreDevos} style={{ alignItems: 'center', paddingVertical: 16 }}>
+              <Text style={{ color: c.accent, fontWeight: '600', fontSize: 15 }}>Load more</Text>
+            </TouchableOpacity>
+          ) : null}
+        </>
       )}
     </ScrollView>
   );

@@ -11,10 +11,11 @@ import { FeedItem } from '../hooks/useFeed';
 interface Props {
   item: FeedItem;
   currentUserId: string;
+  isPremium?: boolean;
   onReactionUpdate: (id: string, reactions: { type: string; user_id: string }[]) => void;
 }
 
-export function DevotionalCard({ item, currentUserId, onReactionUpdate }: Props) {
+export function DevotionalCard({ item, currentUserId, isPremium = false, onReactionUpdate }: Props) {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const [expanded, setExpanded] = useState(false);
@@ -63,6 +64,7 @@ export function DevotionalCard({ item, currentUserId, onReactionUpdate }: Props)
         devotionalId={item.id}
         reactions={item.reactions}
         currentUserId={currentUserId}
+        isPremium={isPremium}
         onUpdate={reactions => onReactionUpdate(item.id, reactions)}
       />
 

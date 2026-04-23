@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, useColorScheme,
-  Clipboard, Alert, Modal, TextInput, ActivityIndicator,
+  Alert, Modal, TextInput, ActivityIndicator,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -44,15 +45,10 @@ export default function ProfileScreen() {
     setEditVisible(false);
   }
 
-  function copyYokeCode() {
+  async function copyYokeCode() {
     if (!profile?.yoke_code) return;
-    Clipboard.setString(profile.yoke_code);
+    await Clipboard.setStringAsync(profile.yoke_code);
     Alert.alert('Copied!', `${profile.yoke_code} copied to clipboard.`);
-  }
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.replace('/(auth)/welcome');
   }
 
   if (loading) {
@@ -174,14 +170,6 @@ export default function ProfileScreen() {
           <Text style={{ color: c.textSecondary, fontSize: 18 }}>›</Text>
         </TouchableOpacity>
       ))}
-
-      {/* Logout */}
-      <TouchableOpacity onPress={handleLogout}
-        style={{ borderColor: c.border, borderWidth: 1, borderRadius: 14, marginTop: 16 }}
-        className="py-4 items-center"
-      >
-        <Text style={{ color: c.textSecondary, fontSize: 16 }}>Log out</Text>
-      </TouchableOpacity>
 
       {/* Edit Profile Modal */}
       <Modal visible={editVisible} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditVisible(false)}>

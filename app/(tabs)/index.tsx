@@ -337,6 +337,7 @@ export default function HomeScreen() {
               devotionalId={todaysDevotion.id}
               reactions={reactions}
               currentUserId={currentUserId}
+              isPremium={!!(profile?.is_premium || (profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date()))}
               onUpdate={setReactions}
             />
           </View>

@@ -6,6 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { useFeed } from '../../hooks/useFeed';
+import { usePremium } from '../../hooks/usePremium';
 import { DevotionalCard } from '../../components/DevotionalCard';
 import { colors } from '../../constants/theme';
 
@@ -19,6 +20,7 @@ export default function FeedScreen() {
   const [currentUserId, setCurrentUserId] = useState('');
 
   const { items, loading, refreshing, loadingMore, hasMore, error, refresh, loadMore } = useFeed(tab);
+  const { isPremium } = usePremium();
 
   // Mutate reactions locally so the UI updates instantly
   const [localItems, setLocalItems] = useState(items);
@@ -93,12 +95,12 @@ export default function FeedScreen() {
           ListEmptyComponent={
             <View className="items-center justify-center pt-20 px-8">
               <Text style={{ color: c.textPrimary, fontSize: 18, fontWeight: '600', marginBottom: 8, textAlign: 'center' }}>
-                {tab === 'public' ? 'No public posts yet' : 'No friends posts yet'}
+                {tab === 'public' ? 'No public posts yet' : 'No posts yet today'}
               </Text>
               <Text style={{ color: c.textSecondary, textAlign: 'center', fontSize: 15, lineHeight: 22 }}>
                 {tab === 'public'
                   ? 'Be the first to post a public devotional today.'
-                  : 'Add friends using their Yoke code to see their devotionals here.'
+                  : "Your friends haven't posted today yet. Find more friends on the Friends screen to grow your feed."
                 }
               </Text>
             </View>
@@ -109,6 +111,7 @@ export default function FeedScreen() {
             <DevotionalCard
               item={item}
               currentUserId={currentUserId}
+              isPremium={isPremium}
               onReactionUpdate={handleReactionUpdate}
             />
           )}

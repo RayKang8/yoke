@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  ActivityIndicator, useColorScheme, Clipboard,
+  ActivityIndicator, useColorScheme,
   Alert, Modal,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getChapter, Verse } from '../../lib/bible-api';
@@ -54,8 +55,8 @@ export default function BibleScreen() {
     if (view === 'reader') loadChapter();
   }, [view, loadChapter]);
 
-  function copyVerse(book: string, chapter: number, verse: number, text: string) {
-    Clipboard.setString(`${book} ${chapter}:${verse} — ${text} (${translation})`);
+  async function copyVerse(book: string, chapter: number, verse: number, text: string) {
+    await Clipboard.setStringAsync(`${book} ${chapter}:${verse} — ${text} (${translation})`);
     Alert.alert('Copied', `${book} ${chapter}:${verse} copied to clipboard.`);
   }
 
