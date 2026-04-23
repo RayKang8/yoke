@@ -70,7 +70,3 @@ eas submit --platform android
 ---
 
 ## License
-
-Copyright © 2026 Ray Kang. All rights reserved.
-
-This source code is provided for reference only. You may not copy, distribute, modify, or use this code (in whole or in part) to build a competing product without explicit written permission from the author.
