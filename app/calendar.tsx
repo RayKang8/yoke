@@ -10,6 +10,7 @@ import { computeStreak } from '../lib/utils';
 import { CalendarGrid } from '../components/CalendarGrid';
 import { colors } from '../constants/theme';
 import { StreakIcon } from '../components/icons';
+import { usePremium } from '../hooks/usePremium';
 
 interface DevotionalDay {
   date: string;
@@ -29,10 +30,10 @@ export default function CalendarScreen() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
+  const { isPremium } = usePremium();
   const [completedDates, setCompletedDates] = useState<Set<string>>(new Set());
   const [devotionalMap, setDevotionalMap] = useState<Record<string, DevotionalDay>>({});
   const [loading, setLoading] = useState(true);
-  const [isPremium, setIsPremium] = useState(false);
   const [streak, setStreak] = useState(0);
 
   const [selectedDay, setSelectedDay] = useState<DevotionalDay | null>(null);
@@ -53,14 +54,11 @@ export default function CalendarScreen() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
 
-    const [{ data: profile }, { data: devos, error: devosError }] = await Promise.all([
-      supabase.from('users').select('is_premium, trial_ends_at').eq('id', user.id).single(),
-      supabase
-        .from('devotionals')
-        .select('id, content, created_at, passage:passages!passage_id(date, reference, text), reactions(type)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false }),
-    ]);
+    const { data: devos, error: devosError } = await supabase
+      .from('devotionals')
+      .select('id, content, created_at, passage:passages!passage_id(date, reference, text), reactions(type)')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
 
     if (devosError) {
       console.error('Calendar load error:', devosError);
@@ -68,9 +66,6 @@ export default function CalendarScreen() {
       setLoading(false);
       return;
     }
-
-    const premium = profile?.is_premium || (profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date());
-    setIsPremium(!!premium);
 
     const dates = new Set<string>();
     const map: Record<string, DevotionalDay> = {};

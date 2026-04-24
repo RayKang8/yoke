@@ -46,7 +46,6 @@ export interface Devotional {
   content: string;
   visibility: Visibility;
   share_friends: boolean;
-  group_id: string | null;
   comments_disabled: boolean;
   created_at: string;
   // joined fields
