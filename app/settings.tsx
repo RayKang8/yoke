@@ -27,23 +27,18 @@ export default function SettingsScreen() {
 
   const [reminderTime, setReminderTime] = useState('8:00 AM');
   const [defaultTranslation, setDefaultTranslation] = useState<Translation>('NIV');
-  const [defaultAudiences, setDefaultAudiences] = useState<Set<string>>(new Set(['friends']));
   const [showPaywall, setShowPaywall] = useState(false);
   const { isPremium, isTrialActive, trialDaysLeft, recheck } = usePremium();
 
   useEffect(() => { load(); }, []);
 
   async function load() {
-    const [time, trans, audiences] = await Promise.all([
+    const [time, trans] = await Promise.all([
       AsyncStorage.getItem('reminderTime'),
       AsyncStorage.getItem('defaultTranslation'),
-      AsyncStorage.getItem('postAudiences'),
     ]);
     if (time) setReminderTime(time);
     if (trans) setDefaultTranslation(trans as Translation);
-    if (audiences) {
-      try { setDefaultAudiences(new Set(JSON.parse(audiences))); } catch {}
-    }
   }
 
   async function setSetting(key: string, value: string) {
@@ -175,26 +170,6 @@ export default function SettingsScreen() {
       {TRANSLATIONS.map(t => (
         <OptionRow key={t} label={t} selected={defaultTranslation === t}
           onPress={() => { setDefaultTranslation(t); setSetting('defaultTranslation', t); }}
-        />
-      ))}
-
-      {/* Default post audiences */}
-      <SectionHeader label="DEFAULT POST TO" />
-      <OptionRow
-        label="Only Me"
-        selected={defaultAudiences.size === 0}
-        onPress={() => { setDefaultAudiences(new Set()); AsyncStorage.setItem('postAudiences', JSON.stringify([])); }}
-      />
-      {[{ key: 'friends', label: 'Friends' }, { key: 'public', label: 'Public' }].map(({ key, label }) => (
-        <OptionRow key={key} label={label} selected={defaultAudiences.has(key)}
-          onPress={() => {
-            setDefaultAudiences(prev => {
-              const next = new Set(prev);
-              next.has(key) ? next.delete(key) : next.add(key);
-              AsyncStorage.setItem('postAudiences', JSON.stringify([...next]));
-              return next;
-            });
-          }}
         />
       ))}
 
