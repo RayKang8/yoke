@@ -10,6 +10,7 @@ import { useFocusEffect } from 'expo-router';
 import { usePassage } from '../../hooks/usePassage';
 import { useProfile } from '../../hooks/useProfile';
 import { useGroups } from '../../hooks/useGroups';
+import { usePremium } from '../../hooks/usePremium';
 import { colors } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
 import { Translation } from '../../types';
@@ -29,6 +30,7 @@ export default function HomeScreen() {
   const { passage, todaysDevotion, loading, error, setTodaysDevotion, refetchDevotion } = usePassage();
   const { profile, refetch: refetchProfile } = useProfile();
   const { groups } = useGroups();
+  const { isPremium } = usePremium();
 
   // Only refetch on focus if it's been more than 30 seconds — avoids hitting
   // the DB on every single tab switch
@@ -342,7 +344,7 @@ export default function HomeScreen() {
               devotionalId={todaysDevotion.id}
               reactions={reactions}
               currentUserId={currentUserId}
-              isPremium={!!(profile?.is_premium || (profile?.trial_ends_at && new Date(profile.trial_ends_at) > new Date()))}
+              isPremium={isPremium}
               onUpdate={setReactions}
             />
           </View>
