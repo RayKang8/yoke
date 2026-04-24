@@ -8,6 +8,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { colors } from '../constants/theme';
 import { timeAgo } from '../lib/utils';
 import { useNotifications, AppNotification } from '../hooks/useNotifications';
+import { BackIcon } from '../components/icons';
 
 function notificationText(n: AppNotification): string {
   const name = n.actor?.name ?? 'Someone';
@@ -40,8 +41,9 @@ export default function NotificationsScreen() {
       {/* Header */}
       <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: c.border }}>
         <View className="flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={{ color: c.textSecondary, fontSize: 16 }}>← Back</Text>
+          <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <BackIcon size={16} color={c.textSecondary} />
+            <Text style={{ color: c.textSecondary, fontSize: 16 }}>Back</Text>
           </TouchableOpacity>
           {notifications.some(n => !n.read) && (
             <TouchableOpacity onPress={markAllRead}>

@@ -9,7 +9,7 @@ import { supabase } from '../../lib/supabase';
 import { localDateStr } from '../../lib/utils';
 import { DevotionalCard } from '../../components/DevotionalCard';
 import { colors } from '../../constants/theme';
-import { GroupsIcon, StreakIcon } from '../../components/icons';
+import { GroupsIcon, StreakIcon, BackIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
 
 interface Member {
@@ -139,8 +139,9 @@ export default function GroupDetailScreen() {
       >
         {/* Header */}
         <View className="flex-row items-center justify-between mb-4">
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={{ color: c.textSecondary, fontSize: 16 }}>← Groups</Text>
+          <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <BackIcon size={16} color={c.textSecondary} />
+            <Text style={{ color: c.textSecondary, fontSize: 16 }}>Groups</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setShowSettings(true)}

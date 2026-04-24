@@ -266,3 +266,91 @@ export function BellIcon({ size = 24, color = GOLD }: IconProps) {
     </Svg>
   );
 }
+
+// ─── Navigation icons ─────────────────────────────────────────────────────────
+
+export function BackIcon({ size = 20, color = GOLD }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M19 12H5" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Path d="M12 5l-7 7 7 7" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+export function ForwardIcon({ size = 20, color = GOLD }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M5 12h14" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Path d="M12 5l7 7-7 7" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+export function ChevronLeftIcon({ size = 20, color = GOLD }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M15 4l-8 8 8 8" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+export function ChevronRightIcon({ size = 20, color = GOLD }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M9 4l8 8-8 8" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+// ─── UI state icons ───────────────────────────────────────────────────────────
+
+export function CheckIcon({ size = 16, color = GOLD }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M4 12l6 6L20 6" stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+export function CloseIcon({ size = 18, color = GOLD }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Line x1="6"  y1="6"  x2="18" y2="18" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Line x1="18" y1="6"  x2="6"  y2="18" stroke={color} strokeWidth={2} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function LockIcon({ size = 16, color = GOLD }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="4" y="11" width="16" height="11" rx="2" stroke={color} strokeWidth={1.8} />
+      <Path d="M8 11V7a4 4 0 0 1 8 0v4" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Circle cx="12" cy="16.5" r="1.2" fill={color} />
+    </Svg>
+  );
+}
+
+export function EmailIcon({ size = 24, color = GOLD }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="3" y="5" width="18" height="14" rx="2" stroke={color} strokeWidth={1.8} />
+      <Path d="M3 8l9 6 9-6" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+export function StarIcon({ size = 24, color = GOLD }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 2L14.09 8.26L21 9.27L16 14.14L17.18 21.02L12 17.77L6.82 21.02L8 14.14L3 9.27L9.91 8.26L12 2Z"
+        fill={color}
+        stroke={color}
+        strokeWidth={0.5}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}

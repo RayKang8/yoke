@@ -10,6 +10,7 @@ import { useFriends } from '../hooks/useFriends';
 import { sendPushToUser } from '../lib/notifications';
 import { haptics } from '../lib/haptics';
 import { colors } from '../constants/theme';
+import { BackIcon, CheckIcon } from '../components/icons';
 
 interface SearchResult {
   id: string;
@@ -146,8 +147,9 @@ export default function FriendsScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={c.accent} />}
     >
       {/* Back */}
-      <TouchableOpacity onPress={() => router.back()} className="mb-6">
-        <Text style={{ color: c.textSecondary, fontSize: 16 }}>← Back</Text>
+      <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 24 }}>
+        <BackIcon size={16} color={c.textSecondary} />
+        <Text style={{ color: c.textSecondary, fontSize: 16 }}>Back</Text>
       </TouchableOpacity>
 
       <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700', marginBottom: 24 }}>Friends</Text>
@@ -211,7 +213,10 @@ export default function FriendsScreen() {
                 <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600' }}>Wants to add you</Text>
               )}
               {result.friendStatus === 'friends' && (
-                <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600' }}>Friends ✓</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600' }}>Friends</Text>
+                  <CheckIcon size={12} color={c.accent} />
+                </View>
               )}
             </View>
           ))}

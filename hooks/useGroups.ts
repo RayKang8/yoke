@@ -74,8 +74,8 @@ export function useGroups() {
           .eq('passage_id', todayPassage.id);
 
         for (const d of devos ?? []) {
-          const groups = dg.filter((r: any) => r.devotional_id === d.id);
-          for (const g of groups) {
+          const devGroups = dg.filter((r: any) => r.devotional_id === d.id);
+          for (const g of devGroups) {
             postedToGroupIds.add(`${g.group_id}:${d.user_id}`);
           }
         }

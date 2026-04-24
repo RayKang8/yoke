@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
+import { EmailIcon } from '../../components/icons';
 
 export default function VerifyEmailScreen() {
   const scheme = useColorScheme();
@@ -30,7 +31,7 @@ export default function VerifyEmailScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: c.background }} className="px-8 pt-20 pb-12 items-center">
-      <Text style={{ fontSize: 64, marginBottom: 24 }}>📧</Text>
+      <EmailIcon size={64} color={c.accent} />
       <Text style={{ color: c.textPrimary, fontSize: 28, fontWeight: '700', marginBottom: 12, textAlign: 'center' }}>
         Check your email
       </Text>

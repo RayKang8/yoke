@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { colors } from '../constants/theme';
+import { LockIcon } from './icons';
 
 interface Props {
   year: number;
@@ -86,7 +87,7 @@ export const CalendarGrid = memo(function CalendarGrid({ year, month, completedD
                   </Text>
                 </View>
                 {isLocked && completed && (
-                  <Text style={{ fontSize: 8, color: c.textSecondary }}>🔒</Text>
+                  <LockIcon size={8} color={c.textSecondary} />
                 )}
               </TouchableOpacity>
             );

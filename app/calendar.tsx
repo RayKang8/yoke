@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   ActivityIndicator, Modal, Alert, useColorScheme,
@@ -9,8 +9,14 @@ import { supabase } from '../lib/supabase';
 import { computeStreak } from '../lib/utils';
 import { CalendarGrid } from '../components/CalendarGrid';
 import { colors } from '../constants/theme';
-import { StreakIcon } from '../components/icons';
+import { StreakIcon, BackIcon, ChevronLeftIcon, ChevronRightIcon, LockIcon, PrayIcon, AmenIcon, HitIcon } from '../components/icons';
 import { usePremium } from '../hooks/usePremium';
+
+const REACTION_CONFIG: Record<string, { label: string; Icon: React.FC<{ size?: number; color?: string }> }> = {
+  pray: { label: 'Pray',        Icon: PrayIcon },
+  amen: { label: 'Amen',        Icon: AmenIcon },
+  hit:  { label: 'This hit me', Icon: HitIcon  },
+};
 
 interface DevotionalDay {
   date: string;
@@ -136,7 +142,6 @@ export default function CalendarScreen() {
     else setMonth(m => m + 1);
   }
 
-  const reactionLabels: Record<string, string> = { pray: '🙏 Pray', amen: '✝ Amen', hit: '💛 This hit me' };
 
   if (loading) {
     return (
@@ -151,8 +156,9 @@ export default function CalendarScreen() {
       style={{ flex: 1, backgroundColor: c.background }}
       contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 40 }}
     >
-      <TouchableOpacity onPress={() => router.back()} className="mb-6">
-        <Text style={{ color: c.textSecondary, fontSize: 16 }}>← Profile</Text>
+      <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 24 }}>
+        <BackIcon size={16} color={c.textSecondary} />
+        <Text style={{ color: c.textSecondary, fontSize: 16 }}>Profile</Text>
       </TouchableOpacity>
 
       <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700', marginBottom: 4 }}>Calendar</Text>
@@ -171,7 +177,7 @@ export default function CalendarScreen() {
         <TouchableOpacity onPress={prevMonth}
           style={{ backgroundColor: c.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: c.border }}
         >
-          <Text style={{ color: c.textPrimary, fontSize: 16 }}>‹</Text>
+          <ChevronLeftIcon size={18} color={c.textPrimary} />
         </TouchableOpacity>
         <Text style={{ color: c.textPrimary, fontSize: 17, fontWeight: '600' }}>
           {MONTH_NAMES[month]} {year}
@@ -181,7 +187,7 @@ export default function CalendarScreen() {
           disabled={year === today.getFullYear() && month === today.getMonth()}
           style={{ backgroundColor: c.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: c.border, opacity: (year === today.getFullYear() && month === today.getMonth()) ? 0.3 : 1 }}
         >
-          <Text style={{ color: c.textPrimary, fontSize: 16 }}>›</Text>
+          <ChevronRightIcon size={18} color={c.textPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -199,7 +205,10 @@ export default function CalendarScreen() {
           className="flex-row items-center justify-between"
         >
           <View>
-            <Text style={{ color: c.textPrimary, fontWeight: '600', fontSize: 15 }}>🔒 Full History</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <LockIcon size={15} color={c.textPrimary} />
+              <Text style={{ color: c.textPrimary, fontWeight: '600', fontSize: 15 }}>Full History</Text>
+            </View>
             <Text style={{ color: c.textSecondary, fontSize: 13 }}>Upgrade to see all past devotionals</Text>
           </View>
           <Text style={{ color: c.accent, fontWeight: '600' }}>Upgrade</Text>
@@ -242,11 +251,15 @@ export default function CalendarScreen() {
                 <View style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16 }}>
                   <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 10 }}>REACTIONS</Text>
                   <View className="flex-row flex-wrap gap-2">
-                    {selectedDay.reactions.map((r, i) => (
-                      <View key={i} style={{ backgroundColor: c.accent + '22', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6 }}>
-                        <Text style={{ color: c.textPrimary, fontSize: 14 }}>{reactionLabels[r.type] ?? r.type}</Text>
-                      </View>
-                    ))}
+                    {selectedDay.reactions.map((r, i) => {
+                      const cfg = REACTION_CONFIG[r.type];
+                      return (
+                        <View key={i} style={{ backgroundColor: c.accent + '22', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                          {cfg && <cfg.Icon size={14} color={c.accent} />}
+                          <Text style={{ color: c.textPrimary, fontSize: 14 }}>{cfg?.label ?? r.type}</Text>
+                        </View>
+                      );
+                    })}
                   </View>
                 </View>
               )}

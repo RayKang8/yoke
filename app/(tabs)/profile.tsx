@@ -10,7 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { useProfile } from '../../hooks/useProfile';
 import { useNotifications } from '../../hooks/useNotifications';
 import { colors } from '../../constants/theme';
-import { CalendarIcon, FriendsIcon, SettingsIcon, ChurchIcon, BellIcon } from '../../components/icons';
+import { CalendarIcon, FriendsIcon, SettingsIcon, ChurchIcon, BellIcon, ChevronRightIcon } from '../../components/icons';
 
 export default function ProfileScreen() {
   const scheme = useColorScheme();
@@ -167,7 +167,7 @@ export default function ProfileScreen() {
             <Icon size={20} color={c.accent} />
             <Text style={{ color: c.textPrimary, fontSize: 16 }}>{label}</Text>
           </View>
-          <Text style={{ color: c.textSecondary, fontSize: 18 }}>›</Text>
+          <ChevronRightIcon size={18} color={c.textSecondary} />
         </TouchableOpacity>
       ))}
 

@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { DevotionalCard } from '../../components/DevotionalCard';
 import { colors } from '../../constants/theme';
-import { ChurchIcon } from '../../components/icons';
+import { ChurchIcon, BackIcon, CheckIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
 
 interface UserProfile {
@@ -156,9 +156,10 @@ export default function UserProfileScreen() {
     if (friendStatus === 'friends') {
       return (
         <TouchableOpacity onPress={handleRemove}
-          style={{ backgroundColor: c.surface, borderColor: c.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 20, paddingVertical: 10 }}
+          style={{ backgroundColor: c.surface, borderColor: c.border, borderWidth: 1, borderRadius: 12, paddingHorizontal: 20, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 6 }}
         >
-          <Text style={{ color: c.textPrimary, fontWeight: '500' }}>Friends ✓</Text>
+          <Text style={{ color: c.textPrimary, fontWeight: '500' }}>Friends</Text>
+          <CheckIcon size={14} color={c.textPrimary} />
         </TouchableOpacity>
       );
     }
@@ -211,8 +212,9 @@ export default function UserProfileScreen() {
       style={{ flex: 1, backgroundColor: c.background }}
       contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 40, paddingHorizontal: 20 }}
     >
-      <TouchableOpacity onPress={() => router.back()} className="mb-6">
-        <Text style={{ color: c.textSecondary, fontSize: 16 }}>← Back</Text>
+      <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 24 }}>
+        <BackIcon size={16} color={c.textSecondary} />
+        <Text style={{ color: c.textSecondary, fontSize: 16 }}>Back</Text>
       </TouchableOpacity>
 
       {/* Profile header */}

@@ -11,6 +11,7 @@ const TERMS_URL   = 'https://yokefaith.com/terms';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
+import { BackIcon } from '../../components/icons';
 
 export default function SignUpScreen() {
   const scheme = useColorScheme();
@@ -62,8 +63,9 @@ export default function SignUpScreen() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <View className="flex-1 px-8 pt-16 pb-10">
           {/* Back */}
-          <TouchableOpacity onPress={() => router.back()} className="mb-10">
-            <Text style={{ color: c.textSecondary, fontSize: 16 }}>← Back</Text>
+          <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 40 }}>
+            <BackIcon size={16} color={c.textSecondary} />
+            <Text style={{ color: c.textSecondary, fontSize: 16 }}>Back</Text>
           </TouchableOpacity>
 
           <Text style={{ color: c.textPrimary, fontSize: 30, fontWeight: '700', marginBottom: 8 }}>

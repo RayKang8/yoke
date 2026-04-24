@@ -11,6 +11,7 @@ import { getChapter, Verse } from '../../lib/bible-api';
 import { BIBLE_BOOKS } from '../../constants/bible-books';
 import { colors } from '../../constants/theme';
 import { Translation } from '../../types';
+import { BackIcon, ForwardIcon, CheckIcon } from '../../components/icons';
 
 const FREE_TRANSLATIONS: Translation[] = ['KJV', 'BSB', 'ASV', 'WEB', 'YLT'];
 const COMING_SOON_TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'NLT', 'NKJV'];
@@ -126,8 +127,9 @@ export default function BibleScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: c.background }}>
         <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: 12 }}>
-          <TouchableOpacity onPress={() => setView('book')} className="mb-3">
-            <Text style={{ color: c.textSecondary, fontSize: 16 }}>← Books</Text>
+          <TouchableOpacity onPress={() => setView('book')} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 12 }}>
+            <BackIcon size={16} color={c.textSecondary} />
+            <Text style={{ color: c.textSecondary, fontSize: 16 }}>Books</Text>
           </TouchableOpacity>
           <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700' }}>{selectedBook}</Text>
         </View>
@@ -174,8 +176,9 @@ export default function BibleScreen() {
       {/* Header */}
       <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: c.border }}>
         <View className="flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => setView('chapter')}>
-            <Text style={{ color: c.textSecondary, fontSize: 16 }}>← {selectedBook}</Text>
+          <TouchableOpacity onPress={() => setView('chapter')} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <BackIcon size={16} color={c.textSecondary} />
+            <Text style={{ color: c.textSecondary, fontSize: 16 }}>{selectedBook}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setShowTranslations(true)}
             style={{ backgroundColor: c.accent, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 }}
@@ -241,7 +244,10 @@ export default function BibleScreen() {
                 style={{ flex: 1, backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: c.border }}
                 className="py-3 items-center"
               >
-                <Text style={{ color: c.textPrimary, fontSize: 15 }}>← Chapter {prevChapter}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                  <BackIcon size={15} color={c.textPrimary} />
+                  <Text style={{ color: c.textPrimary, fontSize: 15 }}>Chapter {prevChapter}</Text>
+                </View>
               </TouchableOpacity>
             )}
             {nextChapter && (
@@ -250,7 +256,10 @@ export default function BibleScreen() {
                 style={{ flex: 1, backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: c.border }}
                 className="py-3 items-center"
               >
-                <Text style={{ color: c.textPrimary, fontSize: 15 }}>Chapter {nextChapter} →</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                  <Text style={{ color: c.textPrimary, fontSize: 15 }}>Chapter {nextChapter}</Text>
+                  <ForwardIcon size={15} color={c.textPrimary} />
+                </View>
               </TouchableOpacity>
             )}
           </View>
@@ -290,7 +299,7 @@ export default function BibleScreen() {
               >
                 <Text style={{ color: c.textPrimary, fontSize: 16 }}>{t}</Text>
                 {free && translation === t
-                  ? <Text style={{ color: c.accent, fontWeight: '700' }}>✓</Text>
+                  ? <CheckIcon size={18} color={c.accent} />
                   : !free
                   ? <Text style={{ color: c.textSecondary, fontSize: 12 }}>Coming soon</Text>
                   : null}

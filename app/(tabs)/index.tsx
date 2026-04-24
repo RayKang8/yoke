@@ -14,7 +14,7 @@ import { usePremium } from '../../hooks/usePremium';
 import { colors } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
 import { Translation } from '../../types';
-import { StreakIcon, CommentIcon } from '../../components/icons';
+import { StreakIcon, CommentIcon, CheckIcon } from '../../components/icons';
 import { ReactionBar } from '../../components/ReactionBar';
 import { CommentThread } from '../../components/CommentThread';
 
@@ -245,6 +245,7 @@ export default function HomeScreen() {
         return;
       }
 
+      cachedGroupIds.current = groupIds;
       setTodaysDevotion({
         ...todaysDevotion,
         content: editContent.trim(),
@@ -466,7 +467,7 @@ export default function HomeScreen() {
                         flexDirection: 'row', alignItems: 'center', gap: 6,
                       }}
                     >
-                      {onlyMe && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                      {onlyMe && <CheckIcon size={13} color={c.accent} />}
                       <Text style={{ color: onlyMe ? c.accent : c.textSecondary, fontWeight: onlyMe ? '600' : '400', fontSize: 14 }}>Only Me</Text>
                     </TouchableOpacity>
                   );
@@ -485,7 +486,7 @@ export default function HomeScreen() {
                         flexDirection: 'row', alignItems: 'center', gap: 6,
                       }}
                     >
-                      {active && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                      {active && <CheckIcon size={13} color={c.accent} />}
                       <Text style={{ color: active ? c.accent : c.textSecondary, fontWeight: active ? '600' : '400', fontSize: 14 }}>{label}</Text>
                     </TouchableOpacity>
                   );
@@ -504,7 +505,7 @@ export default function HomeScreen() {
                         flexDirection: 'row', alignItems: 'center', gap: 6,
                       }}
                     >
-                      {active && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                      {active && <CheckIcon size={13} color={c.accent} />}
                       <Text style={{ color: active ? c.accent : c.textSecondary, fontWeight: active ? '600' : '400', fontSize: 14 }}>{g.name}</Text>
                     </TouchableOpacity>
                   );
@@ -665,7 +666,7 @@ export default function HomeScreen() {
                   flexDirection: 'row', alignItems: 'center', gap: 6,
                 }}
               >
-                {onlyMe && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                {onlyMe && <CheckIcon size={13} color={c.accent} />}
                 <Text style={{ color: onlyMe ? c.accent : c.textSecondary, fontWeight: onlyMe ? '600' : '400', fontSize: 14 }}>
                   Only Me
                 </Text>
@@ -686,7 +687,7 @@ export default function HomeScreen() {
                   flexDirection: 'row', alignItems: 'center', gap: 6,
                 }}
               >
-                {active && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                {active && <CheckIcon size={13} color={c.accent} />}
                 <Text style={{ color: active ? c.accent : c.textSecondary, fontWeight: active ? '600' : '400', fontSize: 14 }}>
                   {label}
                 </Text>
@@ -707,7 +708,7 @@ export default function HomeScreen() {
                   flexDirection: 'row', alignItems: 'center', gap: 6,
                 }}
               >
-                {active && <Text style={{ color: c.accent, fontSize: 13 }}>✓</Text>}
+                {active && <CheckIcon size={13} color={c.accent} />}
                 <Text style={{ color: active ? c.accent : c.textSecondary, fontWeight: active ? '600' : '400', fontSize: 14 }}>
                   {g.name}
                 </Text>

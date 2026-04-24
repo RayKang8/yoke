@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/theme';
 import type { PurchasesOfferings } from 'react-native-purchases';
 import { getOfferings, purchasePackage, restorePurchases } from '../lib/revenuecat';
+import { CheckIcon, CloseIcon } from './icons';
 
 interface Props {
   visible: boolean;
@@ -101,7 +102,7 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
         >
           <Text style={{ color: c.textPrimary, fontSize: 17, fontWeight: '600' }}>Yoke Premium</Text>
           <TouchableOpacity onPress={onClose}>
-            <Text style={{ color: c.textSecondary, fontSize: 16 }}>✕</Text>
+            <CloseIcon size={18} color={c.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -119,7 +120,7 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
             {PREMIUM_FEATURES.map(f => (
               <View key={f} className="flex-row items-center gap-3 mb-3">
                 <View style={{ backgroundColor: c.accent, width: 22, height: 22, borderRadius: 11 }} className="items-center justify-center">
-                  <Text style={{ color: '#1A1A1A', fontSize: 12, fontWeight: '700' }}>✓</Text>
+                  <CheckIcon size={12} color="#1A1A1A" />
                 </View>
                 <Text style={{ color: c.textPrimary, fontSize: 15 }}>{f}</Text>
               </View>
@@ -159,7 +160,7 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
                     backgroundColor: selected === 'annual' ? c.accent : 'transparent',
                     alignItems: 'center', justifyContent: 'center',
                   }}>
-                    {selected === 'annual' && <Text style={{ color: '#1A1A1A', fontSize: 12, fontWeight: '700' }}>✓</Text>}
+                    {selected === 'annual' && <CheckIcon size={12} color="#1A1A1A" />}
                   </View>
                 </View>
               </TouchableOpacity>
@@ -185,7 +186,7 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
                     backgroundColor: selected === 'monthly' ? c.accent : 'transparent',
                     alignItems: 'center', justifyContent: 'center',
                   }}>
-                    {selected === 'monthly' && <Text style={{ color: '#1A1A1A', fontSize: 12, fontWeight: '700' }}>✓</Text>}
+                    {selected === 'monthly' && <CheckIcon size={12} color="#1A1A1A" />}
                   </View>
                 </View>
               </TouchableOpacity>

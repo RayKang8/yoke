@@ -7,24 +7,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerForPushNotifications, scheduleDailyReminder } from '../../lib/notifications';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
+import { AmenIcon, BellIcon, StarIcon, CheckIcon } from '../../components/icons';
 
 const STEPS = [
   {
     title: 'What is Yoke?',
     body: 'Yoke gives you a daily Bible passage and a guided reflection prompt. You write your thoughts and share them with friends or your small group — creating the accountability that makes spiritual habits actually stick.',
-    emoji: '✝',
+    Icon: AmenIcon,
     cta: 'Continue',
   },
   {
     title: 'Set your reminder',
     body: "We'll send you a daily nudge when your passage is ready. You can change this any time in settings.",
-    emoji: '🔔',
+    Icon: BellIcon,
     cta: 'Continue',
   },
   {
     title: 'Your free trial starts now',
     body: 'You get 7 days of full Yoke Premium — unlimited groups, full calendar history, reaction details, and group streaks. After your trial, you can stay on the free tier or upgrade for $4.99/month.',
-    emoji: '🎉',
+    Icon: StarIcon,
     cta: 'Start my free trial',
   },
 ];
@@ -86,7 +87,7 @@ export default function OnboardingScreen() {
 
       {/* Content */}
       <View className="flex-1">
-        <Text style={{ fontSize: 48, marginBottom: 24 }}>{current.emoji}</Text>
+        <current.Icon size={48} color={c.accent} />
         <Text style={{ color: c.textPrimary, fontSize: 28, fontWeight: '700', marginBottom: 16, lineHeight: 36 }}>
           {current.title}
         </Text>
@@ -134,7 +135,7 @@ export default function OnboardingScreen() {
             ].map(feature => (
               <View key={feature} className="flex-row items-center gap-3">
                 <View style={{ backgroundColor: c.accent, width: 22, height: 22, borderRadius: 11 }} className="items-center justify-center">
-                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#1A1A1A' }}>✓</Text>
+                  <CheckIcon size={12} color="#1A1A1A" />
                 </View>
                 <Text style={{ color: c.textPrimary, fontSize: 16 }}>{feature}</Text>
               </View>

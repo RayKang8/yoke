@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { colors } from '../constants/theme';
 import { GroupSummary } from '../hooks/useGroups';
-import { GroupsIcon, StreakIcon } from './icons';
+import { GroupsIcon, StreakIcon, ChevronRightIcon } from './icons';
 
 interface Props {
   group: GroupSummary;
@@ -22,7 +22,7 @@ export function GroupCard({ group, onPress }: Props) {
         <Text style={{ color: c.textPrimary, fontSize: 17, fontWeight: '600', flex: 1 }}>
           {group.name}
         </Text>
-        <Text style={{ color: c.textSecondary, fontSize: 13 }}>›</Text>
+        <ChevronRightIcon size={16} color={c.textSecondary} />
       </View>
 
       <View className="flex-row items-center gap-4">

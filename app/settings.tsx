@@ -15,6 +15,7 @@ import { colors } from '../constants/theme';
 import { Translation } from '../types';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { usePremium } from '../hooks/usePremium';
+import { BackIcon, ChevronRightIcon, CheckIcon } from '../components/icons';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
 const REMINDER_TIMES = ['6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '12:00 PM', '6:00 PM', '8:00 PM'];
@@ -92,7 +93,7 @@ export default function SettingsScreen() {
         style={{ backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: selected ? c.accent : c.border, padding: 14, marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
       >
         <Text style={{ color: c.textPrimary, fontSize: 15 }}>{label}</Text>
-        {selected && <Text style={{ color: c.accent, fontWeight: '700' }}>✓</Text>}
+        {selected && <CheckIcon size={16} color={c.accent} />}
       </TouchableOpacity>
     );
   }
@@ -103,8 +104,9 @@ export default function SettingsScreen() {
       style={{ flex: 1, backgroundColor: c.background }}
       contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 40 }}
     >
-      <TouchableOpacity onPress={() => router.back()} className="mb-6">
-        <Text style={{ color: c.textSecondary, fontSize: 16 }}>← Profile</Text>
+      <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 24 }}>
+        <BackIcon size={16} color={c.textSecondary} />
+        <Text style={{ color: c.textSecondary, fontSize: 16 }}>Profile</Text>
       </TouchableOpacity>
 
       <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700', marginBottom: 4 }}>Settings</Text>
@@ -115,7 +117,10 @@ export default function SettingsScreen() {
         {isPremium && !isTrialActive ? (
           <View className="flex-row items-center justify-between">
             <View>
-              <Text style={{ color: c.accent, fontWeight: '700', fontSize: 16 }}>Yoke Premium ✓</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={{ color: c.accent, fontWeight: '700', fontSize: 16 }}>Yoke Premium</Text>
+                <CheckIcon size={14} color={c.accent} />
+              </View>
               <Text style={{ color: c.textSecondary, fontSize: 14, marginTop: 2 }}>Active subscription</Text>
             </View>
             <TouchableOpacity onPress={handleManageSubscription}
@@ -200,14 +205,14 @@ export default function SettingsScreen() {
         className="flex-row items-center justify-between"
       >
         <Text style={{ color: c.textPrimary, fontSize: 16 }}>Privacy Policy</Text>
-        <Text style={{ color: c.textSecondary, fontSize: 18 }}>›</Text>
+        <ChevronRightIcon size={18} color={c.textSecondary} />
       </TouchableOpacity>
       <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL)}
         style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 10 }}
         className="flex-row items-center justify-between"
       >
         <Text style={{ color: c.textPrimary, fontSize: 16 }}>Terms of Service</Text>
-        <Text style={{ color: c.textSecondary, fontSize: 18 }}>›</Text>
+        <ChevronRightIcon size={18} color={c.textSecondary} />
       </TouchableOpacity>
 
       {/* Account */}
