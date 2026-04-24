@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
+import { useEffect, useRef } from 'react';
 import { supabase } from './supabase';
 
 // How notifications appear when the app is in the foreground
@@ -124,8 +125,14 @@ export async function sendPushToUser(userId: string, title: string, body: string
 // ── Notification tap handler ────────────────────────────────
 
 export function useNotificationListener(onTap: (data: Record<string, unknown>) => void) {
-  return Notifications.addNotificationResponseReceivedListener(response => {
-    const data = response.notification.request.content.data as Record<string, unknown>;
-    onTap(data);
-  });
+  const onTapRef = useRef(onTap);
+  useEffect(() => { onTapRef.current = onTap; });
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data as Record<string, unknown>;
+      onTapRef.current(data);
+    });
+    return () => subscription.remove();
+  }, []);
 }

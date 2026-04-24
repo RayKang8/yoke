@@ -4,10 +4,10 @@ import { View, ActivityIndicator, useColorScheme } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../hooks/useAuth';
 import { registerForPushNotifications, useNotificationListener } from '../lib/notifications';
 import { initRevenueCat } from '../lib/revenuecat';
-import { supabase } from '../lib/supabase';
 import { colors } from '../constants/theme';
 
 export default function RootLayout() {
@@ -18,20 +18,27 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (loading) return;
-    if (session) {
-      if (!session.user.email_confirmed_at) {
-        router.replace('/(auth)/verify-email');
-        return;
+    (async () => {
+      if (session) {
+        if (!session.user.email_confirmed_at) {
+          router.replace('/(auth)/verify-email');
+          return;
+        }
+        const onboardingDone = await AsyncStorage.getItem('onboarding_done');
+        if (!onboardingDone) {
+          router.replace('/(auth)/onboarding');
+        } else {
+          router.replace('/(tabs)');
+        }
+        if (!registered.current) {
+          registered.current = true;
+          registerForPushNotifications();
+          initRevenueCat(session.user.id);
+        }
+      } else {
+        router.replace('/(auth)/welcome');
       }
-      router.replace('/(tabs)');
-      if (!registered.current) {
-        registered.current = true;
-        registerForPushNotifications();
-        initRevenueCat(session.user.id);
-      }
-    } else {
-      router.replace('/(auth)/welcome');
-    }
+    })();
   }, [session, loading]);
 
   useNotificationListener((data) => {

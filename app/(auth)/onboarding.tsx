@@ -48,15 +48,19 @@ export default function OnboardingScreen() {
       await scheduleDailyReminder(selectedTime);
     }
     if (isLast) {
-      // Activate 7-day free trial
-      const trialEnd = new Date();
-      trialEnd.setDate(trialEnd.getDate() + 7);
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from('users')
-          .update({ trial_ends_at: trialEnd.toISOString() })
-          .eq('id', user.id);
+        const { data: existing } = await supabase
+          .from('users').select('trial_ends_at').eq('id', user.id).single();
+        if (!existing?.trial_ends_at) {
+          const trialEnd = new Date();
+          trialEnd.setDate(trialEnd.getDate() + 7);
+          await supabase.from('users')
+            .update({ trial_ends_at: trialEnd.toISOString() })
+            .eq('id', user.id);
+        }
       }
+      await AsyncStorage.setItem('onboarding_done', '1');
       router.replace('/(tabs)');
     } else {
       setStep(s => s + 1);
@@ -151,7 +155,13 @@ export default function OnboardingScreen() {
       </TouchableOpacity>
 
       {!isLast && (
-        <TouchableOpacity onPress={() => router.replace('/(tabs)')} className="mt-4 items-center">
+        <TouchableOpacity
+          onPress={async () => {
+            await AsyncStorage.setItem('onboarding_done', '1');
+            router.replace('/(tabs)');
+          }}
+          className="mt-4 items-center"
+        >
           <Text style={{ color: c.textSecondary, fontSize: 15 }}>Skip for now</Text>
         </TouchableOpacity>
       )}

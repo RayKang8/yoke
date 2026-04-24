@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useGroups } from '../../hooks/useGroups';
+import { usePremium } from '../../hooks/usePremium';
 import { haptics } from '../../lib/haptics';
 import { GroupCard } from '../../components/GroupCard';
 import { colors } from '../../constants/theme';
@@ -17,6 +18,7 @@ export default function GroupsScreen() {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
   const { groups, loading, userId, refetch } = useGroups();
+  const { isPremium } = usePremium();
 
   useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
   const [refreshing, setRefreshing] = useState(false);
@@ -36,8 +38,7 @@ export default function GroupsScreen() {
   async function handleCreate() {
     if (!groupName.trim()) return;
 
-    // Free tier: max 1 group
-    if (groups.length >= 1) {
+    if (!isPremium && groups.length >= 1) {
       Alert.alert(
         'Upgrade to Premium',
         'Free accounts can join 1 group. Upgrade to Yoke Premium for unlimited groups.',
@@ -85,7 +86,7 @@ export default function GroupsScreen() {
     const code = inviteCode.trim().toUpperCase();
     if (!code) return;
 
-    if (groups.length >= 1) {
+    if (!isPremium && groups.length >= 1) {
       Alert.alert(
         'Upgrade to Premium',
         'Free accounts can be in 1 group. Upgrade to Yoke Premium for unlimited groups.',
