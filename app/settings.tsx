@@ -60,7 +60,7 @@ export default function SettingsScreen() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete', style: 'destructive', onPress: async () => {
-            const { error } = await supabase.rpc('delete_user');
+            const { error } = await supabase.functions.invoke('delete-account');
             if (error) {
               Alert.alert('Error', `Could not delete account: ${error.message}`);
               return;

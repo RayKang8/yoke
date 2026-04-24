@@ -67,6 +67,29 @@ export default function HomeScreen() {
   // Pre-cached group shares so openEdit() needs no DB round-trip
   const cachedGroupIds = useRef<string[]>([]);
 
+  // Load current user ID once on mount so reactions/comments work immediately
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id);
+    });
+  }, []);
+
+  // Load reactions and comment count as soon as todaysDevotion arrives
+  useEffect(() => {
+    if (!todaysDevotion) return;
+    lastReactionRefetch.current = Date.now();
+    supabase
+      .from('reactions')
+      .select('type, user_id')
+      .eq('devotional_id', todaysDevotion.id)
+      .then(({ data }) => setReactions(data ?? []));
+    supabase
+      .from('comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('devotional_id', todaysDevotion.id)
+      .then(({ count }) => setCommentCount(count ?? 0));
+  }, [todaysDevotion?.id]);
+
   // Pre-load group shares when todaysDevotion first arrives
   useEffect(() => {
     if (!todaysDevotion) { cachedGroupIds.current = []; return; }

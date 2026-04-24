@@ -10,6 +10,7 @@ import { DevotionalCard } from '../../components/DevotionalCard';
 import { colors } from '../../constants/theme';
 import { ChurchIcon, BackIcon, CheckIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
+import { usePremium } from '../../hooks/usePremium';
 
 interface UserProfile {
   id: string;
@@ -27,6 +28,7 @@ export default function UserProfileScreen() {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
+  const { isPremium } = usePremium();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [publicDevos, setPublicDevos] = useState<FeedItem[]>([]);
@@ -268,6 +270,7 @@ export default function UserProfileScreen() {
               key={item.id}
               item={item}
               currentUserId={currentUserId}
+              isPremium={isPremium}
               onReactionUpdate={(devId, reactions) =>
                 setPublicDevos(prev => prev.map(d => d.id === devId ? { ...d, reactions } : d))
               }

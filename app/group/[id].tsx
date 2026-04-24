@@ -11,6 +11,7 @@ import { DevotionalCard } from '../../components/DevotionalCard';
 import { colors } from '../../constants/theme';
 import { GroupsIcon, StreakIcon, BackIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
+import { usePremium } from '../../hooks/usePremium';
 
 interface Member {
   user_id: string;
@@ -30,6 +31,7 @@ export default function GroupDetailScreen() {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
+  const { isPremium } = usePremium();
 
   const [group, setGroup] = useState<GroupDetail | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -187,6 +189,7 @@ export default function GroupDetailScreen() {
                 key={item.id}
                 item={item}
                 currentUserId={currentUserId}
+                isPremium={isPremium}
                 onReactionUpdate={handleReactionUpdate}
               />
             ))}
@@ -204,6 +207,7 @@ export default function GroupDetailScreen() {
                 key={item.id}
                 item={item}
                 currentUserId={currentUserId}
+                isPremium={isPremium}
                 onReactionUpdate={handleReactionUpdate}
               />
             ))}

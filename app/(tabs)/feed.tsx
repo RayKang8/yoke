@@ -95,12 +95,12 @@ export default function FeedScreen() {
           ListEmptyComponent={
             <View className="items-center justify-center pt-20 px-8">
               <Text style={{ color: c.textPrimary, fontSize: 18, fontWeight: '600', marginBottom: 8, textAlign: 'center' }}>
-                {tab === 'public' ? 'No public posts yet' : 'No posts yet today'}
+                {tab === 'public' ? 'No public posts yet' : 'No posts from friends yet'}
               </Text>
               <Text style={{ color: c.textSecondary, textAlign: 'center', fontSize: 15, lineHeight: 22 }}>
                 {tab === 'public'
                   ? 'Be the first to post a public devotional today.'
-                  : "Your friends haven't posted today yet. Find more friends on the Friends screen to grow your feed."
+                  : "Your friends haven't shared any devotionals yet. Find more friends on the Friends screen to grow your feed."
                 }
               </Text>
             </View>

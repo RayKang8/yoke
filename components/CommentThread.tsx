@@ -86,7 +86,7 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: colors[scheme === 'dark' ? 'dark' : 'light'].background }}
+        style={{ flex: 1, backgroundColor: c.background }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         {/* Header */}
