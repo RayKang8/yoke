@@ -7,6 +7,35 @@ export function localDateStr(d = new Date()): string {
 }
 
 /**
+ * Compute current streak from an array of YYYY-MM-DD passage dates.
+ * Counts from today if posted, otherwise from yesterday (don't penalise
+ * users who haven't posted yet today).
+ */
+export function computeStreak(dates: string[]): number {
+  const unique = [...new Set(dates)].sort().reverse();
+  const todayStr = localDateStr();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = localDateStr(yesterday);
+
+  const startStr = unique.includes(todayStr) ? todayStr : yesterdayStr;
+
+  let streak = 0;
+  let expected = startStr;
+  for (const date of unique) {
+    if (date === expected) {
+      streak++;
+      const prev = new Date(expected + 'T12:00:00');
+      prev.setDate(prev.getDate() - 1);
+      expected = localDateStr(prev);
+    } else if (date < expected) {
+      break;
+    }
+  }
+  return streak;
+}
+
+/**
  * Human-readable elapsed time.
  * short=true  → "3m" / "2h" / "1d"   (for tight spaces like comment threads)
  * short=false → "3m ago" / "2h ago"   (default, for feed cards / notifications)

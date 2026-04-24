@@ -6,6 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
+import { computeStreak } from '../lib/utils';
 import { CalendarGrid } from '../components/CalendarGrid';
 import { colors } from '../constants/theme';
 import { StreakIcon } from '../components/icons';
@@ -53,7 +54,7 @@ export default function CalendarScreen() {
     if (!user) { setLoading(false); return; }
 
     const [{ data: profile }, { data: devos, error: devosError }] = await Promise.all([
-      supabase.from('users').select('is_premium, trial_ends_at, streak').eq('id', user.id).single(),
+      supabase.from('users').select('is_premium, trial_ends_at').eq('id', user.id).single(),
       supabase
         .from('devotionals')
         .select('id, content, created_at, passage:passages!passage_id(date, reference, text), reactions(type)')
@@ -92,7 +93,7 @@ export default function CalendarScreen() {
 
     setCompletedDates(dates);
     setDevotionalMap(map);
-    setStreak(profile?.streak ?? 0);
+    setStreak(computeStreak([...dates]));
     setLoading(false);
   }
 

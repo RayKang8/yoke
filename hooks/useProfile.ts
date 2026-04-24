@@ -1,33 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { User } from '../types';
-import { localDateStr } from '../lib/utils';
-
-function computeStreak(dates: string[]): number {
-  const unique = [...new Set(dates)].sort().reverse();
-  const todayStr = localDateStr();
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = localDateStr(yesterday);
-
-  // If today is done count from today, otherwise count from yesterday
-  // (don't penalise users who haven't done today's devo yet)
-  const startStr = unique.includes(todayStr) ? todayStr : yesterdayStr;
-
-  let streak = 0;
-  let expected = startStr;
-  for (const date of unique) {
-    if (date === expected) {
-      streak++;
-      const prev = new Date(expected + 'T12:00:00');
-      prev.setDate(prev.getDate() - 1);
-      expected = localDateStr(prev);
-    } else if (date < expected) {
-      break;
-    }
-  }
-  return streak;
-}
+import { computeStreak } from '../lib/utils';
 
 export function useProfile() {
   const [profile, setProfile] = useState<User | null>(null);
