@@ -24,7 +24,7 @@ export function useNotifications() {
       .order('created_at', { ascending: false })
       .limit(50);
 
-    const list = (data ?? []) as AppNotification[];
+    const list = (data ?? []) as unknown as AppNotification[];
     setNotifications(list);
     setUnreadCount(list.filter(n => !n.read).length);
     setLoading(false);

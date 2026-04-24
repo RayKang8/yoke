@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/theme';
-import type { Offerings } from 'react-native-purchases';
+import type { PurchasesOfferings } from 'react-native-purchases';
 import { getOfferings, purchasePackage, restorePurchases } from '../lib/revenuecat';
 
 interface Props {
@@ -27,7 +27,7 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
 
-  const [offerings, setOfferings] = useState<Offerings | null>(null);
+  const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
   const [selected, setSelected] = useState<'monthly' | 'annual'>('annual');
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
@@ -48,8 +48,8 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
     const current = offerings?.current;
     if (!current) return null;
     return type === 'monthly'
-      ? current.monthly ?? current.availablePackages.find(p => p.packageType === 'MONTHLY') ?? null
-      : current.annual ?? current.availablePackages.find(p => p.packageType === 'ANNUAL') ?? null;
+      ? current.monthly ?? current.availablePackages.find((p: any) => p.packageType === 'MONTHLY') ?? null
+      : current.annual ?? current.availablePackages.find((p: any) => p.packageType === 'ANNUAL') ?? null;
   }
 
   async function handlePurchase() {

@@ -52,7 +52,7 @@ export default function GroupDetailScreen() {
     ]);
 
     setGroup(groupData);
-    setMembers((memberData as Member[]) ?? []);
+    setMembers((memberData as unknown as Member[]) ?? []);
 
     const { data: todayPassage } = await supabase
       .from('passages').select('id').eq('date', localDateStr()).maybeSingle();

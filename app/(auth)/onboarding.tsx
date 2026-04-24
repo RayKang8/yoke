@@ -5,6 +5,7 @@ import {
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerForPushNotifications, scheduleDailyReminder } from '../../lib/notifications';
+import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
 
 const STEPS = [
@@ -47,6 +48,15 @@ export default function OnboardingScreen() {
       await scheduleDailyReminder(selectedTime);
     }
     if (isLast) {
+      // Activate 7-day free trial
+      const trialEnd = new Date();
+      trialEnd.setDate(trialEnd.getDate() + 7);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('users')
+          .update({ trial_ends_at: trialEnd.toISOString() })
+          .eq('id', user.id);
+      }
       router.replace('/(tabs)');
     } else {
       setStep(s => s + 1);

@@ -49,7 +49,7 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
       .select('id, content, created_at, user_id, user:users!user_id(name)')
       .eq('devotional_id', devotionalId)
       .order('created_at', { ascending: true });
-    setComments((data as Comment[]) ?? []);
+    setComments((data as unknown as Comment[]) ?? []);
     setLoading(false);
   }
 
@@ -63,7 +63,7 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
       .single();
     setPosting(false);
     if (error) { Alert.alert('Error', error.message); return; }
-    const updated = [...comments, data as Comment];
+    const updated = [...comments, data as unknown as Comment];
     setComments(updated);
     onCountChange(updated.length);
     setText('');
