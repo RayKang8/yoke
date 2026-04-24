@@ -66,5 +66,3 @@ eas build --platform all
 eas submit --platform ios
 eas submit --platform android
 ```
-
----
