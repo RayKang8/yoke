@@ -226,6 +226,7 @@ export default function HomeScreen() {
 
     haptics.success();
     setTodaysDevotion(data);
+    refetchProfile();
   }
 
   function openEdit() {
