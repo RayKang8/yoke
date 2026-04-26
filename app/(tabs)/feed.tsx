@@ -24,7 +24,12 @@ export default function FeedScreen() {
 
   // Mutate reactions locally so the UI updates instantly
   const [localItems, setLocalItems] = useState(items);
-  useEffect(() => { setLocalItems(items); }, [items]);
+  useEffect(() => {
+    setLocalItems(prev => {
+      const prevMap = new Map(prev.map(item => [item.id, item]));
+      return items.map(item => prevMap.has(item.id) ? prevMap.get(item.id)! : item);
+    });
+  }, [items]);
 
   function handleReactionUpdate(id: string, reactions: { type: string; user_id: string }[]) {
     setLocalItems(prev => prev.map(item => item.id === id ? { ...item, reactions } : item));

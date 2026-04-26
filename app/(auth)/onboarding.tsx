@@ -156,6 +156,18 @@ export default function OnboardingScreen() {
       {!isLast && (
         <TouchableOpacity
           onPress={async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              const { data: existing } = await supabase
+                .from('users').select('trial_ends_at').eq('id', user.id).single();
+              if (!existing?.trial_ends_at) {
+                const trialEnd = new Date();
+                trialEnd.setDate(trialEnd.getDate() + 7);
+                await supabase.from('users')
+                  .update({ trial_ends_at: trialEnd.toISOString() })
+                  .eq('id', user.id);
+              }
+            }
             await AsyncStorage.setItem('onboarding_done', '1');
             router.replace('/(tabs)');
           }}
