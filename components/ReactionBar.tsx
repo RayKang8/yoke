@@ -63,7 +63,7 @@ export function ReactionBar({ devotionalId, reactions, currentUserId, isPremium 
   }
 
   async function showDetail(type: string) {
-    if (!isPremium || countOf(type) === 0) return;
+    if (countOf(type) === 0) return;
     setDetailType(type);
     setLoadingDetail(true);
     const userIds = reactions.filter(r => r.type === type).map(r => r.user_id);

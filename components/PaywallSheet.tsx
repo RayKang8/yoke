@@ -18,9 +18,6 @@ interface Props {
 const PREMIUM_FEATURES = [
   'Unlimited groups',
   'Full calendar history (all time)',
-  'See exactly who reacted to your posts',
-  'Group streak tracking & stats',
-  'Activity nudge notifications',
 ];
 
 export function PaywallSheet({ visible, onClose, onPurchased }: Props) {

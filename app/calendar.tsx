@@ -46,11 +46,11 @@ export default function CalendarScreen() {
   const [selectedVerses, setSelectedVerses] = useState<{ verse: number; text: string }[]>([]);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
-  // Free tier: only last 30 days
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  // Free tier: only last 7 days
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const lockedBefore = !isPremium
-    ? `${thirtyDaysAgo.getFullYear()}-${String(thirtyDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(thirtyDaysAgo.getDate()).padStart(2, '0')}`
+    ? `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`
     : undefined;
 
   useEffect(() => { load(); }, []);
