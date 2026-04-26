@@ -26,7 +26,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
 
   const [reminderTime, setReminderTime] = useState('8:00 AM');
-  const [defaultTranslation, setDefaultTranslation] = useState<Translation>('KJV');
+  const [defaultTranslation, setDefaultTranslation] = useState<Translation>('NIV');
   const [showPaywall, setShowPaywall] = useState(false);
   const { isPremium, isTrialActive, trialDaysLeft, recheck } = usePremium();
 

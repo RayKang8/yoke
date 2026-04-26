@@ -5,10 +5,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { computeStreak } from '../lib/utils';
 import { CalendarGrid } from '../components/CalendarGrid';
 import { colors } from '../constants/theme';
+import { Translation } from '../types';
 import { StreakIcon, BackIcon, ChevronLeftIcon, ChevronRightIcon, LockIcon, PrayIcon, AmenIcon, HitIcon } from '../components/icons';
 import { usePremium } from '../hooks/usePremium';
 
@@ -37,10 +39,17 @@ export default function CalendarScreen() {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const { isPremium, loading: premiumLoading } = usePremium();
+  const [translation, setTranslation] = useState<Translation>('NIV');
   const [completedDates, setCompletedDates] = useState<Set<string>>(new Set());
   const [devotionalMap, setDevotionalMap] = useState<Record<string, DevotionalDay>>({});
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    AsyncStorage.getItem('defaultTranslation').then(t => {
+      if (t) setTranslation(t as Translation);
+    });
+  }, []);
 
   const [selectedDay, setSelectedDay] = useState<DevotionalDay | null>(null);
   const [selectedVerses, setSelectedVerses] = useState<{ verse: number; text: string }[]>([]);
@@ -116,7 +125,7 @@ export default function CalendarScreen() {
     const { data } = await supabase
       .from('bible_verses')
       .select('verse, text')
-      .eq('translation', 'KJV')
+      .eq('translation', translation)
       .eq('book', book)
       .eq('chapter', chapter)
       .gte('verse', verseStart)

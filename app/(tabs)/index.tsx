@@ -45,7 +45,7 @@ export default function HomeScreen() {
     }
   }, [refetchProfile, refetchDevotion, recheckPremium]));
 
-  const [translation, setTranslation] = useState<Translation>('KJV');
+  const [translation, setTranslation] = useState<Translation>('NIV');
   const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);
   const [reflection, setReflection] = useState('');
   // selectedAudiences: Set of 'friends' | 'public' | <groupId>
@@ -103,12 +103,16 @@ export default function HomeScreen() {
       });
   }, [todaysDevotion?.id]);
 
-  // Load saved defaults
+  // Load saved defaults — if no translation saved yet, write NIV so settings is always the source of truth
   useEffect(() => {
     AsyncStorage.multiGet(['defaultTranslation', 'postAudiences']).then(pairs => {
       const trans = pairs[0][1] as Translation | null;
       const audiences = pairs[1][1];
-      if (trans) setTranslation(trans);
+      if (trans) {
+        setTranslation(trans);
+      } else {
+        AsyncStorage.setItem('defaultTranslation', 'NIV');
+      }
       if (audiences) {
         try { setSelectedAudiences(new Set(JSON.parse(audiences))); } catch {}
       }
