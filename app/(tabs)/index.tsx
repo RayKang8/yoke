@@ -67,6 +67,7 @@ export default function HomeScreen() {
 
   // Pre-cached group shares so openEdit() needs no DB round-trip
   const cachedGroupIds = useRef<string[]>([]);
+  const lastReactionRefetch = useRef(0);
 
   // Load current user ID once on mount so reactions/comments work immediately
   useEffect(() => {
@@ -151,7 +152,6 @@ export default function HomeScreen() {
 
   // Refetch reactions and comment count whenever home tab is focused
   // (same 30s throttle as the profile/devotion refetch above)
-  const lastReactionRefetch = useRef(0);
   useFocusEffect(useCallback(() => {
     if (!todaysDevotion) return;
     const now = Date.now();
@@ -437,7 +437,7 @@ export default function HomeScreen() {
                   {TRANSLATIONS.map(t => (
                     <TouchableOpacity
                       key={t}
-                      onPress={() => setTranslation(t)}
+                      onPress={() => { setTranslation(t); AsyncStorage.setItem('defaultTranslation', t); }}
                       style={{
                         backgroundColor: translation === t ? c.accent : c.surface,
                         borderColor: translation === t ? c.accent : c.border,
@@ -612,7 +612,7 @@ export default function HomeScreen() {
             {TRANSLATIONS.map(t => (
               <TouchableOpacity
                 key={t}
-                onPress={() => setTranslation(t)}
+                onPress={() => { setTranslation(t); AsyncStorage.setItem('defaultTranslation', t); }}
                 style={{
                   backgroundColor: translation === t ? c.accent : c.surface,
                   borderColor: translation === t ? c.accent : c.border,
