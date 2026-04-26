@@ -28,7 +28,7 @@ export default function UserProfileScreen() {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
-  const { isPremium } = usePremium();
+  const { isPremium, loading: premiumLoading } = usePremium();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [publicDevos, setPublicDevos] = useState<FeedItem[]>([]);
@@ -244,10 +244,10 @@ export default function UserProfileScreen() {
           <Text style={{ color: c.textSecondary, fontSize: 12 }}>Devotionals</Text>
         </View>
         <View style={{ flex: 1, backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: c.border, padding: 14 }} className="items-center">
-          {isPremium
+          {!premiumLoading && (isPremium
             ? <Text style={{ color: c.accent, fontSize: 22, fontWeight: '700' }}>{profile.streak}</Text>
             : <LockIcon size={20} color={c.accent} />
-          }
+          )}
           <Text style={{ color: c.textSecondary, fontSize: 12 }}>Day Streak</Text>
         </View>
       </View>

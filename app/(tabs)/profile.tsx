@@ -19,9 +19,9 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { profile, devoCount, friendCount, loading, refetch, updateProfile } = useProfile();
   const { unreadCount, fetch: fetchNotifications } = useNotifications();
-  const { isPremium } = usePremium();
+  const { isPremium, loading: premiumLoading, recheck: recheckPremium } = usePremium();
 
-  useFocusEffect(useCallback(() => { refetch(); fetchNotifications(); }, [refetch, fetchNotifications]));
+  useFocusEffect(useCallback(() => { refetch(); fetchNotifications(); recheckPremium(); }, [refetch, fetchNotifications, recheckPremium]));
 
   const [editVisible, setEditVisible] = useState(false);
   const [editName, setEditName] = useState('');
@@ -138,7 +138,7 @@ export default function ProfileScreen() {
       <View className="flex-row gap-3 mb-6">
         {[
           { label: 'Devotionals', value: devoCount, accent: false, locked: false },
-          { label: 'Day Streak', value: profile?.streak ?? 0, accent: true, locked: !isPremium },
+          { label: 'Day Streak', value: profile?.streak ?? 0, accent: true, locked: !premiumLoading && !isPremium },
           { label: 'Friends', value: friendCount, accent: false, locked: false },
         ].map(stat => (
           <View key={stat.label}

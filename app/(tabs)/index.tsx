@@ -30,7 +30,7 @@ export default function HomeScreen() {
   const { passage, todaysDevotion, loading, error, setTodaysDevotion, refetchDevotion } = usePassage();
   const { profile, refetch: refetchProfile } = useProfile();
   const { groups } = useGroups();
-  const { isPremium } = usePremium();
+  const { isPremium, loading: premiumLoading, recheck: recheckPremium } = usePremium();
 
   // Only refetch on focus if it's been more than 30 seconds — avoids hitting
   // the DB on every single tab switch
@@ -41,10 +41,11 @@ export default function HomeScreen() {
       lastFocusRefetch.current = now;
       refetchProfile();
       refetchDevotion();
+      recheckPremium();
     }
-  }, [refetchProfile, refetchDevotion]));
+  }, [refetchProfile, refetchDevotion, recheckPremium]));
 
-  const [translation, setTranslation] = useState<Translation>('NIV');
+  const [translation, setTranslation] = useState<Translation>('KJV');
   const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);
   const [reflection, setReflection] = useState('');
   // selectedAudiences: Set of 'friends' | 'public' | <groupId>
@@ -339,10 +340,10 @@ export default function HomeScreen() {
             <Text style={{ color: '#1A1A1A', fontSize: 13, marginTop: 2, opacity: 0.65 }}>You posted today's devotional.</Text>
           </View>
           <View className="flex-row items-center gap-1">
-            {isPremium
+            {!premiumLoading && (isPremium
               ? <Text style={{ color: '#1A1A1A', fontSize: 22, fontWeight: '800' }}>{profile?.streak ?? 0}</Text>
               : <LockIcon size={20} color="#1A1A1A" />
-            }
+            )}
             <StreakIcon size={34} />
           </View>
         </View>

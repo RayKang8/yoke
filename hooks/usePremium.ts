@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getCustomerInfo, isPremiumFromCustomerInfo } from '../lib/revenuecat';
 
@@ -8,11 +8,7 @@ export function usePremium() {
   const [trialDaysLeft, setTrialDaysLeft] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    check();
-  }, []);
-
-  async function check() {
+  const check = useCallback(async function check() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
@@ -36,7 +32,11 @@ export function usePremium() {
     setIsTrialActive(trialActive && !rcPremium && !profile?.is_premium);
     setTrialDaysLeft(daysLeft);
     setLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    check();
+  }, [check]);
 
   return { isPremium, isTrialActive, trialDaysLeft, loading, recheck: check };
 }

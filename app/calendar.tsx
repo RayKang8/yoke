@@ -36,7 +36,7 @@ export default function CalendarScreen() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
-  const { isPremium } = usePremium();
+  const { isPremium, loading: premiumLoading } = usePremium();
   const [completedDates, setCompletedDates] = useState<Set<string>>(new Set());
   const [devotionalMap, setDevotionalMap] = useState<Record<string, DevotionalDay>>({});
   const [loading, setLoading] = useState(true);
@@ -46,10 +46,10 @@ export default function CalendarScreen() {
   const [selectedVerses, setSelectedVerses] = useState<{ verse: number; text: string }[]>([]);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
-  // Free tier: only last 7 days
+  // Free tier: only last 7 days. Don't lock during premium check (premiumLoading) to avoid flash.
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const lockedBefore = !isPremium
+  const lockedBefore = (!isPremium && !premiumLoading)
     ? `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`
     : undefined;
 
@@ -116,7 +116,7 @@ export default function CalendarScreen() {
     const { data } = await supabase
       .from('bible_verses')
       .select('verse, text')
-      .eq('translation', 'NIV')
+      .eq('translation', 'KJV')
       .eq('book', book)
       .eq('chapter', chapter)
       .gte('verse', verseStart)
@@ -167,7 +167,9 @@ export default function CalendarScreen() {
       <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 24 }} className="flex-row items-center gap-3">
         <StreakIcon size={28} />
         <View>
-          {isPremium ? (
+          {premiumLoading ? (
+            <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '700' }}>Streak tracking</Text>
+          ) : isPremium ? (
             <>
               <Text style={{ color: '#1A1A1A', fontSize: 20, fontWeight: '700' }}>{streak} day streak</Text>
               <Text style={{ color: '#1A1A1A', fontSize: 14 }}>Keep it going!</Text>
@@ -208,7 +210,7 @@ export default function CalendarScreen() {
         onDayPress={handleDayPress}
       />
 
-      {!isPremium && (
+      {!isPremium && !premiumLoading && (
         <TouchableOpacity onPress={() => setShowUpgrade(true)}
           style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginTop: 20 }}
           className="flex-row items-center justify-between"
