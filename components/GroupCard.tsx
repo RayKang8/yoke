@@ -5,10 +5,11 @@ import { GroupsIcon, StreakIcon, ChevronRightIcon } from './icons';
 
 interface Props {
   group: GroupSummary;
+  isPremium: boolean;
   onPress: () => void;
 }
 
-export function GroupCard({ group, onPress }: Props) {
+export function GroupCard({ group, isPremium, onPress }: Props) {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
 
@@ -35,7 +36,7 @@ export function GroupCard({ group, onPress }: Props) {
         <Text style={{ color: group.posted_today > 0 ? c.accent : c.textSecondary, fontSize: 13, fontWeight: group.posted_today > 0 ? '600' : '400' }}>
           {group.posted_today}/{group.member_count} posted today
         </Text>
-        {group.streak > 0 && (
+        {isPremium && group.streak > 0 && (
           <View className="flex-row items-center gap-1">
             <StreakIcon size={14} />
             <Text style={{ color: c.textSecondary, fontSize: 13 }}>{group.streak}</Text>

@@ -14,7 +14,7 @@ import { usePremium } from '../../hooks/usePremium';
 import { colors } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
 import { Translation } from '../../types';
-import { StreakIcon, CommentIcon, CheckIcon } from '../../components/icons';
+import { StreakIcon, CommentIcon, CheckIcon, LockIcon } from '../../components/icons';
 import { ReactionBar } from '../../components/ReactionBar';
 import { CommentThread } from '../../components/CommentThread';
 
@@ -339,7 +339,10 @@ export default function HomeScreen() {
             <Text style={{ color: '#1A1A1A', fontSize: 13, marginTop: 2, opacity: 0.65 }}>You posted today's devotional.</Text>
           </View>
           <View className="flex-row items-center gap-1">
-            <Text style={{ color: '#1A1A1A', fontSize: 22, fontWeight: '800' }}>{profile?.streak ?? 0}</Text>
+            {isPremium
+              ? <Text style={{ color: '#1A1A1A', fontSize: 22, fontWeight: '800' }}>{profile?.streak ?? 0}</Text>
+              : <LockIcon size={20} color="#1A1A1A" />
+            }
             <StreakIcon size={34} />
           </View>
         </View>

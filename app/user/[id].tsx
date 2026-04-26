@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { DevotionalCard } from '../../components/DevotionalCard';
 import { colors } from '../../constants/theme';
-import { ChurchIcon, BackIcon, CheckIcon } from '../../components/icons';
+import { ChurchIcon, BackIcon, CheckIcon, LockIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
 import { usePremium } from '../../hooks/usePremium';
 
@@ -244,7 +244,10 @@ export default function UserProfileScreen() {
           <Text style={{ color: c.textSecondary, fontSize: 12 }}>Devotionals</Text>
         </View>
         <View style={{ flex: 1, backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: c.border, padding: 14 }} className="items-center">
-          <Text style={{ color: c.accent, fontSize: 22, fontWeight: '700' }}>{profile.streak}</Text>
+          {isPremium
+            ? <Text style={{ color: c.accent, fontSize: 22, fontWeight: '700' }}>{profile.streak}</Text>
+            : <LockIcon size={20} color={c.accent} />
+          }
           <Text style={{ color: c.textSecondary, fontSize: 12 }}>Day Streak</Text>
         </View>
       </View>

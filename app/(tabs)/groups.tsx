@@ -160,6 +160,7 @@ export default function GroupsScreen() {
             <GroupCard
               key={g.id}
               group={g}
+              isPremium={isPremium}
               onPress={() => router.push(`/group/${g.id}`)}
             />
           ))

@@ -164,7 +164,7 @@ export default function GroupDetailScreen() {
               {members.length} member{members.length !== 1 ? 's' : ''}
             </Text>
           </View>
-          {group.streak > 0 && (
+          {isPremium && group.streak > 0 && (
             <View className="flex-row items-center gap-1">
               <StreakIcon size={16} />
               <Text style={{ color: c.textSecondary, fontSize: 14 }}>{group.streak} day streak</Text>

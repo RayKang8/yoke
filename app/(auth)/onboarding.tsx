@@ -129,6 +129,7 @@ export default function OnboardingScreen() {
             {[
               'Unlimited groups',
               'Full calendar history',
+              'Personal & group streak tracking',
             ].map(feature => (
               <View key={feature} className="flex-row items-center gap-3">
                 <View style={{ backgroundColor: c.accent, width: 22, height: 22, borderRadius: 11 }} className="items-center justify-center">

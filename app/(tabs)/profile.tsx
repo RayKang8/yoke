@@ -9,8 +9,9 @@ import { router, useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { useProfile } from '../../hooks/useProfile';
 import { useNotifications } from '../../hooks/useNotifications';
+import { usePremium } from '../../hooks/usePremium';
 import { colors } from '../../constants/theme';
-import { CalendarIcon, FriendsIcon, SettingsIcon, ChurchIcon, BellIcon, ChevronRightIcon } from '../../components/icons';
+import { CalendarIcon, FriendsIcon, SettingsIcon, ChurchIcon, BellIcon, ChevronRightIcon, LockIcon } from '../../components/icons';
 
 export default function ProfileScreen() {
   const scheme = useColorScheme();
@@ -18,6 +19,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { profile, devoCount, friendCount, loading, refetch, updateProfile } = useProfile();
   const { unreadCount, fetch: fetchNotifications } = useNotifications();
+  const { isPremium } = usePremium();
 
   useFocusEffect(useCallback(() => { refetch(); fetchNotifications(); }, [refetch, fetchNotifications]));
 
@@ -135,17 +137,20 @@ export default function ProfileScreen() {
       {/* Stats */}
       <View className="flex-row gap-3 mb-6">
         {[
-          { label: 'Devotionals', value: devoCount, accent: false },
-          { label: 'Day Streak', value: profile?.streak ?? 0, accent: true },
-          { label: 'Friends', value: friendCount, accent: false },
+          { label: 'Devotionals', value: devoCount, accent: false, locked: false },
+          { label: 'Day Streak', value: profile?.streak ?? 0, accent: true, locked: !isPremium },
+          { label: 'Friends', value: friendCount, accent: false, locked: false },
         ].map(stat => (
           <View key={stat.label}
             style={{ flex: 1, backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 14 }}
             className="items-center"
           >
-            <Text style={{ color: stat.accent ? c.accent : c.textPrimary, fontSize: 24, fontWeight: '700' }}>
-              {stat.value}
-            </Text>
+            {stat.locked
+              ? <LockIcon size={22} color={c.accent} />
+              : <Text style={{ color: stat.accent ? c.accent : c.textPrimary, fontSize: 24, fontWeight: '700' }}>
+                  {stat.value}
+                </Text>
+            }
             <Text style={{ color: c.textSecondary, fontSize: 11, textAlign: 'center', marginTop: 2 }}>
               {stat.label}
             </Text>

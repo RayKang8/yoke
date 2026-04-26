@@ -167,8 +167,17 @@ export default function CalendarScreen() {
       <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 24 }} className="flex-row items-center gap-3">
         <StreakIcon size={28} />
         <View>
-          <Text style={{ color: '#1A1A1A', fontSize: 20, fontWeight: '700' }}>{streak} day streak</Text>
-          <Text style={{ color: '#1A1A1A', fontSize: 14 }}>Keep it going!</Text>
+          {isPremium ? (
+            <>
+              <Text style={{ color: '#1A1A1A', fontSize: 20, fontWeight: '700' }}>{streak} day streak</Text>
+              <Text style={{ color: '#1A1A1A', fontSize: 14 }}>Keep it going!</Text>
+            </>
+          ) : (
+            <>
+              <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '700' }}>Streak tracking</Text>
+              <Text style={{ color: '#1A1A1A', fontSize: 13 }}>Upgrade to Premium to see your streak</Text>
+            </>
+          )}
         </View>
       </View>
 

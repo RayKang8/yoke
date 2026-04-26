@@ -18,6 +18,7 @@ interface Props {
 const PREMIUM_FEATURES = [
   'Unlimited groups',
   'Full calendar history (all time)',
+  'Personal & group streak tracking',
 ];
 
 export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
