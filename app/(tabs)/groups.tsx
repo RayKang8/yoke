@@ -18,9 +18,9 @@ export default function GroupsScreen() {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
   const { groups, loading, userId, refetch } = useGroups();
-  const { isPremium } = usePremium();
+  const { isPremium, recheck: recheckPremium } = usePremium();
 
-  useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
+  useFocusEffect(useCallback(() => { refetch(); recheckPremium(); }, [refetch, recheckPremium]));
   const [refreshing, setRefreshing] = useState(false);
 
   const [showCreate, setShowCreate] = useState(false);

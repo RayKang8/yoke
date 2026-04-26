@@ -79,7 +79,13 @@ export function usePassage() {
     error,
     refetch: () => {
       setLoading(true);
-      fetchPassage();
+      // If passage is already loaded for today, skip re-fetching the passage
+      // and go straight to refreshing the devotion
+      if (passage && passage.date === today) {
+        fetchTodaysDevotion(passage.id);
+      } else {
+        fetchPassage();
+      }
     },
     refetchDevotion: () => {
       if (passage) fetchTodaysDevotion(passage.id);

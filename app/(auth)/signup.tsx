@@ -5,13 +5,13 @@ import {
   useColorScheme, Alert, ScrollView, Linking,
 } from 'react-native';
 import { router } from 'expo-router';
-
-const PRIVACY_URL = 'https://yokefaith.com/privacy';
-const TERMS_URL   = 'https://yokefaith.com/terms';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
 import { BackIcon } from '../../components/icons';
+
+const PRIVACY_URL = 'https://yokefaith.com/privacy';
+const TERMS_URL   = 'https://yokefaith.com/terms';
 
 export default function SignUpScreen() {
   const scheme = useColorScheme();

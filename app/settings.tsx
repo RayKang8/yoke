@@ -7,15 +7,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
-
-const PRIVACY_URL = 'https://yokefaith.com/privacy';
-const TERMS_URL   = 'https://yokefaith.com/terms';
 import { scheduleDailyReminder } from '../lib/notifications';
 import { colors } from '../constants/theme';
 import { Translation } from '../types';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { usePremium } from '../hooks/usePremium';
 import { BackIcon, ChevronRightIcon, CheckIcon } from '../components/icons';
+
+const PRIVACY_URL = 'https://yokefaith.com/privacy';
+const TERMS_URL   = 'https://yokefaith.com/terms';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
 const REMINDER_TIMES = ['6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '12:00 PM', '6:00 PM', '8:00 PM'];
@@ -26,7 +26,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
 
   const [reminderTime, setReminderTime] = useState('8:00 AM');
-  const [defaultTranslation, setDefaultTranslation] = useState<Translation>('NIV');
+  const [defaultTranslation, setDefaultTranslation] = useState<Translation>('KJV');
   const [showPaywall, setShowPaywall] = useState(false);
   const { isPremium, isTrialActive, trialDaysLeft, recheck } = usePremium();
 
