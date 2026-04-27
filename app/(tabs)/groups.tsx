@@ -97,45 +97,26 @@ export default function GroupsScreen() {
 
     setBusy(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setBusy(false); return; }
-
-    const { data: group, error } = await supabase
-      .from('groups')
-      .select('id, name')
-      .eq('invite_code', code)
-      .maybeSingle();
-
-    if (error || !group) {
-      Alert.alert('Invalid code', 'No group found with that invite code.');
-      setBusy(false);
-      return;
-    }
-
-    // Check already a member
-    const { data: existing } = await supabase
-      .from('group_members')
-      .select('group_id')
-      .eq('group_id', group.id)
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (existing) {
-      Alert.alert('Already a member', `You're already in "${group.name}".`);
-      setBusy(false);
-      setShowJoin(false);
-      setInviteCode('');
-      return;
-    }
-
-    await supabase.from('group_members').insert({ group_id: group.id, user_id: user.id });
+    const { data, error } = await supabase.rpc('join_group_by_invite', { p_invite_code: code });
 
     setBusy(false);
+
+    if (error) {
+      if (error.message.includes('Invalid invite code')) {
+        Alert.alert('Invalid code', 'No group found with that invite code.');
+      } else if (error.message.includes('Already a member')) {
+        Alert.alert('Already a member', "You're already in this group.");
+      } else {
+        Alert.alert('Error', error.message);
+      }
+      return;
+    }
+
     setShowJoin(false);
     setInviteCode('');
     haptics.success();
     refetch();
-    Alert.alert('Joined!', `You joined "${group.name}".`);
+    Alert.alert('Joined!', `You joined "${(data as any)?.group_name ?? 'the group'}".`);
   }
 
   return (
@@ -199,9 +180,10 @@ export default function GroupsScreen() {
           <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: '500', marginBottom: 6 }}>GROUP NAME</Text>
           <TextInput
             value={groupName}
-            onChangeText={setGroupName}
+            onChangeText={t => setGroupName(t.slice(0, 100))}
             placeholder="e.g. Sunday Small Group"
             placeholderTextColor={c.textSecondary}
+            maxLength={100}
             style={{
               backgroundColor: c.surface, color: c.textPrimary,
               borderColor: c.border, borderWidth: 1, borderRadius: 12,
@@ -236,10 +218,11 @@ export default function GroupsScreen() {
           <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: '500', marginBottom: 6 }}>INVITE CODE</Text>
           <TextInput
             value={inviteCode}
-            onChangeText={setInviteCode}
+            onChangeText={t => setInviteCode(t.slice(0, 20))}
             placeholder="e.g. YK-X7K2A3"
             placeholderTextColor={c.textSecondary}
             autoCapitalize="characters"
+            maxLength={20}
             style={{
               backgroundColor: c.surface, color: c.textPrimary,
               borderColor: c.border, borderWidth: 1, borderRadius: 12,

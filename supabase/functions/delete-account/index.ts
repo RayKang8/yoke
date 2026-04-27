@@ -9,19 +9,31 @@ Deno.serve(async (req) => {
     });
   }
 
-  // Decode the JWT payload to get the user ID (gateway already verified the signature)
-  const jwt = authHeader.replace('Bearer ', '');
-  const payload = JSON.parse(atob(jwt.split('.')[1]));
-  const userId = payload.sub;
+  // Verify the JWT by calling getUser() — safer than manual JWT parsing
+  const userClient = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
 
-  if (!userId) {
-    return new Response(JSON.stringify({ error: 'Invalid token' }), {
+  let userId: string;
+  try {
+    const { data: { user }, error } = await userClient.auth.getUser();
+    if (error || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    userId = user.id;
+  } catch {
+    return new Response(JSON.stringify({ error: 'Authentication failed' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  // Admin client to delete the user
+  // Use admin client to delete — requires confirmed identity above
   const adminClient = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
