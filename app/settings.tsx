@@ -48,7 +48,7 @@ export default function SettingsScreen() {
   function handleManageSubscription() {
     const url = Platform.OS === 'ios'
       ? 'itms-apps://apps.apple.com/account/subscriptions'
-      : 'https://play.google.com/store/account/subscriptions?sku=yoke_premium_monthly&package=com.yoke.app';
+      : 'https://play.google.com/store/account/subscriptions?sku=yoke_premium_monthly&package=com.yokefaith.app';
     Linking.openURL(url);
   }
 

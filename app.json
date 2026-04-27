@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.yoke.app",
+      "bundleIdentifier": "com.yokefaith.app",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "Yoke sends a daily reminder for your devotional and notifies you when friends react to or comment on your posts."
       }
@@ -27,7 +27,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.yoke.app"
+      "package": "com.yokefaith.app"
     },
     "web": {
       "favicon": "./assets/Yoke.png"
