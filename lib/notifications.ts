@@ -109,17 +109,21 @@ export async function sendPushToUser(userId: string, title: string, body: string
 
   if (!user?.push_token) return; // user hasn't granted permission
 
-  await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      to: user.push_token,
-      title,
-      body,
-      data: data ?? {},
-      sound: 'default',
-    }),
-  });
+  try {
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: user.push_token,
+        title,
+        body,
+        data: data ?? {},
+        sound: 'default',
+      }),
+    });
+  } catch {
+    // Non-critical — push delivery failure should not surface to the user
+  }
 }
 
 // ── Notification tap handler ────────────────────────────────

@@ -13,6 +13,7 @@ import { useGroups } from '../../hooks/useGroups';
 import { usePremium } from '../../hooks/usePremium';
 import { colors } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
+import { localDateStr } from '../../lib/utils';
 import { Translation } from '../../types';
 import { StreakIcon, CommentIcon, CheckIcon, LockIcon } from '../../components/icons';
 import { ReactionBar } from '../../components/ReactionBar';
@@ -27,23 +28,30 @@ export default function HomeScreen() {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
 
-  const { passage, todaysDevotion, loading, error, setTodaysDevotion, refetchDevotion } = usePassage();
+  const { passage, todaysDevotion, loading, error, setTodaysDevotion, refetch, refetchDevotion } = usePassage();
   const { profile, refetch: refetchProfile } = useProfile();
   const { groups } = useGroups();
   const { isPremium, loading: premiumLoading, recheck: recheckPremium } = usePremium();
 
   // Only refetch on focus if it's been more than 30 seconds — avoids hitting
-  // the DB on every single tab switch
+  // the DB on every single tab switch. Always refetch if the passage date has
+  // rolled past midnight.
   const lastFocusRefetch = useRef(0);
   useFocusEffect(useCallback(() => {
     const now = Date.now();
-    if (now - lastFocusRefetch.current > 30_000) {
+    const newDay = !!passage?.date && passage.date !== localDateStr();
+    if (newDay || now - lastFocusRefetch.current > 30_000) {
       lastFocusRefetch.current = now;
       refetchProfile();
-      refetchDevotion();
       recheckPremium();
+      if (newDay) {
+        setReflection('');
+        refetch();
+      } else {
+        refetchDevotion();
+      }
     }
-  }, [refetchProfile, refetchDevotion, recheckPremium]));
+  }, [refetchProfile, refetchDevotion, recheckPremium, refetch, passage?.date]));
 
   const [translation, setTranslation] = useState<Translation>('NIV');
   const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);

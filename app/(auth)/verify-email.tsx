@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, useColorScheme, ActivityIndicator, Alert } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,11 +9,37 @@ import { EmailIcon } from '../../components/icons';
 export default function VerifyEmailScreen() {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
+  const [checking, setChecking] = useState(false);
   const [resending, setResending] = useState(false);
 
+  // If the user taps the email link and the app opens via deep link,
+  // Supabase fires SIGNED_IN with email_confirmed_at set — auto-advance.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (
+        (event === 'SIGNED_IN' || event === 'USER_UPDATED') &&
+        session?.user?.email_confirmed_at
+      ) {
+        router.replace('/(auth)/onboarding');
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   async function handleCheckConfirmed() {
-    await supabase.auth.signOut();
-    router.replace('/(auth)/login');
+    setChecking(true);
+    // Re-fetch the user to see if they've confirmed since this screen opened
+    const { data: { user } } = await supabase.auth.getUser();
+    setChecking(false);
+
+    if (user?.email_confirmed_at) {
+      router.replace('/(auth)/onboarding');
+    } else {
+      Alert.alert(
+        'Not confirmed yet',
+        "Your email hasn't been confirmed. Check your inbox and tap the link, then come back here.",
+      );
+    }
   }
 
   async function handleResend() {
@@ -41,10 +67,14 @@ export default function VerifyEmailScreen() {
 
       <TouchableOpacity
         onPress={handleCheckConfirmed}
+        disabled={checking}
         style={{ backgroundColor: c.accent, borderRadius: 14, width: '100%' }}
         className="py-4 items-center mb-4"
       >
-        <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>I've confirmed my email</Text>
+        {checking
+          ? <ActivityIndicator color="#1A1A1A" />
+          : <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>I've confirmed my email</Text>
+        }
       </TouchableOpacity>
 
       <TouchableOpacity

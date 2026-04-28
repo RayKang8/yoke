@@ -7,11 +7,18 @@ export interface Verse {
   heading?: string | null;
 }
 
+// In-memory cache keyed by "translation:book:chapter".
+// Bible text is immutable so entries are valid for the lifetime of the app session.
+const chapterCache = new Map<string, Verse[]>();
+
 export async function getChapter(
   book: string,
   chapter: number,
   translation: Translation
 ): Promise<Verse[]> {
+  const key = `${translation}:${book}:${chapter}`;
+  if (chapterCache.has(key)) return chapterCache.get(key)!;
+
   const { data, error } = await supabase
     .from('bible_verses')
     .select('verse, text, heading')
@@ -21,7 +28,9 @@ export async function getChapter(
     .order('verse');
 
   if (error || !data) return [];
-  return data as Verse[];
+  const verses = data as Verse[];
+  chapterCache.set(key, verses);
+  return verses;
 }
 
 export async function searchVerses(

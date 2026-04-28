@@ -173,6 +173,16 @@ export default function SettingsScreen() {
         />
       ))}
 
+      {/* Support */}
+      <SectionHeader label="SUPPORT" />
+      <TouchableOpacity onPress={() => Linking.openURL('mailto:contact@yokefaith.com')}
+        style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 10 }}
+        className="flex-row items-center justify-between"
+      >
+        <Text style={{ color: c.textPrimary, fontSize: 16 }}>Contact Support</Text>
+        <Text style={{ color: c.textSecondary, fontSize: 13 }}>contact@yokefaith.com</Text>
+      </TouchableOpacity>
+
       {/* Legal */}
       <SectionHeader label="LEGAL" />
       <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL)}
