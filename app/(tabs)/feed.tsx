@@ -8,7 +8,7 @@ import { supabase } from '../../lib/supabase';
 import { useFeed } from '../../hooks/useFeed';
 import { usePremium } from '../../hooks/usePremium';
 import { DevotionalCard } from '../../components/DevotionalCard';
-import { colors } from '../../constants/theme';
+import { colors, fonts } from '../../constants/theme';
 
 type Tab = 'public' | 'friends';
 
@@ -45,7 +45,7 @@ export default function FeedScreen() {
     <View style={{ flex: 1, backgroundColor: c.background }}>
       {/* Header */}
       <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: 0, backgroundColor: c.background }}>
-        <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700', marginBottom: 14 }}>Feed</Text>
+        <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 26, marginBottom: 14 }}>Feed</Text>
 
         {/* Tab switcher */}
         <View style={{ flexDirection: 'row', backgroundColor: c.surface, borderRadius: 12, padding: 3, borderWidth: 1, borderColor: c.border, marginBottom: 12 }}>
@@ -63,7 +63,7 @@ export default function FeedScreen() {
             >
               <Text style={{
                 color: tab === t ? '#1A1A1A' : c.textSecondary,
-                fontWeight: tab === t ? '600' : '400',
+                fontFamily: tab === t ? fonts.ui : fonts.uiRegular,
                 fontSize: 14,
               }}>
                 {t === 'public' ? 'Public' : 'Friends'}

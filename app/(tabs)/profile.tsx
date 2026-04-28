@@ -10,7 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { useProfile } from '../../hooks/useProfile';
 import { useNotifications } from '../../hooks/useNotifications';
 import { usePremium } from '../../hooks/usePremium';
-import { colors } from '../../constants/theme';
+import { colors, fonts, shadows, radius } from '../../constants/theme';
 import { CalendarIcon, FriendsIcon, SettingsIcon, ChurchIcon, BellIcon, ChevronRightIcon, LockIcon } from '../../components/icons';
 
 export default function ProfileScreen() {
@@ -70,7 +70,7 @@ export default function ProfileScreen() {
     >
       {/* Header row */}
       <View className="flex-row items-center justify-between mb-6">
-        <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700' }}>Profile</Text>
+        <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 26 }}>Profile</Text>
         <View className="flex-row gap-2">
           {/* Bell with unread badge */}
           <TouchableOpacity onPress={() => router.push('/notifications')}
@@ -102,7 +102,7 @@ export default function ProfileScreen() {
         <View style={{ backgroundColor: c.accent, width: 80, height: 80, borderRadius: 40 }} className="items-center justify-center mb-3">
           <Text style={{ color: '#1A1A1A', fontSize: 30, fontWeight: '700' }}>{initials}</Text>
         </View>
-        <Text style={{ color: c.textPrimary, fontSize: 22, fontWeight: '700', marginBottom: 2 }}>
+        <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 22, marginBottom: 2 }}>
           {profile?.name}
         </Text>
 
@@ -142,16 +142,16 @@ export default function ProfileScreen() {
           { label: 'Friends', value: friendCount, accent: false, locked: false },
         ].map(stat => (
           <View key={stat.label}
-            style={{ flex: 1, backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 14 }}
+            style={{ flex: 1, backgroundColor: c.warmSurface, borderRadius: radius.lg, borderWidth: 1, borderColor: c.warmBorder, padding: 16, ...shadows.card }}
             className="items-center"
           >
             {stat.locked
               ? <LockIcon size={22} color={c.accent} />
-              : <Text style={{ color: stat.accent ? c.accent : c.textPrimary, fontSize: 24, fontWeight: '700' }}>
+              : <Text style={{ color: stat.accent ? c.accent : c.textPrimary, fontFamily: fonts.heading, fontSize: 24 }}>
                   {stat.value}
                 </Text>
             }
-            <Text style={{ color: c.textSecondary, fontSize: 11, textAlign: 'center', marginTop: 2 }}>
+            <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 11, textAlign: 'center', marginTop: 3 }}>
               {stat.label}
             </Text>
           </View>
@@ -165,12 +165,12 @@ export default function ProfileScreen() {
         { label: 'Settings',      route: '/settings',  Icon: SettingsIcon },
       ] as const).map(({ label, route, Icon }) => (
         <TouchableOpacity key={route} onPress={() => router.push(route as any)}
-          style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 10 }}
+          style={{ backgroundColor: c.warmSurface, borderRadius: radius.lg, borderWidth: 1, borderColor: c.warmBorder, padding: 18, marginBottom: 10, ...shadows.sm }}
           className="flex-row items-center justify-between"
         >
           <View className="flex-row items-center gap-3">
             <Icon size={20} color={c.accent} />
-            <Text style={{ color: c.textPrimary, fontSize: 16 }}>{label}</Text>
+            <Text style={{ color: c.textPrimary, fontFamily: fonts.ui, fontSize: 16 }}>{label}</Text>
           </View>
           <ChevronRightIcon size={18} color={c.textSecondary} />
         </TouchableOpacity>
@@ -180,9 +180,9 @@ export default function ProfileScreen() {
       <Modal visible={editVisible} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditVisible(false)}>
         <View style={{ flex: 1, backgroundColor: c.background, padding: 24, paddingTop: 32 }}>
           <View className="flex-row items-center justify-between mb-8">
-            <Text style={{ color: c.textPrimary, fontSize: 22, fontWeight: '700' }}>Edit Profile</Text>
+            <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 22 }}>Edit Profile</Text>
             <TouchableOpacity onPress={() => setEditVisible(false)}>
-              <Text style={{ color: c.textSecondary, fontSize: 16 }}>Cancel</Text>
+              <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 16 }}>Cancel</Text>
             </TouchableOpacity>
           </View>
 
@@ -211,12 +211,12 @@ export default function ProfileScreen() {
           ))}
 
           <TouchableOpacity onPress={saveEdit} disabled={saving || !editName.trim()}
-            style={{ backgroundColor: editName.trim() ? c.accent : c.border, borderRadius: 14, marginTop: 8 }}
+            style={{ backgroundColor: editName.trim() ? c.accent : c.border, borderRadius: radius.md, marginTop: 8 }}
             className="py-4 items-center"
           >
             {saving
               ? <ActivityIndicator color="#1A1A1A" />
-              : <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>Save</Text>
+              : <Text style={{ color: '#1A1A1A', fontFamily: fonts.uiBold, fontSize: 17 }}>Save</Text>
             }
           </TouchableOpacity>
         </View>

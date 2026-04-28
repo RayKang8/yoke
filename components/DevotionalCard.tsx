@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { router } from 'expo-router';
-import { colors } from '../constants/theme';
+import { colors, fonts, shadows, radius } from '../constants/theme';
 import { timeAgo } from '../lib/utils';
 import { ReactionBar } from './ReactionBar';
 import { CommentThread } from './CommentThread';
@@ -25,39 +25,47 @@ export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId
   const initials = item.user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <View style={{ backgroundColor: c.surface, borderRadius: 16, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 12 }}>
+    <View style={{
+      backgroundColor: c.warmSurface,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: c.warmBorder,
+      padding: 20,
+      marginBottom: 14,
+      ...shadows.card,
+    }}>
       {/* Author row */}
       <TouchableOpacity className="flex-row items-center gap-3 mb-3" onPress={() => router.push(`/user/${item.user.id}` as any)} activeOpacity={0.7}>
         <View style={{ backgroundColor: c.accent, width: 40, height: 40, borderRadius: 20 }} className="items-center justify-center">
-          <Text style={{ color: '#1A1A1A', fontWeight: '700', fontSize: 15 }}>{initials}</Text>
+          <Text style={{ color: '#1A1A1A', fontFamily: fonts.uiBold, fontSize: 15 }}>{initials}</Text>
         </View>
         <View className="flex-1">
-          <Text style={{ color: c.textPrimary, fontWeight: '600', fontSize: 15 }}>{item.user.name}</Text>
-          <Text style={{ color: c.textSecondary, fontSize: 12 }}>{item.user.yoke_code}</Text>
+          <Text style={{ color: c.textPrimary, fontFamily: fonts.uiBold, fontSize: 15 }}>{item.user.name}</Text>
+          <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 12 }}>{item.user.yoke_code}</Text>
         </View>
-        <Text style={{ color: c.textSecondary, fontSize: 12 }}>{timeAgo(item.created_at)}</Text>
+        <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 12 }}>{timeAgo(item.created_at)}</Text>
       </TouchableOpacity>
 
       {/* Passage reference */}
-      <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600', marginBottom: 6 }}>
+      <Text style={{ color: c.accent, fontFamily: fonts.uiMedium, fontSize: 13, marginBottom: 8 }}>
         {item.passage.reference}
       </Text>
 
       {/* Reflection text */}
       <TouchableOpacity onPress={() => setExpanded(e => !e)} activeOpacity={0.8}>
         <Text
-          style={{ color: c.textPrimary, fontSize: 15, lineHeight: 22 }}
+          style={{ color: c.textPrimary, fontFamily: fonts.body, fontSize: 15, lineHeight: 26 }}
           numberOfLines={expanded ? undefined : 3}
         >
           {item.content}
         </Text>
         {!expanded && item.content.length > 120 && (
-          <Text style={{ color: c.textSecondary, fontSize: 13, marginTop: 2 }}>more</Text>
+          <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 13, marginTop: 4 }}>more</Text>
         )}
       </TouchableOpacity>
 
       {/* Divider */}
-      <View style={{ height: 1, backgroundColor: c.border, marginVertical: 12 }} />
+      <View style={{ height: 1, backgroundColor: c.warmBorder, marginVertical: 14 }} />
 
       {/* Reactions + comments */}
       <ReactionBar
@@ -73,7 +81,7 @@ export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId
         className="flex-row items-center gap-1 mt-3"
       >
         <CommentIcon size={16} color={c.textSecondary} />
-        <Text style={{ color: c.textSecondary, fontSize: 13 }}>
+        <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 13 }}>
           {commentCount > 0 ? `${commentCount} comment${commentCount === 1 ? '' : 's'}` : 'Comment'}
         </Text>
       </TouchableOpacity>

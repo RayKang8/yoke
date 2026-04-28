@@ -5,6 +5,19 @@ import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFonts } from 'expo-font';
+import {
+  Lora_400Regular,
+  Lora_400Regular_Italic,
+  Lora_600SemiBold,
+  Lora_700Bold,
+} from '@expo-google-fonts/lora';
+import {
+  Nunito_400Regular,
+  Nunito_500Medium,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+} from '@expo-google-fonts/nunito';
 import { useAuth } from '../hooks/useAuth';
 import { registerForPushNotifications, useNotificationListener } from '../lib/notifications';
 import { initRevenueCat } from '../lib/revenuecat';
@@ -15,6 +28,17 @@ export default function RootLayout() {
   const registered = useRef(false);
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
+
+  const [fontsLoaded] = useFonts({
+    Lora_400Regular,
+    Lora_400Regular_Italic,
+    Lora_600SemiBold,
+    Lora_700Bold,
+    Nunito_400Regular,
+    Nunito_500Medium,
+    Nunito_600SemiBold,
+    Nunito_700Bold,
+  });
 
   useEffect(() => {
     if (loading) return;
@@ -50,7 +74,7 @@ export default function RootLayout() {
     else if (data.screen === 'profile' && data.userId) router.push(`/user/${data.userId}` as any);
   });
 
-  if (loading) {
+  if (loading || !fontsLoaded) {
     return (
       <SafeAreaProvider>
         <View style={{ flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' }}>

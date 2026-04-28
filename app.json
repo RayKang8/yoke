@@ -34,10 +34,14 @@
     },
     "plugins": [
       "expo-router",
-      ["expo-notifications", {
-        "icon": "./assets/Yoke-Icon.png",
-        "color": "#F5C842"
-      }]
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/Yoke-Icon.png",
+          "color": "#F5C842"
+        }
+      ],
+      "expo-font"
     ]
   }
 }

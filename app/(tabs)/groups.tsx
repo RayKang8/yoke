@@ -11,7 +11,7 @@ import { useGroups } from '../../hooks/useGroups';
 import { usePremium } from '../../hooks/usePremium';
 import { haptics } from '../../lib/haptics';
 import { GroupCard } from '../../components/GroupCard';
-import { colors } from '../../constants/theme';
+import { colors, fonts, shadows, radius } from '../../constants/theme';
 
 export default function GroupsScreen() {
   const scheme = useColorScheme();
@@ -127,7 +127,7 @@ export default function GroupsScreen() {
         contentContainerStyle={{ paddingTop: insets.top + 16, paddingHorizontal: 20, paddingBottom: 40 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={c.accent} />}
       >
-        <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700', marginBottom: 20 }}>Groups</Text>
+        <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 26, marginBottom: 20 }}>Groups</Text>
 
         {loading ? (
           <ActivityIndicator color={c.accent} style={{ marginTop: 40 }} />
@@ -153,18 +153,18 @@ export default function GroupsScreen() {
         <View className="gap-3 mt-4">
           <TouchableOpacity
             onPress={() => setShowCreate(true)}
-            style={{ backgroundColor: c.accent, borderRadius: 14 }}
+            style={{ backgroundColor: c.accent, borderRadius: radius.md, ...shadows.sm }}
             className="py-4 items-center"
           >
-            <Text style={{ color: '#1A1A1A', fontSize: 16, fontWeight: '600' }}>+ Create Group</Text>
+            <Text style={{ color: '#1A1A1A', fontFamily: fonts.uiBold, fontSize: 16 }}>+ Create Group</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => setShowJoin(true)}
-            style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border }}
+            style={{ backgroundColor: c.warmSurface, borderRadius: radius.md, borderWidth: 1, borderColor: c.warmBorder }}
             className="py-4 items-center"
           >
-            <Text style={{ color: c.textPrimary, fontSize: 16, fontWeight: '500' }}>Join with Invite Code</Text>
+            <Text style={{ color: c.textPrimary, fontFamily: fonts.ui, fontSize: 16 }}>Join with Invite Code</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -173,13 +173,13 @@ export default function GroupsScreen() {
       <Modal visible={showCreate} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowCreate(false)}>
         <View style={{ flex: 1, backgroundColor: c.background, padding: 24, paddingTop: 32 }}>
           <View className="flex-row items-center justify-between mb-8">
-            <Text style={{ color: c.textPrimary, fontSize: 22, fontWeight: '700' }}>Create Group</Text>
+            <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 22 }}>Create Group</Text>
             <TouchableOpacity onPress={() => { setShowCreate(false); setGroupName(''); }}>
-              <Text style={{ color: c.textSecondary, fontSize: 16 }}>Cancel</Text>
+              <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 16 }}>Cancel</Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: '500', marginBottom: 6 }}>GROUP NAME</Text>
+          <Text style={{ color: c.textSecondary, fontFamily: fonts.uiMedium, fontSize: 11, letterSpacing: 0.6, marginBottom: 6 }}>GROUP NAME</Text>
           <TextInput
             value={groupName}
             onChangeText={t => setGroupName(t.slice(0, 100))}
@@ -187,21 +187,21 @@ export default function GroupsScreen() {
             placeholderTextColor={c.textSecondary}
             maxLength={100}
             style={{
-              backgroundColor: c.surface, color: c.textPrimary,
-              borderColor: c.border, borderWidth: 1, borderRadius: 12,
-              padding: 14, fontSize: 16, marginBottom: 32,
+              backgroundColor: c.warmSurface, color: c.textPrimary,
+              borderColor: c.warmBorder, borderWidth: 1, borderRadius: radius.md,
+              padding: 16, fontFamily: fonts.uiRegular, fontSize: 16, marginBottom: 32,
             }}
           />
 
           <TouchableOpacity
             onPress={handleCreate}
             disabled={busy || !groupName.trim()}
-            style={{ backgroundColor: groupName.trim() ? c.accent : c.border, borderRadius: 14 }}
+            style={{ backgroundColor: groupName.trim() ? c.accent : c.border, borderRadius: radius.md }}
             className="py-4 items-center"
           >
             {busy
               ? <ActivityIndicator color="#1A1A1A" />
-              : <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>Create Group</Text>
+              : <Text style={{ color: '#1A1A1A', fontFamily: fonts.uiBold, fontSize: 17 }}>Create Group</Text>
             }
           </TouchableOpacity>
         </View>
@@ -211,13 +211,13 @@ export default function GroupsScreen() {
       <Modal visible={showJoin} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowJoin(false)}>
         <View style={{ flex: 1, backgroundColor: c.background, padding: 24, paddingTop: 32 }}>
           <View className="flex-row items-center justify-between mb-8">
-            <Text style={{ color: c.textPrimary, fontSize: 22, fontWeight: '700' }}>Join Group</Text>
+            <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 22 }}>Join Group</Text>
             <TouchableOpacity onPress={() => { setShowJoin(false); setInviteCode(''); }}>
-              <Text style={{ color: c.textSecondary, fontSize: 16 }}>Cancel</Text>
+              <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 16 }}>Cancel</Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: '500', marginBottom: 6 }}>INVITE CODE</Text>
+          <Text style={{ color: c.textSecondary, fontFamily: fonts.uiMedium, fontSize: 11, letterSpacing: 0.6, marginBottom: 6 }}>INVITE CODE</Text>
           <TextInput
             value={inviteCode}
             onChangeText={t => setInviteCode(t.slice(0, 20))}
@@ -226,9 +226,9 @@ export default function GroupsScreen() {
             autoCapitalize="characters"
             maxLength={20}
             style={{
-              backgroundColor: c.surface, color: c.textPrimary,
-              borderColor: c.border, borderWidth: 1, borderRadius: 12,
-              padding: 14, fontSize: 16, marginBottom: 32,
+              backgroundColor: c.warmSurface, color: c.textPrimary,
+              borderColor: c.warmBorder, borderWidth: 1, borderRadius: radius.md,
+              padding: 16, fontSize: 16, marginBottom: 32,
               fontFamily: 'monospace',
             }}
           />
@@ -236,12 +236,12 @@ export default function GroupsScreen() {
           <TouchableOpacity
             onPress={handleJoin}
             disabled={busy || !inviteCode.trim()}
-            style={{ backgroundColor: inviteCode.trim() ? c.accent : c.border, borderRadius: 14 }}
+            style={{ backgroundColor: inviteCode.trim() ? c.accent : c.border, borderRadius: radius.md }}
             className="py-4 items-center"
           >
             {busy
               ? <ActivityIndicator color="#1A1A1A" />
-              : <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>Join Group</Text>
+              : <Text style={{ color: '#1A1A1A', fontFamily: fonts.uiBold, fontSize: 17 }}>Join Group</Text>
             }
           </TouchableOpacity>
         </View>

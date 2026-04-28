@@ -57,7 +57,7 @@ export default function CalendarScreen() {
 
   // Free tier: only last 7 days. Don't lock during premium check (premiumLoading) to avoid flash.
   const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
   const lockedBefore = (!isPremium && !premiumLoading)
     ? `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`
     : undefined;

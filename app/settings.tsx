@@ -8,7 +8,7 @@ import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { scheduleDailyReminder } from '../lib/notifications';
-import { restorePurchases } from '../lib/revenuecat';
+import { restorePurchases, getOfferings } from '../lib/revenuecat';
 import { colors } from '../constants/theme';
 import { Translation } from '../types';
 import { PaywallSheet } from '../components/PaywallSheet';
@@ -30,9 +30,21 @@ export default function SettingsScreen() {
   const [defaultTranslation, setDefaultTranslation] = useState<Translation>('NIV');
   const [showPaywall, setShowPaywall] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [planPrices, setPlanPrices] = useState<{ monthly: string; annual: string } | null>(null);
   const { isPremium, isTrialActive, trialDaysLeft, recheck } = usePremium();
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    getOfferings().then(data => {
+      const current = data?.current;
+      if (!current) return;
+      const monthly = current.monthly ?? current.availablePackages.find((p: any) => p.packageType === 'MONTHLY');
+      const annual  = current.annual  ?? current.availablePackages.find((p: any) => p.packageType === 'ANNUAL');
+      if (monthly && annual) {
+        setPlanPrices({ monthly: monthly.product.priceString, annual: annual.product.priceString });
+      }
+    });
+  }, []);
 
   async function load() {
     const [time, trans] = await Promise.all([
@@ -163,7 +175,9 @@ export default function SettingsScreen() {
           <View className="flex-row items-center justify-between">
             <View>
               <Text style={{ color: c.textPrimary, fontWeight: '600', fontSize: 16 }}>Free Tier</Text>
-              <Text style={{ color: c.textSecondary, fontSize: 13 }}>$4.99/mo or $49.99/yr</Text>
+              <Text style={{ color: c.textSecondary, fontSize: 13 }}>
+                {planPrices ? `${planPrices.monthly}/mo or ${planPrices.annual}/yr` : 'Monthly & Annual plans available'}
+              </Text>
             </View>
             <TouchableOpacity onPress={() => setShowPaywall(true)}
               style={{ backgroundColor: c.accent, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8 }}

@@ -11,7 +11,7 @@ import { usePassage } from '../../hooks/usePassage';
 import { useProfile } from '../../hooks/useProfile';
 import { useGroups } from '../../hooks/useGroups';
 import { usePremium } from '../../hooks/usePremium';
-import { colors } from '../../constants/theme';
+import { colors, fonts, shadows, radius } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
 import { localDateStr } from '../../lib/utils';
 import { Translation } from '../../types';
@@ -335,25 +335,25 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 40, paddingHorizontal: 20 }}
       >
         {/* Header */}
-        <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: '500', marginBottom: 4 }}>
+        <Text style={{ color: c.textSecondary, fontFamily: fonts.uiMedium, fontSize: 12, letterSpacing: 0.8, marginBottom: 6 }}>
           {dateLabel.toUpperCase()}
         </Text>
-        <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700', marginBottom: 2 }}>
+        <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 26, lineHeight: 34, marginBottom: 4 }}>
           {passage.title}
         </Text>
-        <Text style={{ color: c.accent, fontSize: 15, fontWeight: '600', marginBottom: 20 }}>
+        <Text style={{ color: c.accent, fontFamily: fonts.ui, fontSize: 15, marginBottom: 20 }}>
           {passage.reference}
         </Text>
 
         {/* Streak */}
-        <View style={{ backgroundColor: c.accent, borderRadius: 14, padding: 16, marginBottom: 20 }} className="flex-row items-center">
+        <View style={{ backgroundColor: c.accent, borderRadius: radius.lg, padding: 20, marginBottom: 20, ...shadows.sm }} className="flex-row items-center">
           <View className="flex-1">
-            <Text style={{ color: '#1A1A1A', fontSize: 18, fontWeight: '700' }}>Keep it up!</Text>
-            <Text style={{ color: '#1A1A1A', fontSize: 13, marginTop: 2, opacity: 0.65 }}>You posted today's devotional.</Text>
+            <Text style={{ color: '#1A1A1A', fontFamily: fonts.heading, fontSize: 19 }}>Keep it up!</Text>
+            <Text style={{ color: '#1A1A1A', fontFamily: fonts.uiRegular, fontSize: 13, marginTop: 3, opacity: 0.7 }}>You posted today's devotional.</Text>
           </View>
           <View className="flex-row items-center gap-1">
             {!premiumLoading && (isPremium
-              ? <Text style={{ color: '#1A1A1A', fontSize: 22, fontWeight: '800' }}>{profile?.streak ?? 0}</Text>
+              ? <Text style={{ color: '#1A1A1A', fontFamily: fonts.uiBold, fontSize: 22 }}>{profile?.streak ?? 0}</Text>
               : <LockIcon size={20} color="#1A1A1A" />
             )}
             <StreakIcon size={34} />
@@ -361,9 +361,9 @@ export default function HomeScreen() {
         </View>
 
         {/* Posted reflection */}
-        <View style={{ backgroundColor: c.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: c.border, marginBottom: 20 }}>
-          <View className="flex-row items-center justify-between mb-2">
-            <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600' }}>
+        <View style={{ backgroundColor: c.warmSurface, borderRadius: radius.lg, padding: 20, borderWidth: 1, borderColor: c.warmBorder, marginBottom: 20, ...shadows.card }}>
+          <View className="flex-row items-center justify-between mb-3">
+            <Text style={{ color: c.textSecondary, fontFamily: fonts.uiMedium, fontSize: 11, letterSpacing: 0.6 }}>
               YOUR REFLECTION
             </Text>
             <TouchableOpacity
@@ -373,7 +373,7 @@ export default function HomeScreen() {
               <Text style={{ color: c.accent, fontSize: 13, fontWeight: '600' }}>Edit</Text>
             </TouchableOpacity>
           </View>
-          <Text style={{ color: c.textPrimary, fontSize: 16, lineHeight: 24 }}>
+          <Text style={{ color: c.textPrimary, fontFamily: fonts.body, fontSize: 17, lineHeight: 28 }}>
             {todaysDevotion.content}
           </Text>
         </View>
@@ -425,17 +425,17 @@ export default function HomeScreen() {
           >
             <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 32 }} keyboardShouldPersistTaps="handled">
               <View className="flex-row items-center justify-between mb-6">
-                <Text style={{ color: c.textPrimary, fontSize: 22, fontWeight: '700' }}>Edit Reflection</Text>
+                <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 22 }}>Edit Reflection</Text>
                 <TouchableOpacity onPress={() => setEditVisible(false)}>
-                  <Text style={{ color: c.textSecondary, fontSize: 16 }}>Cancel</Text>
+                  <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 16 }}>Cancel</Text>
                 </TouchableOpacity>
               </View>
 
               {/* Passage context */}
-              <Text style={{ color: c.textPrimary, fontSize: 18, fontWeight: '700', marginBottom: 2 }}>
+              <Text style={{ color: c.textPrimary, fontFamily: fonts.headingSemibold, fontSize: 18, marginBottom: 2 }}>
                 {passage.title}
               </Text>
-              <Text style={{ color: c.accent, fontSize: 14, fontWeight: '600', marginBottom: 10 }}>
+              <Text style={{ color: c.accent, fontFamily: fonts.ui, fontSize: 14, marginBottom: 10 }}>
                 {passage.reference}
               </Text>
 
@@ -449,28 +449,28 @@ export default function HomeScreen() {
                       style={{
                         backgroundColor: translation === t ? c.accent : c.surface,
                         borderColor: translation === t ? c.accent : c.border,
-                        borderWidth: 1, borderRadius: 8,
+                        borderWidth: 1, borderRadius: radius.sm,
                         paddingHorizontal: 12, paddingVertical: 6,
                       }}
                     >
-                      <Text style={{ color: translation === t ? '#1A1A1A' : c.textSecondary, fontWeight: translation === t ? '600' : '400', fontSize: 13 }}>{t}</Text>
+                      <Text style={{ color: translation === t ? '#1A1A1A' : c.textSecondary, fontFamily: translation === t ? fonts.ui : fonts.uiRegular, fontSize: 13 }}>{t}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
               </ScrollView>
 
-              <View style={{ backgroundColor: c.surface, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: c.border, marginBottom: 20 }}>
+              <View style={{ backgroundColor: c.warmSurface, borderRadius: radius.md, padding: 16, borderWidth: 1, borderColor: c.warmBorder, marginBottom: 20 }}>
                 {passageVerses.map((v, i) => (
                   v.verse === 0
-                    ? <Text key={i} style={{ color: c.textPrimary, fontSize: 15, lineHeight: 24 }}>{v.text}</Text>
+                    ? <Text key={i} style={{ color: c.textPrimary, fontFamily: fonts.body, fontSize: 16, lineHeight: 28 }}>{v.text}</Text>
                     : <View key={v.verse} className="flex-row gap-2 mb-1">
-                        <Text style={{ color: c.accent, fontSize: 11, fontWeight: '700', width: 18, paddingTop: 3 }}>{v.verse}</Text>
-                        <Text style={{ flex: 1, color: c.textPrimary, fontSize: 15, lineHeight: 24 }}>{v.text}</Text>
+                        <Text style={{ color: c.accent, fontFamily: fonts.uiBold, fontSize: 11, width: 18, paddingTop: 4 }}>{v.verse}</Text>
+                        <Text style={{ flex: 1, color: c.textPrimary, fontFamily: fonts.body, fontSize: 16, lineHeight: 28 }}>{v.text}</Text>
                       </View>
                 ))}
               </View>
 
-              <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>YOUR REFLECTION</Text>
+              <Text style={{ color: c.textSecondary, fontFamily: fonts.uiMedium, fontSize: 11, letterSpacing: 0.6, marginBottom: 8 }}>YOUR REFLECTION</Text>
               <TextInput
                 value={editContent}
                 onChangeText={setEditContent}
@@ -478,21 +478,22 @@ export default function HomeScreen() {
                 placeholderTextColor={c.textSecondary}
                 multiline
                 style={{
-                  backgroundColor: c.surface,
+                  backgroundColor: c.warmSurface,
                   color: c.textPrimary,
-                  borderColor: c.border,
+                  borderColor: c.warmBorder,
                   borderWidth: 1,
-                  borderRadius: 14,
-                  padding: 14,
-                  fontSize: 16,
-                  lineHeight: 24,
+                  borderRadius: radius.lg,
+                  padding: 20,
+                  fontFamily: fonts.body,
+                  fontSize: 17,
+                  lineHeight: 28,
                   minHeight: 160,
                   textAlignVertical: 'top',
                   marginBottom: 16,
                 }}
               />
 
-              <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>POST TO</Text>
+              <Text style={{ color: c.textSecondary, fontFamily: fonts.uiMedium, fontSize: 11, letterSpacing: 0.6, marginBottom: 8 }}>POST TO</Text>
               <View className="flex-row flex-wrap gap-2 mb-6">
                 {(() => {
                   const onlyMe = editAudiences.size === 0;
@@ -575,12 +576,12 @@ export default function HomeScreen() {
               <TouchableOpacity
                 onPress={handleSaveEdit}
                 disabled={saving || !editContent.trim()}
-                style={{ backgroundColor: editContent.trim() ? c.accent : c.border, borderRadius: 14 }}
+                style={{ backgroundColor: editContent.trim() ? c.accent : c.border, borderRadius: radius.md }}
                 className="py-4 items-center"
               >
                 {saving
                   ? <ActivityIndicator color="#1A1A1A" />
-                  : <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>Save Changes</Text>
+                  : <Text style={{ color: '#1A1A1A', fontFamily: fonts.uiBold, fontSize: 17 }}>Save Changes</Text>
                 }
               </TouchableOpacity>
             </ScrollView>
@@ -602,15 +603,15 @@ export default function HomeScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {/* Date + day */}
-        <Text style={{ color: c.textSecondary, fontSize: 13, fontWeight: '500', marginBottom: 4 }}>
+        <Text style={{ color: c.textSecondary, fontFamily: fonts.uiMedium, fontSize: 12, letterSpacing: 0.8, marginBottom: 6 }}>
           {dateLabel.toUpperCase()}
         </Text>
 
         {/* Title + reference */}
-        <Text style={{ color: c.textPrimary, fontSize: 24, fontWeight: '700', marginBottom: 2 }}>
+        <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 26, lineHeight: 34, marginBottom: 4 }}>
           {passage.title}
         </Text>
-        <Text style={{ color: c.accent, fontSize: 15, fontWeight: '600', marginBottom: 16 }}>
+        <Text style={{ color: c.accent, fontFamily: fonts.ui, fontSize: 15, marginBottom: 16 }}>
           {passage.reference}
         </Text>
 
@@ -643,28 +644,28 @@ export default function HomeScreen() {
         </ScrollView>
 
         {/* Passage text */}
-        <View style={{ backgroundColor: c.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: c.border, marginBottom: 16 }}>
+        <View style={{ backgroundColor: c.warmSurface, borderRadius: radius.lg, padding: 20, borderWidth: 1, borderColor: c.warmBorder, marginBottom: 16, ...shadows.card }}>
           {passageVerses.map((v, i) => (
             v.verse === 0
-              ? <Text key={i} style={{ color: c.textPrimary, fontSize: 16, lineHeight: 26 }}>{v.text}</Text>
+              ? <Text key={i} style={{ color: c.textPrimary, fontFamily: fonts.body, fontSize: 17, lineHeight: 30 }}>{v.text}</Text>
               : <View key={v.verse} className="flex-row gap-2 mb-1">
-                  <Text style={{ color: c.accent, fontSize: 12, fontWeight: '700', width: 20, paddingTop: 3 }}>{v.verse}</Text>
-                  <Text style={{ flex: 1, color: c.textPrimary, fontSize: 16, lineHeight: 26 }}>{v.text}</Text>
+                  <Text style={{ color: c.accent, fontFamily: fonts.uiBold, fontSize: 11, width: 20, paddingTop: 5 }}>{v.verse}</Text>
+                  <Text style={{ flex: 1, color: c.textPrimary, fontFamily: fonts.body, fontSize: 17, lineHeight: 30 }}>{v.text}</Text>
                 </View>
           ))}
         </View>
 
         {/* Reflection prompt */}
-        <View style={{ backgroundColor: c.accent + '22', borderRadius: 12, padding: 14, marginBottom: 16 }}>
-          <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 6 }}>
-            Something To Think About
+        <View style={{ backgroundColor: c.accent + '18', borderRadius: radius.md, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: c.accent + '30' }}>
+          <Text style={{ color: c.textSecondary, fontFamily: fonts.uiMedium, fontSize: 11, letterSpacing: 0.6, marginBottom: 6 }}>
+            SOMETHING TO THINK ABOUT
           </Text>
-          <Text style={{ color: c.textPrimary, fontSize: 15, lineHeight: 22, fontStyle: 'italic' }}>
+          <Text style={{ color: c.textPrimary, fontFamily: fonts.bodyItalic, fontSize: 15, lineHeight: 24 }}>
             "{passage.prompt}"
           </Text>
         </View>
 
-        {/* Reflection input */}
+        {/* Reflection input — journal page */}
         <TextInput
           value={reflection}
           onChangeText={setReflection}
@@ -673,25 +674,27 @@ export default function HomeScreen() {
           multiline
           maxLength={5000}
           style={{
-            backgroundColor: c.surface,
+            backgroundColor: c.warmSurface,
             color: c.textPrimary,
-            borderColor: c.border,
+            borderColor: c.warmBorder,
             borderWidth: 1,
-            borderRadius: 14,
-            padding: 14,
-            fontSize: 16,
-            lineHeight: 24,
-            minHeight: 140,
+            borderRadius: radius.lg,
+            padding: 20,
+            fontFamily: fonts.body,
+            fontSize: 17,
+            lineHeight: 28,
+            minHeight: 160,
             textAlignVertical: 'top',
             marginBottom: 4,
+            ...shadows.sm,
           }}
         />
-        <Text style={{ color: reflection.length > 4800 ? '#FF6B6B' : c.textSecondary, fontSize: 12, textAlign: 'right', marginBottom: 16 }}>
+        <Text style={{ color: reflection.length > 4800 ? '#FF6B6B' : c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 12, textAlign: 'right', marginBottom: 16 }}>
           {reflection.length}/5000
         </Text>
 
         {/* Audience selector */}
-        <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>POST TO</Text>
+        <Text style={{ color: c.textSecondary, fontFamily: fonts.uiMedium, fontSize: 11, letterSpacing: 0.6, marginBottom: 8 }}>POST TO</Text>
         <View className="flex-row flex-wrap gap-2 mb-5">
           {/* Only Me — active when nothing else is selected */}
           {(() => {
@@ -765,12 +768,12 @@ export default function HomeScreen() {
         <TouchableOpacity
           onPress={handlePost}
           disabled={posting}
-          style={{ backgroundColor: c.accent, borderRadius: 14 }}
+          style={{ backgroundColor: c.accent, borderRadius: radius.md, ...shadows.sm }}
           className="py-4 items-center"
         >
           {posting
             ? <ActivityIndicator color="#1A1A1A" />
-            : <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>Post Devotional</Text>
+            : <Text style={{ color: '#1A1A1A', fontFamily: fonts.uiBold, fontSize: 17 }}>Post Devotional</Text>
           }
         </TouchableOpacity>
       </ScrollView>
