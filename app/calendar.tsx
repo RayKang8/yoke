@@ -76,7 +76,6 @@ export default function CalendarScreen() {
       .order('created_at', { ascending: false });
 
     if (devosError) {
-      console.error('Calendar load error:', devosError);
       Alert.alert('Error loading calendar', devosError.message);
       setLoading(false);
       return;

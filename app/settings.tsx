@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity,
+  View, Text, ScrollView, TouchableOpacity, ActivityIndicator,
   useColorScheme, Alert, Linking, Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { scheduleDailyReminder } from '../lib/notifications';
+import { restorePurchases } from '../lib/revenuecat';
 import { colors } from '../constants/theme';
 import { Translation } from '../types';
 import { PaywallSheet } from '../components/PaywallSheet';
@@ -28,6 +29,7 @@ export default function SettingsScreen() {
   const [reminderTime, setReminderTime] = useState('8:00 AM');
   const [defaultTranslation, setDefaultTranslation] = useState<Translation>('NIV');
   const [showPaywall, setShowPaywall] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   const { isPremium, isTrialActive, trialDaysLeft, recheck } = usePremium();
 
   useEffect(() => { load(); }, []);
@@ -43,6 +45,23 @@ export default function SettingsScreen() {
 
   async function setSetting(key: string, value: string) {
     await AsyncStorage.setItem(key, value);
+  }
+
+  async function handleRestorePurchases() {
+    setRestoring(true);
+    try {
+      const info = await restorePurchases();
+      const active = Object.keys(info.entitlements.active ?? {}).length > 0;
+      if (active) {
+        Alert.alert('Restored!', 'Your Yoke Premium subscription has been restored.');
+        recheck();
+      } else {
+        Alert.alert('Nothing to restore', 'No active subscription found for this Apple ID or Google account.');
+      }
+    } catch (e: any) {
+      Alert.alert('Restore failed', e.message ?? 'Something went wrong.');
+    }
+    setRestoring(false);
   }
 
   function handleManageSubscription() {
@@ -172,6 +191,33 @@ export default function SettingsScreen() {
           onPress={() => { setDefaultTranslation(t); setSetting('defaultTranslation', t); }}
         />
       ))}
+
+      {/* Restore purchases */}
+      {!isPremium && (
+        <>
+          <SectionHeader label="PURCHASES" />
+          <TouchableOpacity onPress={handleRestorePurchases} disabled={restoring}
+            style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 8 }}
+            className="flex-row items-center justify-between"
+          >
+            <Text style={{ color: c.textPrimary, fontSize: 16 }}>Restore Purchases</Text>
+            {restoring
+              ? <ActivityIndicator size="small" color={c.accent} />
+              : <ChevronRightIcon size={18} color={c.textSecondary} />
+            }
+          </TouchableOpacity>
+        </>
+      )}
+
+      {/* Notifications */}
+      <SectionHeader label="NOTIFICATIONS" />
+      <TouchableOpacity onPress={() => Linking.openSettings()}
+        style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 8 }}
+        className="flex-row items-center justify-between"
+      >
+        <Text style={{ color: c.textPrimary, fontSize: 16 }}>Manage Notification Permissions</Text>
+        <ChevronRightIcon size={18} color={c.textSecondary} />
+      </TouchableOpacity>
 
       {/* Support */}
       <SectionHeader label="SUPPORT" />

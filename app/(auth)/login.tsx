@@ -47,11 +47,16 @@ export default function LoginScreen() {
       Alert.alert('Enter your email', 'Type your email above, then tap Forgot Password.');
       return;
     }
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: 'yoke://(auth)/reset-password',
+    });
     if (error) {
       Alert.alert('Error', error.message);
     } else {
-      Alert.alert('Check your email', 'A password reset link has been sent.');
+      Alert.alert(
+        'Check your email',
+        'A password reset link has been sent. Tap the link in your email — it will reopen Yoke so you can set a new password.',
+      );
     }
   }
 

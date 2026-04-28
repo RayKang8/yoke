@@ -11,7 +11,7 @@ import { initRevenueCat } from '../lib/revenuecat';
 import { colors } from '../constants/theme';
 
 export default function RootLayout() {
-  const { session, loading } = useAuth();
+  const { session, loading, isRecovery } = useAuth();
   const registered = useRef(false);
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -20,6 +20,10 @@ export default function RootLayout() {
     if (loading) return;
     (async () => {
       if (session) {
+        if (isRecovery) {
+          router.replace('/(auth)/reset-password');
+          return;
+        }
         if (!session.user.email_confirmed_at) {
           router.replace('/(auth)/verify-email');
           return;
@@ -39,7 +43,7 @@ export default function RootLayout() {
         router.replace('/(auth)/welcome');
       }
     })();
-  }, [session, loading]);
+  }, [session, loading, isRecovery]);
 
   useNotificationListener((data) => {
     if (data.screen === 'home') router.push('/(tabs)');
