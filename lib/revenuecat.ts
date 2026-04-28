@@ -11,6 +11,11 @@ try {
 
 export const RC_ENTITLEMENT = 'premium';
 
+export const PRODUCT_IDS = {
+  monthly: 'com.yokefaith.app.premium.monthly',
+  annual:  'com.yokefaith.app.premium.annual',
+} as const;
+
 export async function initRevenueCat(userId: string) {
   if (!Purchases) return;
 

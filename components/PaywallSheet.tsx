@@ -6,7 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/theme';
 import type { PurchasesOfferings } from 'react-native-purchases';
-import { getOfferings, purchasePackage, restorePurchases } from '../lib/revenuecat';
+import { getOfferings, purchasePackage, restorePurchases, PRODUCT_IDS } from '../lib/revenuecat';
 import { CheckIcon, CloseIcon } from './icons';
 
 interface Props {
@@ -46,9 +46,13 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
   function getPackage(type: 'monthly' | 'annual') {
     const current = offerings?.current;
     if (!current) return null;
-    return type === 'monthly'
-      ? current.monthly ?? current.availablePackages.find((p: any) => p.packageType === 'MONTHLY') ?? null
-      : current.annual ?? current.availablePackages.find((p: any) => p.packageType === 'ANNUAL') ?? null;
+    const productId = PRODUCT_IDS[type];
+    const byType = type === 'monthly'
+      ? current.monthly ?? current.availablePackages.find((p: any) => p.packageType === 'MONTHLY')
+      : current.annual  ?? current.availablePackages.find((p: any) => p.packageType === 'ANNUAL');
+    return byType
+      ?? current.availablePackages.find((p: any) => p.product.identifier === productId)
+      ?? null;
   }
 
   async function handlePurchase() {
@@ -90,6 +94,9 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
   const annualPkg = getPackage('annual');
   const monthlyPrice = monthlyPkg?.product.priceString ?? '$4.99';
   const annualPrice = annualPkg?.product.priceString ?? '$49.99';
+  const monthlyValue = monthlyPkg?.product.price ?? 4.99;
+  const annualValue = annualPkg?.product.price ?? 49.99;
+  const savingsPct = Math.round(((monthlyValue * 12 - annualValue) / (monthlyValue * 12)) * 100);
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
@@ -149,7 +156,7 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
                       </View>
                     </View>
                     <Text style={{ color: c.textSecondary, fontSize: 13 }}>
-                      {annualPrice}/year · save 17% vs monthly
+                      {annualPrice}/year · save {savingsPct}% vs monthly
                     </Text>
                   </View>
                   <View style={{
