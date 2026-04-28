@@ -65,10 +65,11 @@ export function isPremiumFromCustomerInfo(customerInfo: import('react-native-pur
   return RC_ENTITLEMENT in (customerInfo.entitlements.active ?? {});
 }
 
-// Sync RC premium status → Supabase users table
+// Sync RC premium status → Supabase users table via SECURITY DEFINER RPC.
+// Direct UPDATE on is_premium is revoked from the authenticated role.
 async function syncPremiumStatus(customerInfo: import('react-native-purchases').CustomerInfo) {
   const isPremium = isPremiumFromCustomerInfo(customerInfo);
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
-  await supabase.from('users').update({ is_premium: isPremium }).eq('id', user.id);
+  await supabase.rpc('sync_premium_status', { p_is_premium: isPremium });
 }

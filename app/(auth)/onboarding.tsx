@@ -5,7 +5,6 @@ import {
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerForPushNotifications, scheduleDailyReminder } from '../../lib/notifications';
-import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
 import { AmenIcon, BellIcon, StarIcon, CheckIcon } from '../../components/icons';
 
@@ -49,18 +48,7 @@ export default function OnboardingScreen() {
       await scheduleDailyReminder(selectedTime);
     }
     if (isLast) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: existing } = await supabase
-          .from('users').select('trial_ends_at').eq('id', user.id).single();
-        if (!existing?.trial_ends_at) {
-          const trialEnd = new Date();
-          trialEnd.setDate(trialEnd.getDate() + 7);
-          await supabase.from('users')
-            .update({ trial_ends_at: trialEnd.toISOString() })
-            .eq('id', user.id);
-        }
-      }
+      // trial_ends_at is set server-side by the handle_new_user() trigger at signup
       await AsyncStorage.setItem('onboarding_done', '1');
       router.replace('/(tabs)');
     } else {
@@ -156,18 +144,6 @@ export default function OnboardingScreen() {
       {!isLast && (
         <TouchableOpacity
           onPress={async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              const { data: existing } = await supabase
-                .from('users').select('trial_ends_at').eq('id', user.id).single();
-              if (!existing?.trial_ends_at) {
-                const trialEnd = new Date();
-                trialEnd.setDate(trialEnd.getDate() + 7);
-                await supabase.from('users')
-                  .update({ trial_ends_at: trialEnd.toISOString() })
-                  .eq('id', user.id);
-              }
-            }
             await AsyncStorage.setItem('onboarding_done', '1');
             router.replace('/(tabs)');
           }}

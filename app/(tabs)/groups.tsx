@@ -106,6 +106,8 @@ export default function GroupsScreen() {
         Alert.alert('Invalid code', 'No group found with that invite code.');
       } else if (error.message.includes('Already a member')) {
         Alert.alert('Already a member', "You're already in this group.");
+      } else if (error.message.includes('Upgrade to Premium')) {
+        Alert.alert('Upgrade to Premium', 'Free accounts can be in 1 group. Upgrade to Yoke Premium for unlimited groups.');
       } else {
         Alert.alert('Error', error.message);
       }
