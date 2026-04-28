@@ -75,7 +75,8 @@ export default function GroupDetailScreen() {
         const da = a.passage?.date ?? '';
         const db = b.passage?.date ?? '';
         return da !== db ? db.localeCompare(da) : b.created_at.localeCompare(a.created_at);
-      });
+      })
+      .slice(0, 50);
 
     const devoIds = allDevos.map((d: any) => d.id);
     let commentCounts: Record<string, number> = {};

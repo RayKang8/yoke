@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { router } from 'expo-router';
 import { colors } from '../constants/theme';
@@ -15,7 +15,7 @@ interface Props {
   onReactionUpdate: (id: string, reactions: { type: string; user_id: string }[]) => void;
 }
 
-export function DevotionalCard({ item, currentUserId, isPremium = false, onReactionUpdate }: Props) {
+export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId, isPremium = false, onReactionUpdate }: Props) {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const [expanded, setExpanded] = useState(false);
@@ -89,4 +89,4 @@ export function DevotionalCard({ item, currentUserId, isPremium = false, onReact
       />
     </View>
   );
-}
+});

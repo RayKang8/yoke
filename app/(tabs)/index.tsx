@@ -671,6 +671,7 @@ export default function HomeScreen() {
           placeholder="Write your reflection..."
           placeholderTextColor={c.textSecondary}
           multiline
+          maxLength={5000}
           style={{
             backgroundColor: c.surface,
             color: c.textPrimary,
@@ -682,9 +683,12 @@ export default function HomeScreen() {
             lineHeight: 24,
             minHeight: 140,
             textAlignVertical: 'top',
-            marginBottom: 16,
+            marginBottom: 4,
           }}
         />
+        <Text style={{ color: reflection.length > 4800 ? '#FF6B6B' : c.textSecondary, fontSize: 12, textAlign: 'right', marginBottom: 16 }}>
+          {reflection.length}/5000
+        </Text>
 
         {/* Audience selector */}
         <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>POST TO</Text>

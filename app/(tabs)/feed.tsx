@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity,
   ActivityIndicator, RefreshControl, useColorScheme,
@@ -31,9 +31,9 @@ export default function FeedScreen() {
     });
   }, [items]);
 
-  function handleReactionUpdate(id: string, reactions: { type: string; user_id: string }[]) {
+  const handleReactionUpdate = useCallback((id: string, reactions: { type: string; user_id: string }[]) => {
     setLocalItems(prev => prev.map(item => item.id === id ? { ...item, reactions } : item));
-  }
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
