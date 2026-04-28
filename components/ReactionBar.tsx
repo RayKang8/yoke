@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, useColorScheme, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, useColorScheme, Modal, ActivityIndicator, Alert } from 'react-native';
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
@@ -64,6 +64,10 @@ export function ReactionBar({ devotionalId, reactions, currentUserId, isPremium 
 
   async function showDetail(type: string) {
     if (countOf(type) === 0) return;
+    if (!isPremium) {
+      Alert.alert('Premium Feature', 'Upgrade to Yoke Premium to see who reacted to this post.');
+      return;
+    }
     setDetailType(type);
     setLoadingDetail(true);
     const userIds = reactions.filter(r => r.type === type).map(r => r.user_id);
