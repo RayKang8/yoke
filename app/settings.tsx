@@ -64,11 +64,15 @@ export default function SettingsScreen() {
     setRestoring(false);
   }
 
-  function handleManageSubscription() {
-    const url = Platform.OS === 'ios'
-      ? 'itms-apps://apps.apple.com/account/subscriptions'
-      : 'https://play.google.com/store/account/subscriptions?sku=yoke_premium_monthly&package=com.yokefaith.app';
-    Linking.openURL(url);
+  async function handleManageSubscription() {
+    if (Platform.OS === 'ios') {
+      const native = 'itms-apps://apps.apple.com/account/subscriptions';
+      const web = 'https://apps.apple.com/account/subscriptions';
+      const canOpen = await Linking.canOpenURL(native);
+      Linking.openURL(canOpen ? native : web);
+    } else {
+      Linking.openURL('https://play.google.com/store/account/subscriptions?sku=yoke_premium_monthly&package=com.yokefaith.app');
+    }
   }
 
   async function handleDeleteAccount() {
