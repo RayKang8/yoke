@@ -5,7 +5,7 @@
     "scheme": "yoke",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Yoke.png",
+    "icon": "./assets/Yoke-Icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -30,12 +30,12 @@
       "package": "com.yokefaith.app"
     },
     "web": {
-      "favicon": "./assets/Yoke.png"
+      "favicon": "./assets/Yoke-Icon.png"
     },
     "plugins": [
       "expo-router",
       ["expo-notifications", {
-        "icon": "./assets/Yoke.png",
+        "icon": "./assets/Yoke-Icon.png",
         "color": "#F5C842"
       }]
     ]
