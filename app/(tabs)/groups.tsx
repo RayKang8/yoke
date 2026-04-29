@@ -68,7 +68,15 @@ export default function GroupsScreen() {
     }
 
     // Add creator as member
-    await supabase.from('group_members').insert({ group_id: group.id, user_id: user.id });
+    const { error: memberError } = await supabase
+      .from('group_members')
+      .insert({ group_id: group.id, user_id: user.id });
+
+    if (memberError) {
+      Alert.alert('Error', memberError.message ?? 'Could not add you to the group.');
+      setBusy(false);
+      return;
+    }
 
     setBusy(false);
     setShowCreate(false);
