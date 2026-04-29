@@ -98,7 +98,7 @@ export function useFeed(tab: 'public' | 'friends') {
   }, [tab]);
 
   const fetch = useCallback(async (silent = false) => {
-    if (!silent) { setLoading(true); setItems([]); }
+    if (!silent) setLoading(true);
     else setRefreshing(true);
 
     cursorRef.current = null;

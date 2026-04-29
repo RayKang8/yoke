@@ -73,7 +73,7 @@ export default function FeedScreen() {
         </View>
       </View>
 
-      {loading ? (
+      {loading && localItems.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color={c.accent} size="large" />
         </View>
@@ -109,6 +109,11 @@ export default function FeedScreen() {
                 }
               </Text>
             </View>
+          }
+          ListHeaderComponent={
+            loading && localItems.length > 0
+              ? <ActivityIndicator color={c.accent} style={{ paddingVertical: 12 }} />
+              : null
           }
           onEndReached={loadMore}
           onEndReachedThreshold={0.3}
