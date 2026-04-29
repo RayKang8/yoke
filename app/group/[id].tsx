@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { localDateStr } from '../../lib/utils';
 import { DevotionalCard } from '../../components/DevotionalCard';
+import { Avatar } from '../../components/Avatar';
 import { colors } from '../../constants/theme';
 import { GroupsIcon, StreakIcon, BackIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
@@ -15,7 +16,7 @@ import { usePremium } from '../../hooks/usePremium';
 
 interface Member {
   user_id: string;
-  user: { name: string; yoke_code: string };
+  user: { name: string; yoke_code: string; avatar_url: string | null };
 }
 
 interface GroupDetail {
@@ -50,7 +51,7 @@ export default function GroupDetailScreen() {
 
     const [{ data: groupData }, { data: memberData }] = await Promise.all([
       supabase.from('groups').select('*').eq('id', id).single(),
-      supabase.from('group_members').select('user_id, user:users!user_id(name, yoke_code)').eq('group_id', id),
+      supabase.from('group_members').select('user_id, user:users!user_id(name, yoke_code, avatar_url)').eq('group_id', id),
     ]);
 
     setGroup(groupData);
@@ -255,11 +256,7 @@ export default function GroupDetailScreen() {
                 style={{ padding: 14, borderBottomWidth: i < members.length - 1 ? 1 : 0, borderBottomColor: c.border }}
                 className="flex-row items-center gap-3"
               >
-                <View style={{ backgroundColor: c.accent, width: 36, height: 36, borderRadius: 18 }} className="items-center justify-center">
-                  <Text style={{ color: '#1A1A1A', fontWeight: '700', fontSize: 14 }}>
-                    {m.user.name[0]?.toUpperCase()}
-                  </Text>
-                </View>
+                <Avatar url={m.user.avatar_url} name={m.user.name} size={36} accent={c.accent} />
                 <View>
                   <Text style={{ color: c.textPrimary, fontWeight: '500', fontSize: 15 }}>{m.user.name}</Text>
                   <Text style={{ color: c.textSecondary, fontSize: 12 }}>{m.user.yoke_code}</Text>

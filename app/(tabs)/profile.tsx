@@ -10,8 +10,10 @@ import { supabase } from '../../lib/supabase';
 import { useProfile } from '../../hooks/useProfile';
 import { useNotifications } from '../../hooks/useNotifications';
 import { usePremium } from '../../hooks/usePremium';
+import { pickAndUploadAvatar } from '../../lib/uploadAvatar';
+import { Avatar } from '../../components/Avatar';
 import { colors, fonts, shadows, radius } from '../../constants/theme';
-import { CalendarIcon, FriendsIcon, SettingsIcon, ChurchIcon, BellIcon, ChevronRightIcon, LockIcon } from '../../components/icons';
+import { CalendarIcon, FriendsIcon, SettingsIcon, ChurchIcon, BellIcon, ChevronRightIcon, LockIcon, CameraIcon } from '../../components/icons';
 
 export default function ProfileScreen() {
   const scheme = useColorScheme();
@@ -23,6 +25,7 @@ export default function ProfileScreen() {
 
   useFocusEffect(useCallback(() => { refetch(); fetchNotifications(); recheckPremium(); }, [refetch, fetchNotifications, recheckPremium]));
 
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [editVisible, setEditVisible] = useState(false);
   const [editName, setEditName] = useState('');
   const [editBio, setEditBio] = useState('');
@@ -34,6 +37,15 @@ export default function ProfileScreen() {
     setEditBio(profile?.bio ?? '');
     setEditChurch(profile?.church ?? '');
     setEditVisible(true);
+  }
+
+  async function handleAvatarPress() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setUploadingAvatar(true);
+    const url = await pickAndUploadAvatar(user.id);
+    setUploadingAvatar(false);
+    if (url) refetch();
   }
 
   async function saveEdit() {
@@ -60,8 +72,6 @@ export default function ProfileScreen() {
       </View>
     );
   }
-
-  const initials = profile?.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() ?? '?';
 
   return (
     <ScrollView
@@ -99,9 +109,26 @@ export default function ProfileScreen() {
 
       {/* Avatar + name */}
       <View className="items-center mb-6">
-        <View style={{ backgroundColor: c.accent, width: 80, height: 80, borderRadius: 40 }} className="items-center justify-center mb-3">
-          <Text style={{ color: '#1A1A1A', fontSize: 30, fontWeight: '700' }}>{initials}</Text>
-        </View>
+        {/* Tappable avatar with camera overlay */}
+        <TouchableOpacity onPress={handleAvatarPress} disabled={uploadingAvatar} style={{ position: 'relative', marginBottom: 12 }}>
+          {uploadingAvatar ? (
+            <View style={{ backgroundColor: c.accent, width: 80, height: 80, borderRadius: 40, alignItems: 'center', justifyContent: 'center' }}>
+              <ActivityIndicator color="#1A1A1A" />
+            </View>
+          ) : (
+            <Avatar url={profile?.avatar_url} name={profile?.name ?? ''} size={80} accent={c.accent} />
+          )}
+          {!uploadingAvatar && (
+            <View style={{
+              position: 'absolute', bottom: 0, right: 0,
+              backgroundColor: c.accent, borderRadius: 12,
+              width: 26, height: 26, alignItems: 'center', justifyContent: 'center',
+              borderWidth: 2, borderColor: c.background,
+            }}>
+              <CameraIcon size={13} color="#1A1A1A" />
+            </View>
+          )}
+        </TouchableOpacity>
         <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 22, marginBottom: 2 }}>
           {profile?.name}
         </Text>

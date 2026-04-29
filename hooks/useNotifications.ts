@@ -6,7 +6,7 @@ export interface AppNotification {
   type: 'friend_request' | 'friend_accepted' | 'reaction' | 'comment';
   read: boolean;
   created_at: string;
-  actor: { id: string; name: string } | null;
+  actor: { id: string; name: string; avatar_url: string | null } | null;
   devotional_id: string | null;
   friendship_id: string | null;
 }
@@ -20,7 +20,7 @@ export function useNotifications() {
     setLoading(true);
     const { data } = await supabase
       .from('notifications')
-      .select('id, type, read, created_at, devotional_id, friendship_id, actor:users!actor_id(id, name)')
+      .select('id, type, read, created_at, devotional_id, friendship_id, actor:users!actor_id(id, name, avatar_url)')
       .order('created_at', { ascending: false })
       .limit(50);
 

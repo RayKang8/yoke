@@ -5,6 +5,7 @@ import { colors, fonts, shadows, radius } from '../constants/theme';
 import { timeAgo } from '../lib/utils';
 import { ReactionBar } from './ReactionBar';
 import { CommentThread } from './CommentThread';
+import { Avatar } from './Avatar';
 import { CommentIcon } from './icons';
 import { FeedItem } from '../hooks/useFeed';
 
@@ -22,8 +23,6 @@ export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId
   const [showComments, setShowComments] = useState(false);
   const [commentCount, setCommentCount] = useState(item.comment_count);
 
-  const initials = item.user.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-
   return (
     <View style={{
       backgroundColor: c.warmSurface,
@@ -36,9 +35,7 @@ export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId
     }}>
       {/* Author row */}
       <TouchableOpacity className="flex-row items-center gap-3 mb-3" onPress={() => router.push(`/user/${item.user.id}` as any)} activeOpacity={0.7}>
-        <View style={{ backgroundColor: c.accent, width: 40, height: 40, borderRadius: 20 }} className="items-center justify-center">
-          <Text style={{ color: '#1A1A1A', fontFamily: fonts.uiBold, fontSize: 15 }}>{initials}</Text>
-        </View>
+        <Avatar url={item.user.avatar_url} name={item.user.name} size={40} accent={c.accent} />
         <View className="flex-1">
           <Text style={{ color: c.textPrimary, fontFamily: fonts.uiBold, fontSize: 15 }}>{item.user.name}</Text>
           <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 12 }}>{item.user.yoke_code}</Text>

@@ -7,6 +7,7 @@ export interface FriendUser {
   yoke_code: string;
   bio: string | null;
   church: string | null;
+  avatar_url: string | null;
 }
 
 export interface FriendRequest {
@@ -44,7 +45,7 @@ export function useFriends() {
 
     const { data: usersData } = await supabase
       .from('users')
-      .select('id, name, yoke_code, bio, church')
+      .select('id, name, yoke_code, bio, church, avatar_url')
       .in('id', uniqueIds);
 
     const userMap: Record<string, FriendUser> = {};

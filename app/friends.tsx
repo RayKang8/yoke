@@ -10,6 +10,7 @@ import { useFriends } from '../hooks/useFriends';
 import { sendPushToUser } from '../lib/notifications';
 import { haptics } from '../lib/haptics';
 import { colors } from '../constants/theme';
+import { Avatar } from '../components/Avatar';
 import { BackIcon, CheckIcon } from '../components/icons';
 
 interface SearchResult {
@@ -17,6 +18,7 @@ interface SearchResult {
   name: string;
   yoke_code: string;
   church: string | null;
+  avatar_url: string | null;
   friendStatus: 'none' | 'friends' | 'pending_sent' | 'pending_received';
 }
 
@@ -52,7 +54,7 @@ export default function FriendsScreen() {
     setSearching(true);
     const { data: users } = await supabase
       .from('users')
-      .select('id, name, yoke_code, church')
+      .select('id, name, yoke_code, church, avatar_url')
       .or(`name.ilike.%${q}%,yoke_code.ilike.%${q}%`)
       .neq('id', currentUserId)
       .limit(10);
@@ -185,9 +187,7 @@ export default function FriendsScreen() {
               style={{ padding: 14, borderBottomWidth: i < searchResults.length - 1 ? 1 : 0, borderBottomColor: c.border, flexDirection: 'row', alignItems: 'center', gap: 12 }}
             >
               <TouchableOpacity className="flex-row items-center gap-3 flex-1" onPress={() => router.push(`/user/${result.id}`)}>
-                <View style={{ backgroundColor: c.accent, width: 38, height: 38, borderRadius: 19 }} className="items-center justify-center">
-                  <Text style={{ color: '#1A1A1A', fontWeight: '700' }}>{result.name[0]?.toUpperCase()}</Text>
-                </View>
+                <Avatar url={result.avatar_url} name={result.name} size={38} accent={c.accent} />
                 <View>
                   <Text style={{ color: c.textPrimary, fontWeight: '600', fontSize: 15 }}>{result.name}</Text>
                   <Text style={{ color: c.textSecondary, fontSize: 12 }}>{result.yoke_code}</Text>
@@ -238,11 +238,7 @@ export default function FriendsScreen() {
                   style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 14, marginBottom: 10 }}
                   className="flex-row items-center gap-3"
                 >
-                  <View style={{ backgroundColor: c.accent, width: 40, height: 40, borderRadius: 20 }} className="items-center justify-center">
-                    <Text style={{ color: '#1A1A1A', fontWeight: '700' }}>
-                      {req.other_user?.name?.[0]?.toUpperCase()}
-                    </Text>
-                  </View>
+                  <Avatar url={req.other_user?.avatar_url} name={req.other_user?.name ?? ''} size={40} accent={c.accent} />
                   <View className="flex-1">
                     <Text style={{ color: c.textPrimary, fontWeight: '600', fontSize: 15 }}>{req.other_user?.name}</Text>
                     <Text style={{ color: c.textSecondary, fontSize: 12 }}>{req.other_user?.yoke_code}</Text>
@@ -284,11 +280,7 @@ export default function FriendsScreen() {
                 style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 14, marginBottom: 10 }}
                 className="flex-row items-center gap-3"
               >
-                <View style={{ backgroundColor: c.accent, width: 40, height: 40, borderRadius: 20 }} className="items-center justify-center">
-                  <Text style={{ color: '#1A1A1A', fontWeight: '700' }}>
-                    {friend.name[0]?.toUpperCase()}
-                  </Text>
-                </View>
+                <Avatar url={friend.avatar_url} name={friend.name} size={40} accent={c.accent} />
                 <View className="flex-1">
                   <Text style={{ color: c.textPrimary, fontWeight: '600', fontSize: 15 }}>{friend.name}</Text>
                   <Text style={{ color: c.textSecondary, fontSize: 12 }}>{friend.yoke_code}</Text>
@@ -313,11 +305,7 @@ export default function FriendsScreen() {
                   style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 14, marginBottom: 10 }}
                   className="flex-row items-center gap-3"
                 >
-                  <View style={{ backgroundColor: c.border, width: 40, height: 40, borderRadius: 20 }} className="items-center justify-center">
-                    <Text style={{ color: c.textSecondary, fontWeight: '700' }}>
-                      {req.other_user?.name?.[0]?.toUpperCase()}
-                    </Text>
-                  </View>
+                  <Avatar url={req.other_user?.avatar_url} name={req.other_user?.name ?? ''} size={40} accent={c.border} textColor={c.textSecondary} />
                   <View className="flex-1">
                     <Text style={{ color: c.textPrimary, fontSize: 15 }}>{req.other_user?.name}</Text>
                     <Text style={{ color: c.textSecondary, fontSize: 12 }}>{req.other_user?.yoke_code}</Text>

@@ -8,13 +8,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { timeAgo } from '../lib/utils';
 import { colors } from '../constants/theme';
+import { Avatar } from './Avatar';
 
 interface Comment {
   id: string;
   content: string;
   created_at: string;
   user_id: string;
-  user: { name: string };
+  user: { name: string; avatar_url: string | null };
 }
 
 interface Props {
@@ -46,7 +47,7 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
     setLoading(true);
     const { data } = await supabase
       .from('comments')
-      .select('id, content, created_at, user_id, user:users!user_id(name)')
+      .select('id, content, created_at, user_id, user:users!user_id(name, avatar_url)')
       .eq('devotional_id', devotionalId)
       .order('created_at', { ascending: true });
     setComments((data as unknown as Comment[]) ?? []);
@@ -59,7 +60,7 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
     const { data, error } = await supabase
       .from('comments')
       .insert({ devotional_id: devotionalId, user_id: currentUserId, content: text.trim() })
-      .select('id, content, created_at, user_id, user:users!user_id(name)')
+      .select('id, content, created_at, user_id, user:users!user_id(name, avatar_url)')
       .single();
     setPosting(false);
     if (error) { Alert.alert('Error', error.message); return; }
@@ -117,13 +118,12 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
               const canDelete = item.user_id === currentUserId || authorId === currentUserId;
               return (
                 <View className="flex-row gap-3">
-                  <View style={{ backgroundColor: c.accent, width: 34, height: 34, borderRadius: 17 }}
-                    className="items-center justify-center flex-shrink-0"
-                  >
-                    <Text style={{ color: '#1A1A1A', fontWeight: '700', fontSize: 13 }}>
-                      {item.user?.name?.[0]?.toUpperCase() ?? '?'}
-                    </Text>
-                  </View>
+                  <Avatar
+                    url={item.user?.avatar_url}
+                    name={item.user?.name ?? '?'}
+                    size={34}
+                    accent={c.accent}
+                  />
                   <View className="flex-1">
                     <View className="flex-row items-center gap-2 mb-1">
                       <Text style={{ color: c.textPrimary, fontWeight: '600', fontSize: 14 }}>

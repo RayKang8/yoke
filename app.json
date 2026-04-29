@@ -17,7 +17,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.yokefaith.app",
       "infoPlist": {
-        "NSUserNotificationsUsageDescription": "Yoke sends a daily reminder for your devotional and notifies you when friends react to or comment on your posts."
+        "NSUserNotificationsUsageDescription": "Yoke sends a daily reminder for your devotional and notifies you when friends react to or comment on your posts.",
+        "NSPhotoLibraryUsageDescription": "Yoke uses your photo library so you can set a profile picture."
       }
     },
     "android": {

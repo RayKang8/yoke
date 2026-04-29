@@ -11,6 +11,7 @@ export interface FeedItem {
     id: string;
     name: string;
     yoke_code: string;
+    avatar_url: string | null;
   };
   passage: {
     reference: string;
@@ -25,7 +26,7 @@ const PAGE_SIZE = 20;
 
 const FEED_SELECT = `
   id, content, visibility, created_at, comments_disabled,
-  user:users!user_id(id, name, yoke_code),
+  user:users!user_id(id, name, yoke_code, avatar_url),
   passage:passages!passage_id(reference, title),
   reactions(type, user_id)
 `;

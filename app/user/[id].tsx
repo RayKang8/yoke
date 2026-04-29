@@ -7,6 +7,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { DevotionalCard } from '../../components/DevotionalCard';
+import { Avatar } from '../../components/Avatar';
 import { colors } from '../../constants/theme';
 import { ChurchIcon, BackIcon, CheckIcon, LockIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
@@ -19,6 +20,7 @@ interface UserProfile {
   bio: string | null;
   church: string | null;
   streak: number;
+  avatar_url: string | null;
 }
 
 type FriendStatus = 'none' | 'pending_sent' | 'pending_received' | 'friends';
@@ -55,7 +57,7 @@ export default function UserProfileScreen() {
       if (user) setCurrentUserId(user.id);
 
       const [{ data: profileData }, { data: devos }, { data: friendship }] = await Promise.all([
-        supabase.from('users').select('id, name, yoke_code, bio, church, streak').eq('id', id).single(),
+        supabase.from('users').select('id, name, yoke_code, bio, church, streak, avatar_url').eq('id', id).single(),
         supabase
           .from('devotionals')
           .select('id, content, visibility, created_at, comments_disabled, user:users!user_id(id, name, yoke_code), passage:passages!passage_id(reference, title), reactions(type, user_id)')
@@ -221,10 +223,8 @@ export default function UserProfileScreen() {
 
       {/* Profile header */}
       <View className="items-center mb-6">
-        <View style={{ backgroundColor: c.accent, width: 72, height: 72, borderRadius: 36 }} className="items-center justify-center mb-3">
-          <Text style={{ color: '#1A1A1A', fontSize: 28, fontWeight: '700' }}>
-            {profile.name[0]?.toUpperCase()}
-          </Text>
+        <View style={{ marginBottom: 12 }}>
+          <Avatar url={profile.avatar_url} name={profile.name} size={72} accent={c.accent} />
         </View>
         <Text style={{ color: c.textPrimary, fontSize: 22, fontWeight: '700', marginBottom: 2 }}>{profile.name}</Text>
         <Text style={{ color: c.accent, fontSize: 14, fontWeight: '600', marginBottom: 4 }}>{profile.yoke_code}</Text>

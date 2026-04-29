@@ -8,6 +8,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { colors } from '../constants/theme';
 import { timeAgo } from '../lib/utils';
 import { useNotifications, AppNotification } from '../hooks/useNotifications';
+import { Avatar } from '../components/Avatar';
 import { BackIcon } from '../components/icons';
 
 function notificationText(n: AppNotification): string {
@@ -83,11 +84,7 @@ export default function NotificationsScreen() {
               }}
             >
               {/* Avatar */}
-              <View style={{ backgroundColor: c.accent, width: 42, height: 42, borderRadius: 21 }} className="items-center justify-center flex-shrink-0">
-                <Text style={{ color: '#1A1A1A', fontWeight: '700', fontSize: 16 }}>
-                  {n.actor?.name?.[0]?.toUpperCase() ?? '?'}
-                </Text>
-              </View>
+              <Avatar url={n.actor?.avatar_url} name={n.actor?.name ?? '?'} size={42} accent={c.accent} />
 
               {/* Text */}
               <View style={{ flex: 1 }}>
