@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { User } from '../types';
-import { computeStreak } from '../lib/utils';
 
 export function useProfile() {
   const [profile, setProfile] = useState<User | null>(null);
@@ -14,18 +13,17 @@ export function useProfile() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
 
-    const [{ data: profileData }, { data: devoRows }, { count: friends }] = await Promise.all([
+    const [{ data: profileData }, { count: devoTotal }, { count: friends }, { data: streakRows }] = await Promise.all([
       supabase.from('users').select('*').eq('id', user.id).single(),
-      supabase.from('devotionals').select('passage:passages!passage_id(date)').eq('user_id', user.id),
+      supabase.from('devotionals').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
       supabase.from('friendships').select('*', { count: 'exact', head: true })
         .eq('status', 'accepted')
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
+      supabase.rpc('compute_user_streak', { p_user_id: user.id }),
     ]);
 
-    // Compute streak from passage date — avoids timezone skew from created_at
-    const dates = (devoRows ?? []).map((r: any) => (r.passage as any)?.date ?? null).filter(Boolean);
-    const streak = computeStreak(dates);
-    const longestStreak = Math.max(profileData?.longest_streak ?? 0, streak);
+    const streak = (streakRows as any)?.[0]?.streak ?? 0;
+    const longestStreak = Math.max(profileData?.longest_streak ?? 0, (streakRows as any)?.[0]?.longest_streak ?? 0);
 
     // Sync back to DB if stale (fire-and-forget — non-critical background update)
     if (profileData && (profileData.streak !== streak || profileData.longest_streak !== longestStreak)) {
@@ -33,7 +31,7 @@ export function useProfile() {
     }
 
     setProfile(profileData ? { ...profileData, streak, longest_streak: longestStreak } : null);
-    setDevoCount(devoRows?.length ?? 0);
+    setDevoCount(devoTotal ?? 0);
     setFriendCount(friends ?? 0);
     setLoading(false);
   }, []);
