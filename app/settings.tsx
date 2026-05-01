@@ -95,12 +95,12 @@ export default function SettingsScreen() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete', style: 'destructive', onPress: async () => {
-            const { error } = await supabase.functions.invoke('delete-account');
+            const { error } = await supabase.rpc('delete_user');
             if (error) {
               Alert.alert('Error', `Could not delete account: ${error.message}`);
               return;
             }
-            await supabase.auth.signOut();
+            await supabase.auth.signOut({ scope: 'local' });
             router.replace('/(auth)/welcome');
           },
         },
