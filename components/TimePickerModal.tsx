@@ -53,7 +53,6 @@ function WheelColumn({ items, initialIndex, onChange, textColor }: ColumnProps) 
       decelerationRate="fast"
       getItemLayout={(_, i) => ({ length: ITEM_H, offset: ITEM_H * i, index: i })}
       onMomentumScrollEnd={e => handleSettle(e.nativeEvent.contentOffset.y)}
-      onScrollEndDrag={e => handleSettle(e.nativeEvent.contentOffset.y)}
       renderItem={({ item }) => (
         <View style={{ height: ITEM_H, width: 72, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ fontSize: 22, color: item ? textColor : 'transparent' }}>
