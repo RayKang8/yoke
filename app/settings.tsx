@@ -333,7 +333,7 @@ export default function SettingsScreen() {
           display="spinner"
           onChange={(_, date) => { if (date) setPendingDate(date); }}
           {...(Platform.OS === 'ios' ? { textColor: scheme === 'dark' ? '#FFFFFF' : '#1A1A1A' } : {})}
-          style={{ alignSelf: 'center' }}
+          style={{ height: 216, width: '100%' }}
         />
       </View>
     </Modal>
