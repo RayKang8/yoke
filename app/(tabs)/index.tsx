@@ -421,9 +421,9 @@ export default function HomeScreen() {
         <Modal visible={editVisible} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditVisible(false)}>
           <KeyboardAvoidingView
             style={{ flex: 1, backgroundColor: c.background }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            behavior={Platform.OS === 'android' ? 'height' : undefined}
           >
-            <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 32 }} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={{ padding: 24, paddingTop: 32 }} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
               <View className="flex-row items-center justify-between mb-6">
                 <Text style={{ color: c.textPrimary, fontFamily: fonts.heading, fontSize: 22 }}>Edit Reflection</Text>
                 <TouchableOpacity onPress={() => setEditVisible(false)}>
@@ -595,12 +595,12 @@ export default function HomeScreen() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: c.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={0}
+      behavior={Platform.OS === 'android' ? 'height' : undefined}
     >
       <ScrollView
         contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 40, paddingHorizontal: 20 }}
         keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
       >
         {/* Date + day */}
         <Text style={{ color: c.textSecondary, fontFamily: fonts.uiMedium, fontSize: 12, letterSpacing: 0.8, marginBottom: 6 }}>

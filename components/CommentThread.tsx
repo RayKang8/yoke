@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
   View, Text, Modal, TouchableOpacity, FlatList,
-  TextInput, KeyboardAvoidingView, Platform,
-  ActivityIndicator, Alert, useColorScheme,
+  TextInput, ActivityIndicator, Alert, useColorScheme,
 } from 'react-native';
+import Animated, { useAnimatedKeyboard, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { timeAgo } from '../lib/utils';
@@ -37,6 +37,11 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [posting, setPosting] = useState(false);
+
+  const keyboard = useAnimatedKeyboard();
+  const inputBarAnimatedStyle = useAnimatedStyle(() => ({
+    paddingBottom: Math.max(keyboard.height.value, insets.bottom) + 8,
+  }));
 
   useEffect(() => {
     if (!visible) return;
@@ -86,10 +91,7 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: c.background }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <View style={{ flex: 1, backgroundColor: c.background }}>
         {/* Header */}
         <View style={{ borderBottomColor: c.border, borderBottomWidth: 1 }}
           className="flex-row items-center justify-between px-5 py-4"
@@ -108,6 +110,7 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
           <FlatList
             data={comments}
             keyExtractor={item => item.id}
+            automaticallyAdjustKeyboardInsets
             contentContainerStyle={{ padding: 16, gap: 16 }}
             ListEmptyComponent={
               <Text style={{ color: c.textSecondary, textAlign: 'center', marginTop: 40 }}>
@@ -150,8 +153,8 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
 
         {/* Input */}
         {!commentsDisabled && (
-          <View
-            style={{ borderTopColor: c.border, borderTopWidth: 1, paddingBottom: insets.bottom + 8, paddingTop: 10, paddingHorizontal: 16 }}
+          <Animated.View
+            style={[{ borderTopColor: c.border, borderTopWidth: 1, paddingTop: 10, paddingHorizontal: 16 }, inputBarAnimatedStyle]}
             className="flex-row items-end gap-3"
           >
             <TextInput
@@ -183,9 +186,9 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
                 : <Text style={{ color: '#1A1A1A', fontWeight: '600', fontSize: 14 }}>Post</Text>
               }
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         )}
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }
