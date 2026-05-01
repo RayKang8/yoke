@@ -72,7 +72,7 @@ export default function SignUpScreen() {
             Create account
           </Text>
           <Text style={{ color: c.textSecondary, fontSize: 16, marginBottom: 36 }}>
-            Join thousands doing devotionals together.
+            Let's get you set up.
           </Text>
 
           {/* Fields */}

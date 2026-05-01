@@ -11,19 +11,19 @@ import { AmenIcon, BellIcon, StarIcon, CheckIcon } from '../../components/icons'
 const STEPS = [
   {
     title: 'What is Yoke?',
-    body: 'Yoke gives you a daily Bible passage and a guided reflection prompt. You write your thoughts and share them with friends or your small group — creating the accountability that makes spiritual habits actually stick.',
+    body: "Every day, Yoke gives you a passage to read and a simple question to sit with. Write your thoughts, share with friends or your small group, and grow together — one day at a time.",
     Icon: AmenIcon,
     cta: 'Continue',
   },
   {
-    title: 'Set your reminder',
-    body: "We'll send you a daily nudge when your passage is ready. You can change this any time in settings.",
+    title: 'Your daily reminder',
+    body: "Pick a time that works for you and we'll send a gentle nudge when your passage is ready. You can always change this in settings.",
     Icon: BellIcon,
     cta: 'Continue',
   },
   {
     title: 'Your free trial starts now',
-    body: 'You get 7 days of full Yoke Premium — unlimited groups, full calendar history, reaction details, and group streaks. After your trial, you can stay on the free tier or upgrade for $4.99/month.',
+    body: "You've got 7 days of full Yoke Premium to explore. After that, you can keep using Yoke free or upgrade to keep the extras — no pressure either way.",
     Icon: StarIcon,
     cta: 'Start my free trial',
   },
