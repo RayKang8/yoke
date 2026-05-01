@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import {
-  View, Text, TouchableOpacity, useColorScheme,
+  View, Text, TouchableOpacity, useColorScheme, Modal, Pressable, Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerForPushNotifications, scheduleDailyReminder } from '../../lib/notifications';
@@ -29,13 +30,27 @@ const STEPS = [
   },
 ];
 
-const REMINDER_TIMES = ['6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '12:00 PM', '6:00 PM', '8:00 PM'];
+function formatTimeDate(date: Date): string {
+  let h = date.getHours();
+  const m = date.getMinutes();
+  const period = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${m.toString().padStart(2, '0')} ${period}`;
+}
+
+function defaultReminderDate(): Date {
+  const d = new Date();
+  d.setHours(8, 0, 0, 0);
+  return d;
+}
 
 export default function OnboardingScreen() {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const [step, setStep] = useState(0);
   const [selectedTime, setSelectedTime] = useState('8:00 AM');
+  const [pendingDate, setPendingDate] = useState<Date>(defaultReminderDate());
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
@@ -85,30 +100,22 @@ export default function OnboardingScreen() {
 
         {/* Time picker for step 2 */}
         {step === 1 && (
-          <View className="mt-8 flex-row flex-wrap gap-2">
-            {REMINDER_TIMES.map(time => (
-              <TouchableOpacity
-                key={time}
-                onPress={() => setSelectedTime(time)}
-                style={{
-                  backgroundColor: selectedTime === time ? c.accent : c.surface,
-                  borderColor: selectedTime === time ? c.accent : c.border,
-                  borderWidth: 1,
-                  borderRadius: 10,
-                  paddingHorizontal: 14,
-                  paddingVertical: 10,
-                }}
-              >
-                <Text style={{
-                  color: selectedTime === time ? '#1A1A1A' : c.textPrimary,
-                  fontWeight: selectedTime === time ? '600' : '400',
-                  fontSize: 15,
-                }}>
-                  {time}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <TouchableOpacity
+            onPress={() => setShowTimePicker(true)}
+            style={{
+              marginTop: 32,
+              backgroundColor: c.surface,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: c.accent,
+              paddingHorizontal: 24,
+              paddingVertical: 18,
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ color: c.accent, fontSize: 28, fontWeight: '700' }}>{selectedTime}</Text>
+            <Text style={{ color: c.textSecondary, fontSize: 13, marginTop: 4 }}>Tap to change</Text>
+          </TouchableOpacity>
         )}
 
         {/* Premium features list for step 3 */}
@@ -152,6 +159,33 @@ export default function OnboardingScreen() {
           <Text style={{ color: c.textSecondary, fontSize: 15 }}>Skip for now</Text>
         </TouchableOpacity>
       )}
+
+      <Modal visible={showTimePicker} transparent animationType="slide" onRequestClose={() => setShowTimePicker(false)}>
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setShowTimePicker(false)} />
+        <View style={{ backgroundColor: c.surface, paddingBottom: 32 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: c.border }}>
+            <TouchableOpacity onPress={() => setShowTimePicker(false)}>
+              <Text style={{ color: c.textSecondary, fontSize: 16 }}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={{ color: c.textPrimary, fontSize: 16, fontWeight: '600' }}>Reminder Time</Text>
+            <TouchableOpacity onPress={() => {
+              const formatted = formatTimeDate(pendingDate);
+              setSelectedTime(formatted);
+              setShowTimePicker(false);
+            }}>
+              <Text style={{ color: c.accent, fontSize: 16, fontWeight: '600' }}>Done</Text>
+            </TouchableOpacity>
+          </View>
+          <DateTimePicker
+            value={pendingDate}
+            mode="time"
+            display="spinner"
+            onChange={(_, date) => { if (date) setPendingDate(date); }}
+            {...(Platform.OS === 'ios' ? { textColor: scheme === 'dark' ? '#FFFFFF' : '#1A1A1A' } : {})}
+            style={{ alignSelf: 'center' }}
+          />
+        </View>
+      </Modal>
     </View>
   );
 }

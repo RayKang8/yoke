@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, ActivityIndicator,
-  useColorScheme, Alert, Linking, Platform,
+  useColorScheme, Alert, Linking, Platform, Modal, Pressable,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -19,7 +20,24 @@ const PRIVACY_URL = 'https://yokefaith.com/privacy';
 const TERMS_URL   = 'https://yokefaith.com/terms';
 
 const TRANSLATIONS: Translation[] = ['NIV', 'ESV', 'KJV', 'NLT', 'NKJV', 'BSB', 'ASV', 'WEB', 'YLT'];
-const REMINDER_TIMES = ['6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '12:00 PM', '6:00 PM', '8:00 PM'];
+
+function parseTimeString(str: string): Date {
+  const [time, period] = str.split(' ');
+  let [h, m] = time.split(':').map(Number);
+  if (period === 'PM' && h !== 12) h += 12;
+  if (period === 'AM' && h === 12) h = 0;
+  const d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+function formatTimeDate(date: Date): string {
+  let h = date.getHours();
+  const m = date.getMinutes();
+  const period = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${m.toString().padStart(2, '0')} ${period}`;
+}
 
 export default function SettingsScreen() {
   const scheme = useColorScheme();
@@ -27,6 +45,8 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
 
   const [reminderTime, setReminderTime] = useState('8:00 AM');
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [pendingDate, setPendingDate] = useState<Date>(new Date());
   const [defaultTranslation, setDefaultTranslation] = useState<Translation>('NIV');
   const [showPaywall, setShowPaywall] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -85,6 +105,19 @@ export default function SettingsScreen() {
     } else {
       Linking.openURL('https://play.google.com/store/account/subscriptions?sku=yoke_premium_monthly&package=com.yokefaith.app');
     }
+  }
+
+  function openTimePicker() {
+    setPendingDate(parseTimeString(reminderTime));
+    setShowTimePicker(true);
+  }
+
+  async function handleTimeConfirm() {
+    const formatted = formatTimeDate(pendingDate);
+    setReminderTime(formatted);
+    setShowTimePicker(false);
+    await setSetting('reminderTime', formatted);
+    await scheduleDailyReminder(formatted);
   }
 
   async function handleDeleteAccount() {
@@ -190,17 +223,13 @@ export default function SettingsScreen() {
 
       {/* Notification time */}
       <SectionHeader label="DAILY REMINDER TIME" />
-      <View className="flex-row flex-wrap gap-2 mb-4">
-        {REMINDER_TIMES.map(t => (
-          <TouchableOpacity key={t} onPress={async () => { setReminderTime(t); await setSetting('reminderTime', t); await scheduleDailyReminder(t); }}
-            style={{ backgroundColor: reminderTime === t ? c.accent : c.surface, borderColor: reminderTime === t ? c.accent : c.border, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 }}
-          >
-            <Text style={{ color: reminderTime === t ? '#1A1A1A' : c.textPrimary, fontWeight: reminderTime === t ? '600' : '400', fontSize: 14 }}>
-              {t}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <TouchableOpacity
+        onPress={openTimePicker}
+        style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+      >
+        <Text style={{ color: c.textPrimary, fontSize: 16 }}>{reminderTime}</Text>
+        <ChevronRightIcon size={18} color={c.textSecondary} />
+      </TouchableOpacity>
 
       {/* Default translation */}
       <SectionHeader label="DEFAULT TRANSLATION" />
@@ -285,6 +314,29 @@ export default function SettingsScreen() {
       onClose={() => setShowPaywall(false)}
       onPurchased={() => { setShowPaywall(false); recheck(); }}
     />
+
+    <Modal visible={showTimePicker} transparent animationType="slide" onRequestClose={() => setShowTimePicker(false)}>
+      <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setShowTimePicker(false)} />
+      <View style={{ backgroundColor: c.surface, paddingBottom: insets.bottom + 8 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: c.border }}>
+          <TouchableOpacity onPress={() => setShowTimePicker(false)}>
+            <Text style={{ color: c.textSecondary, fontSize: 16 }}>Cancel</Text>
+          </TouchableOpacity>
+          <Text style={{ color: c.textPrimary, fontSize: 16, fontWeight: '600' }}>Reminder Time</Text>
+          <TouchableOpacity onPress={handleTimeConfirm}>
+            <Text style={{ color: c.accent, fontSize: 16, fontWeight: '600' }}>Done</Text>
+          </TouchableOpacity>
+        </View>
+        <DateTimePicker
+          value={pendingDate}
+          mode="time"
+          display="spinner"
+          onChange={(_, date) => { if (date) setPendingDate(date); }}
+          {...(Platform.OS === 'ios' ? { textColor: scheme === 'dark' ? '#FFFFFF' : '#1A1A1A' } : {})}
+          style={{ alignSelf: 'center' }}
+        />
+      </View>
+    </Modal>
     </>
   );
 }

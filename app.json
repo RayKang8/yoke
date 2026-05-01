@@ -43,7 +43,8 @@
           "color": "#F5C842"
         }
       ],
-      "expo-font"
+      "expo-font",
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "router": {},
