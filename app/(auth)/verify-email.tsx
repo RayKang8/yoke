@@ -59,7 +59,7 @@ export default function VerifyEmailScreen() {
       return;
     }
     setResending(true);
-    const { error } = await supabase.auth.resend({ type: 'signup', email });
+    const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo: 'yoke://' } });
     setResending(false);
     if (error) Alert.alert('Error', error.message);
     else Alert.alert('Sent', 'Confirmation email resent. Check your inbox.');
