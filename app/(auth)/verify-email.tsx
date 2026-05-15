@@ -28,16 +28,26 @@ export default function VerifyEmailScreen() {
 
   async function handleCheckConfirmed() {
     setChecking(true);
-    // Re-fetch the user to see if they've confirmed since this screen opened
+    // Refresh first — getUser() returns null (not an error) on an expired token,
+    // which falsely shows "not confirmed" even if the email was confirmed.
+    const { data: { session } } = await supabase.auth.refreshSession();
+    if (!session) {
+      setChecking(false);
+      Alert.alert(
+        'Session expired',
+        'Please log in — your email may already be confirmed.',
+        [{ text: 'Log in', onPress: () => router.replace('/(auth)/login') }],
+      );
+      return;
+    }
     const { data: { user } } = await supabase.auth.getUser();
     setChecking(false);
-
     if (user?.email_confirmed_at) {
       router.replace('/(auth)/onboarding');
     } else {
       Alert.alert(
         'Not confirmed yet',
-        "Your email hasn't been confirmed. Check your inbox and tap the link, then come back here.",
+        "Check your inbox and tap the confirmation link, then come back here.",
       );
     }
   }

@@ -18,7 +18,9 @@ import {
   Nunito_600SemiBold,
   Nunito_700Bold,
 } from '@expo-google-fonts/nunito';
+import * as Linking from 'expo-linking';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 import { registerForPushNotifications, useNotificationListener } from '../lib/notifications';
 import { initRevenueCat } from '../lib/revenuecat';
 import { colors } from '../constants/theme';
@@ -68,6 +70,18 @@ export default function RootLayout() {
       }
     })();
   }, [session, loading, isRecovery]);
+
+  // Handle deep links for email confirmation and password reset (PKCE flow)
+  useEffect(() => {
+    async function handleUrl(url: string) {
+      if (!url.includes('code=')) return;
+      await supabase.auth.exchangeCodeForSession(url);
+      // onAuthStateChange fires automatically; _layout routing effect handles navigation
+    }
+    Linking.getInitialURL().then(url => { if (url) handleUrl(url); });
+    const sub = Linking.addEventListener('url', ({ url }) => handleUrl(url));
+    return () => sub.remove();
+  }, []);
 
   useNotificationListener((data) => {
     if (data.screen === 'home') router.push('/(tabs)');

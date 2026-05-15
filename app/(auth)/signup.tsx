@@ -37,7 +37,10 @@ export default function SignUpScreen() {
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { data: { name: name.trim() } },
+      options: {
+        data: { name: name.trim() },
+        emailRedirectTo: 'yoke://',
+      },
     });
     setLoading(false);
 
