@@ -30,7 +30,7 @@ export default function HomeScreen() {
 
   const { passage, todaysDevotion, loading, error, setTodaysDevotion, refetch, refetchDevotion } = usePassage();
   const { profile, refetch: refetchProfile } = useProfile();
-  const { groups } = useGroups();
+  const { groups, refetch: refetchGroups } = useGroups();
   const { isPremium, loading: premiumLoading, recheck: recheckPremium } = usePremium();
 
   // Only refetch on focus if it's been more than 30 seconds — avoids hitting
@@ -44,6 +44,7 @@ export default function HomeScreen() {
       lastFocusRefetch.current = now;
       refetchProfile();
       recheckPremium();
+      refetchGroups();
       if (newDay) {
         setReflection('');
         refetch();
@@ -51,7 +52,7 @@ export default function HomeScreen() {
         refetchDevotion();
       }
     }
-  }, [refetchProfile, refetchDevotion, recheckPremium, refetch, passage?.date]));
+  }, [refetchProfile, refetchDevotion, recheckPremium, refetch, refetchGroups, passage?.date]));
 
   const [translation, setTranslation] = useState<Translation>('NIV');
   const [passageVerses, setPassageVerses] = useState<{ verse: number; text: string }[]>([]);
