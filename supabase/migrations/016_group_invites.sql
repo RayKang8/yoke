@@ -85,7 +85,7 @@ BEGIN
   END IF;
 
   -- Premium gate — mirrors join_group_by_invite
-  IF NOT COALESCE((SELECT premium FROM users WHERE id = auth.uid()), false)
+  IF NOT COALESCE((SELECT is_premium FROM users WHERE id = auth.uid()), false)
      AND get_my_group_count() >= 1 THEN
     RAISE EXCEPTION 'Upgrade to Premium to join more than 1 group';
   END IF;
