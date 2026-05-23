@@ -13,10 +13,18 @@ import { colors } from '../../constants/theme';
 import { GroupsIcon, StreakIcon, BackIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
 import { usePremium } from '../../hooks/usePremium';
+import { sendPushToUser } from '../../lib/notifications';
 
 interface Member {
   user_id: string;
   user: { name: string; yoke_code: string; avatar_url: string | null };
+}
+
+interface InvitableFriend {
+  id: string;
+  name: string;
+  yoke_code: string;
+  avatar_url: string | null;
 }
 
 interface GroupDetail {
@@ -41,6 +49,9 @@ export default function GroupDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState('');
   const [showSettings, setShowSettings] = useState(false);
+  const [invitableFriends, setInvitableFriends] = useState<InvitableFriend[]>([]);
+  const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
+  const [inviteLoading, setInviteLoading] = useState(false);
 
   useEffect(() => { loadGroup(); }, [id]);
 
@@ -112,6 +123,56 @@ export default function GroupDetailScreen() {
         },
       },
     ]);
+  }
+
+  useEffect(() => {
+    if (showSettings) loadInvitableFriends();
+  }, [showSettings]);
+
+  async function loadInvitableFriends() {
+    setInviteLoading(true);
+    const memberIds = new Set(members.map(m => m.user_id));
+
+    const [{ data: friendships }, { data: existingInvites }] = await Promise.all([
+      supabase
+        .from('friendships')
+        .select('requester_id, addressee_id, requester:users!requester_id(id, name, yoke_code, avatar_url), addressee:users!addressee_id(id, name, yoke_code, avatar_url)')
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${currentUserId},addressee_id.eq.${currentUserId}`),
+      supabase
+        .from('group_invites')
+        .select('invitee_id')
+        .eq('group_id', id)
+        .eq('status', 'pending'),
+    ]);
+
+    const pendingInviteeIds = new Set((existingInvites ?? []).map((i: any) => i.invitee_id));
+    const invitable = (friendships ?? [])
+      .map((f: any) => f.requester_id === currentUserId ? f.addressee : f.requester)
+      .filter((f: any) => !memberIds.has(f.id) && !pendingInviteeIds.has(f.id));
+
+    setInvitableFriends(invitable);
+    setInvitedIds(new Set());
+    setInviteLoading(false);
+  }
+
+  async function handleSendInvite(friend: InvitableFriend) {
+    const { error } = await supabase.from('group_invites').insert({
+      group_id: id,
+      inviter_id: currentUserId,
+      invitee_id: friend.id,
+    });
+    if (error) {
+      Alert.alert('Error', error.message);
+      return;
+    }
+    setInvitedIds(prev => new Set(prev).add(friend.id));
+    sendPushToUser(
+      friend.id,
+      'Group invite',
+      `You've been invited to join "${group?.name}" on Yoke.`,
+      { screen: 'groups' },
+    );
   }
 
   async function handleShareCode() {
@@ -244,6 +305,45 @@ export default function GroupDetailScreen() {
             <Text style={{ color: c.accent, fontSize: 26, fontWeight: '700', letterSpacing: 3 }}>{group.invite_code}</Text>
             <Text style={{ color: c.textSecondary, fontSize: 13, marginTop: 4 }}>Tap to share with friends</Text>
           </TouchableOpacity>
+
+          {/* Invite a friend */}
+          <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>INVITE A FRIEND</Text>
+          {inviteLoading ? (
+            <ActivityIndicator color={c.accent} style={{ marginBottom: 24 }} />
+          ) : invitableFriends.length === 0 ? (
+            <View style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, padding: 16, marginBottom: 24 }}>
+              <Text style={{ color: c.textSecondary, fontSize: 14, textAlign: 'center' }}>
+                No friends to invite — add friends in the app or they may already be in this group.
+              </Text>
+            </View>
+          ) : (
+            <View style={{ backgroundColor: c.surface, borderRadius: 14, borderWidth: 1, borderColor: c.border, marginBottom: 24, overflow: 'hidden' }}>
+              {invitableFriends.map((f, i) => {
+                const invited = invitedIds.has(f.id);
+                return (
+                  <View
+                    key={f.id}
+                    style={{ padding: 14, borderBottomWidth: i < invitableFriends.length - 1 ? 1 : 0, borderBottomColor: c.border, flexDirection: 'row', alignItems: 'center', gap: 12 }}
+                  >
+                    <Avatar url={f.avatar_url} name={f.name} size={36} accent={c.accent} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: c.textPrimary, fontWeight: '500', fontSize: 15 }}>{f.name}</Text>
+                      <Text style={{ color: c.textSecondary, fontSize: 12 }}>{f.yoke_code}</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => !invited && handleSendInvite(f)}
+                      disabled={invited}
+                      style={{ backgroundColor: invited ? c.border : c.accent, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6 }}
+                    >
+                      <Text style={{ color: invited ? c.textSecondary : '#1A1A1A', fontSize: 13, fontWeight: '600' }}>
+                        {invited ? 'Invited' : 'Invite'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+          )}
 
           {/* Members */}
           <Text style={{ color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 8 }}>MEMBERS</Text>
