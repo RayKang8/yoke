@@ -109,6 +109,7 @@ export default function SettingsScreen() {
               Alert.alert('Error', `Could not delete account: ${error.message}`);
               return;
             }
+            await AsyncStorage.multiRemove(['onboarding_done', 'pending_email']);
             await supabase.auth.signOut({ scope: 'local' });
             router.replace('/(auth)/welcome');
           },
