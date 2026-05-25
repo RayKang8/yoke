@@ -7,8 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
-import { scheduleDailyReminder } from '../lib/notifications';
-import { restorePurchases, getOfferings } from '../lib/revenuecat';
+import { scheduleDailyReminder, cancelDailyReminder } from '../lib/notifications';
+import { restorePurchases, getOfferings, logOutRevenueCat } from '../lib/revenuecat';
 import { colors } from '../constants/theme';
 import { Translation } from '../types';
 import { PaywallSheet } from '../components/PaywallSheet';
@@ -104,12 +104,31 @@ export default function SettingsScreen() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Delete', style: 'destructive', onPress: async () => {
+            const { data: { user } } = await supabase.auth.getUser();
             const { error } = await supabase.rpc('delete_user');
             if (error) {
               Alert.alert('Error', `Could not delete account: ${error.message}`);
               return;
             }
-            await AsyncStorage.multiRemove(['onboarding_done', 'pending_email']);
+            // Delete avatar from storage
+            if (user) {
+              await supabase.storage.from('avatars').remove([`${user.id}/avatar.jpg`]);
+            }
+            // Cancel scheduled reminder
+            await cancelDailyReminder();
+            // Reset RevenueCat identity
+            await logOutRevenueCat();
+            // Clear all local state
+            await AsyncStorage.multiRemove([
+              'onboarding_done',
+              'pending_email',
+              'reminderTime',
+              'defaultTranslation',
+              'postAudiences',
+              'bibleBook',
+              'bibleChapter',
+              'bibleTranslation',
+            ]);
             await supabase.auth.signOut({ scope: 'local' });
             router.replace('/(auth)/welcome');
           },

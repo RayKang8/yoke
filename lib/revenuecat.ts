@@ -51,6 +51,15 @@ export async function restorePurchases() {
   return customerInfo;
 }
 
+export async function logOutRevenueCat() {
+  if (!Purchases) return;
+  try {
+    await Purchases.logOut();
+  } catch {
+    // logOut throws if the user is already anonymous — safe to ignore
+  }
+}
+
 export async function getCustomerInfo() {
   if (!Purchases) return null;
   try {
