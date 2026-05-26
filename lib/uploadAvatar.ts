@@ -26,6 +26,12 @@ export async function pickAndUploadAvatar(userId: string): Promise<string | null
 
   const asset = result.assets[0];
 
+  // Reject files over 20 MB before we even attempt to process them
+  if (asset.fileSize && asset.fileSize > 20 * 1024 * 1024) {
+    Alert.alert('File too large', 'Please choose an image under 20 MB.');
+    return null;
+  }
+
   // 3. Resize to max 500×500 and compress (keeps file size ~30–60 KB)
   let manipulated: ImageManipulator.ImageResult;
   try {
