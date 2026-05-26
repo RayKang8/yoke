@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, useColorScheme, ActivityIndicator, Alert 
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
+import { analytics } from '../../lib/posthog';
 import { colors } from '../../constants/theme';
 import { EmailIcon } from '../../components/icons';
 
@@ -20,6 +21,7 @@ export default function VerifyEmailScreen() {
         (event === 'SIGNED_IN' || event === 'USER_UPDATED') &&
         session?.user?.email_confirmed_at
       ) {
+        analytics.capture('email_confirmed');
         router.replace('/(auth)/onboarding');
       }
     });
@@ -43,6 +45,7 @@ export default function VerifyEmailScreen() {
     const { data: { user } } = await supabase.auth.getUser();
     setChecking(false);
     if (user?.email_confirmed_at) {
+      analytics.capture('email_confirmed');
       router.replace('/(auth)/onboarding');
     } else {
       Alert.alert(

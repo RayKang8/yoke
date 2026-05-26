@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import { analytics } from '../../lib/posthog';
 import { colors } from '../../constants/theme';
 import { BackIcon } from '../../components/icons';
 
@@ -39,6 +40,8 @@ export default function LoginScreen() {
       router.replace('/(auth)/verify-email');
       return;
     }
+    analytics.capture('user_logged_in', { method: 'email' });
+    analytics.identify(data.user!.id, { email: data.user!.email ?? '' });
     // _layout.tsx handles routing to tabs/onboarding on session change
   }
 

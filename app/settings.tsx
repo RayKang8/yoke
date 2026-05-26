@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { scheduleDailyReminder, cancelDailyReminder } from '../lib/notifications';
 import { restorePurchases, getOfferings, logOutRevenueCat } from '../lib/revenuecat';
+import { analytics } from '../lib/posthog';
 import { colors } from '../constants/theme';
 import { Translation } from '../types';
 import { PaywallSheet } from '../components/PaywallSheet';
@@ -67,6 +68,7 @@ export default function SettingsScreen() {
       const info = await restorePurchases();
       const active = Object.keys(info.entitlements.active ?? {}).length > 0;
       if (active) {
+        analytics.capture('subscription_restored');
         Alert.alert('Restored!', 'Your Yoke Premium subscription has been restored.');
         recheck();
       } else {
@@ -131,7 +133,9 @@ export default function SettingsScreen() {
               'bibleChapter',
               'bibleTranslation',
             ]);
+            analytics.capture('account_deleted');
             await supabase.auth.signOut({ scope: 'local' });
+            analytics.reset();
             router.replace('/(auth)/welcome');
           },
         },
@@ -140,6 +144,7 @@ export default function SettingsScreen() {
   }
 
   async function handleLogout() {
+    analytics.reset();
     await supabase.auth.signOut();
     router.replace('/(auth)/welcome');
   }

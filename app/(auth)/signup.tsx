@@ -7,6 +7,7 @@ import {
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
+import { analytics } from '../../lib/posthog';
 import { colors } from '../../constants/theme';
 import { BackIcon } from '../../components/icons';
 
@@ -47,6 +48,11 @@ export default function SignUpScreen() {
     if (error) {
       Alert.alert('Sign up failed', error.message);
       return;
+    }
+
+    if (data.user) {
+      analytics.capture('user_signed_up', { method: 'email' });
+      analytics.identify(data.user.id, { email: email.trim(), name: name.trim() });
     }
 
     // No session means email confirmation is required

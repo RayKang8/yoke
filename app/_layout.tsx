@@ -23,11 +23,14 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { registerForPushNotifications, useNotificationListener } from '../lib/notifications';
 import { initRevenueCat } from '../lib/revenuecat';
+import { initPostHog, analytics } from '../lib/posthog';
 import { colors } from '../constants/theme';
 
 export default function RootLayout() {
   const { session, loading, isRecovery } = useAuth();
   const registered = useRef(false);
+
+  useEffect(() => { initPostHog(); }, []);
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
 
@@ -46,6 +49,10 @@ export default function RootLayout() {
     if (loading) return;
     (async () => {
       if (session) {
+        analytics.identify(session.user.id, {
+          email: session.user.email ?? null,
+          name: session.user.user_metadata?.name ?? null,
+        });
         if (isRecovery) {
           router.replace('/(auth)/reset-password');
           return;

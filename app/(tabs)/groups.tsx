@@ -10,6 +10,7 @@ import { supabase } from '../../lib/supabase';
 import { useGroups } from '../../hooks/useGroups';
 import { usePremium } from '../../hooks/usePremium';
 import { haptics } from '../../lib/haptics';
+import { analytics } from '../../lib/posthog';
 import { GroupCard } from '../../components/GroupCard';
 import { colors, fonts, shadows, radius } from '../../constants/theme';
 
@@ -66,6 +67,7 @@ export default function GroupsScreen() {
       return;
     }
     setPendingInvites(prev => prev.filter(i => i.id !== invite.id));
+    analytics.capture('group_joined', { method: 'direct_invite' });
     refetch();
     Alert.alert('Joined!', `You joined "${invite.group_name}".`);
   }
@@ -138,6 +140,7 @@ export default function GroupsScreen() {
     setShowCreate(false);
     setGroupName('');
     haptics.success();
+    analytics.capture('group_created');
     refetch();
 
     // Share invite code
@@ -181,6 +184,7 @@ export default function GroupsScreen() {
     setShowJoin(false);
     setInviteCode('');
     haptics.success();
+    analytics.capture('group_joined', { method: 'invite_code' });
     refetch();
     Alert.alert('Joined!', `You joined "${(data as any)?.group_name ?? 'the group'}".`);
   }

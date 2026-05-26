@@ -13,6 +13,7 @@ import { useGroups } from '../../hooks/useGroups';
 import { usePremium } from '../../hooks/usePremium';
 import { colors, fonts, shadows, radius } from '../../constants/theme';
 import { haptics } from '../../lib/haptics';
+import { analytics } from '../../lib/posthog';
 import { localDateStr } from '../../lib/utils';
 import { Translation } from '../../types';
 import { StreakIcon, CommentIcon, CheckIcon, LockIcon } from '../../components/icons';
@@ -239,6 +240,7 @@ export default function HomeScreen() {
     }
 
     haptics.success();
+    analytics.capture('devotional_posted', { visibility, audience_count: selectedAudiences.size });
     setTodaysDevotion(data);
     refetchProfile();
   }
@@ -293,6 +295,7 @@ export default function HomeScreen() {
       } as any);
 
       haptics.success();
+      analytics.capture('devotional_edited');
       setEditVisible(false);
     } catch (e: any) {
       Alert.alert('Error', e?.message ?? 'Something went wrong');

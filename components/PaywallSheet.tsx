@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/theme';
 import type { PurchasesOfferings } from 'react-native-purchases';
 import { getOfferings, purchasePackage, restorePurchases, PRODUCT_IDS } from '../lib/revenuecat';
+import { analytics } from '../lib/posthog';
 import { CheckIcon, CloseIcon } from './icons';
 
 interface Props {
@@ -33,7 +34,10 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
   const [restoring, setRestoring] = useState(false);
 
   useEffect(() => {
-    if (visible) loadOfferings();
+    if (visible) {
+      loadOfferings();
+      analytics.capture('paywall_viewed');
+    }
   }, [visible]);
 
   async function loadOfferings() {
@@ -64,6 +68,7 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
     setPurchasing(true);
     try {
       await purchasePackage(pkg);
+      analytics.capture('subscription_started', { plan: selected });
       onPurchased();
       onClose();
     } catch (e: any) {

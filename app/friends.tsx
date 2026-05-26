@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { useFriends } from '../hooks/useFriends';
 import { sendPushToUser } from '../lib/notifications';
 import { haptics } from '../lib/haptics';
+import { analytics } from '../lib/posthog';
 import { colors } from '../constants/theme';
 import { Avatar } from '../components/Avatar';
 import { BackIcon, CheckIcon } from '../components/icons';
@@ -97,6 +98,7 @@ export default function FriendsScreen() {
     if (error) { Alert.alert('Error', error.message); setAddingId(null); return; }
 
     haptics.success();
+    analytics.capture('friend_request_sent');
     setSearchResults(prev => prev.map(r => r.id === target.id ? { ...r, friendStatus: 'pending_sent' } : r));
     const { data: me } = await supabase.from('users').select('name').eq('id', currentUserId).single();
     await sendPushToUser(target.id, 'New Friend Request', `${me?.name ?? 'Someone'} wants to be Yoke friends.`, { screen: 'profile', userId: currentUserId });

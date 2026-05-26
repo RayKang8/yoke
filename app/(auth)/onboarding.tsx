@@ -5,6 +5,7 @@ import {
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerForPushNotifications, scheduleDailyReminder } from '../../lib/notifications';
+import { analytics } from '../../lib/posthog';
 import { colors } from '../../constants/theme';
 import { AmenIcon, BellIcon, StarIcon, CheckIcon } from '../../components/icons';
 import { TimePickerModal } from '../../components/TimePickerModal';
@@ -49,6 +50,7 @@ export default function OnboardingScreen() {
       await scheduleDailyReminder(selectedTime);
     }
     if (isLast) {
+      analytics.capture('onboarding_completed');
       // trial_ends_at is set server-side by the handle_new_user() trigger at signup
       await AsyncStorage.setItem('onboarding_done', '1');
       router.replace('/(tabs)');
