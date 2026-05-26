@@ -1,13 +1,20 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const SECURE_HEADERS = {
+  'Content-Type': 'application/json',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'Cache-Control': 'no-store',
+};
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), { status, headers: SECURE_HEADERS });
+}
+
 Deno.serve(async (req) => {
   const authHeader = req.headers.get('Authorization');
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (!authHeader) return json({ error: 'Missing authorization header' }, 401);
 
   // Verify the JWT by calling getUser() — safer than manual JWT parsing
   const userClient = createClient(
@@ -19,18 +26,10 @@ Deno.serve(async (req) => {
   let userId: string;
   try {
     const { data: { user }, error } = await userClient.auth.getUser();
-    if (error || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    if (error || !user) return json({ error: 'Invalid or expired token' }, 401);
     userId = user.id;
   } catch {
-    return new Response(JSON.stringify({ error: 'Authentication failed' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return json({ error: 'Authentication failed' }, 401);
   }
 
   // Use admin client to delete — requires confirmed identity above
@@ -40,15 +39,7 @@ Deno.serve(async (req) => {
   );
 
   const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
-  if (deleteError) {
-    return new Response(JSON.stringify({ error: deleteError.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
+  if (deleteError) return json({ error: deleteError.message }, 500);
 
-  return new Response(JSON.stringify({ success: true }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return json({ success: true });
 });
