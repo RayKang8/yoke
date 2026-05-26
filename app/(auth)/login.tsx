@@ -93,6 +93,7 @@ export default function LoginScreen() {
                 placeholderTextColor={c.textSecondary}
                 autoCapitalize="none"
                 keyboardType="email-address"
+                maxLength={254}
                 style={{
                   backgroundColor: c.surface,
                   color: c.textPrimary,
@@ -115,6 +116,7 @@ export default function LoginScreen() {
                 placeholder="Your password"
                 placeholderTextColor={c.textSecondary}
                 secureTextEntry
+                maxLength={128}
                 style={{
                   backgroundColor: c.surface,
                   color: c.textPrimary,

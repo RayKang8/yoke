@@ -164,6 +164,7 @@ export default function FriendsScreen() {
           onChangeText={handleQueryChange}
           placeholder="Search by name or Yoke code..."
           placeholderTextColor={c.textSecondary}
+          maxLength={50}
           style={{
             backgroundColor: c.surface, color: c.textPrimary,
             borderColor: c.border, borderWidth: 1, borderRadius: 12,

@@ -90,6 +90,7 @@ export default function SignUpScreen() {
                 placeholder="Your name"
                 placeholderTextColor={c.textSecondary}
                 autoCapitalize="words"
+                maxLength={100}
                 style={{
                   backgroundColor: c.surface,
                   color: c.textPrimary,
@@ -113,6 +114,7 @@ export default function SignUpScreen() {
                 placeholderTextColor={c.textSecondary}
                 autoCapitalize="none"
                 keyboardType="email-address"
+                maxLength={254}
                 style={{
                   backgroundColor: c.surface,
                   color: c.textPrimary,
@@ -135,6 +137,7 @@ export default function SignUpScreen() {
                 placeholder="At least 6 characters"
                 placeholderTextColor={c.textSecondary}
                 secureTextEntry
+                maxLength={128}
                 style={{
                   backgroundColor: c.surface,
                   color: c.textPrimary,

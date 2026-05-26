@@ -23,9 +23,9 @@ Deno.serve(async (req) => {
     return json({ error: 'Method not allowed' }, 405);
   }
 
-  const WEBHOOK_SECRET = 'yoke_webhook_secret_2026_$!kF9xQpR3mZ';
+  const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET');
   const authHeader = req.headers.get('Authorization') ?? '';
-  if (authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
+  if (!WEBHOOK_SECRET || authHeader !== `Bearer ${WEBHOOK_SECRET}`) {
     return json({ error: 'Unauthorized' }, 401);
   }
 
