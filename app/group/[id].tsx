@@ -127,7 +127,7 @@ export default function GroupDetailScreen() {
 
   useEffect(() => {
     if (showSettings) loadInvitableFriends();
-  }, [showSettings]);
+  }, [showSettings, members, currentUserId, id]);
 
   async function loadInvitableFriends() {
     setInviteLoading(true);

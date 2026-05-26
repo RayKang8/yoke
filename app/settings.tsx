@@ -105,15 +105,17 @@ export default function SettingsScreen() {
         {
           text: 'Delete', style: 'destructive', onPress: async () => {
             const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+              Alert.alert('Error', 'Your session has expired. Please log in again.');
+              return;
+            }
             const { error } = await supabase.rpc('delete_user');
             if (error) {
               Alert.alert('Error', `Could not delete account: ${error.message}`);
               return;
             }
             // Delete avatar from storage
-            if (user) {
-              await supabase.storage.from('avatars').remove([`${user.id}/avatar.jpg`]);
-            }
+            await supabase.storage.from('avatars').remove([`${user.id}/avatar.jpg`]);
             // Cancel scheduled reminder
             await cancelDailyReminder();
             // Reset RevenueCat identity

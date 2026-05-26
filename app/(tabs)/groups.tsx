@@ -27,9 +27,7 @@ export default function GroupsScreen() {
   const { groups, loading, userId, refetch } = useGroups();
   const { isPremium, recheck: recheckPremium } = usePremium();
 
-  useFocusEffect(useCallback(() => { refetch(); recheckPremium(); loadInvites(); }, [refetch, recheckPremium]));
-
-  async function loadInvites() {
+  const loadInvites = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data } = await supabase
@@ -43,7 +41,9 @@ export default function GroupsScreen() {
       group_name: i.group?.name ?? '',
       inviter_name: i.inviter?.name ?? '',
     })));
-  }
+  }, []);
+
+  useFocusEffect(useCallback(() => { refetch(); recheckPremium(); loadInvites(); }, [refetch, recheckPremium, loadInvites]));
 
   async function handleAcceptInvite(invite: PendingInvite) {
     if (!isPremium && groups.length >= 1) {
