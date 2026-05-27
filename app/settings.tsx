@@ -125,6 +125,7 @@ export default function SettingsScreen() {
             // Clear all local state
             await AsyncStorage.multiRemove([
               'onboarding_done',
+              `onboarding_done_${user.id}`,
               'pending_email',
               'reminderTime',
               'defaultTranslation',

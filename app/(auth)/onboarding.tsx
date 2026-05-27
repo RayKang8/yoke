@@ -4,30 +4,31 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../../lib/supabase';
 import { registerForPushNotifications, scheduleDailyReminder } from '../../lib/notifications';
 import { analytics } from '../../lib/posthog';
 import { colors } from '../../constants/theme';
-import { AmenIcon, BellIcon, StarIcon, CheckIcon } from '../../components/icons';
+import { AmenIcon, BellIcon, StarIcon } from '../../components/icons';
 import { TimePickerModal } from '../../components/TimePickerModal';
 
 const STEPS = [
   {
-    title: 'What is Yoke?',
-    body: "Every day, Yoke gives you a passage to read and a simple question to sit with. Write your thoughts, share with friends or your small group, and grow together — one day at a time.",
+    title: 'Welcome to Yoke!',
+    body: "We are so glad you are here. Every day, Yoke brings you a short passage to read and a simple question to sit with. Write your reflection, share it with friends or your small group, and grow in faith together.",
     Icon: AmenIcon,
     cta: 'Continue',
   },
   {
-    title: 'Your daily reminder',
-    body: "Pick a time that works for you and we'll send a gentle nudge when your passage is ready. You can always change this in settings.",
+    title: 'Set your daily reminder',
+    body: "Pick a time that works for you and we will send a gentle nudge when your passage is ready each day. You can always update this later in Settings.",
     Icon: BellIcon,
     cta: 'Continue',
   },
   {
-    title: 'Your free trial starts now',
-    body: "You've got 7 days of full Yoke Premium to explore. After that, you can keep using Yoke free or upgrade to keep the extras — no pressure either way.",
+    title: "You're all set!",
+    body: "Welcome to the Yoke community! Jump in, explore, and start making it part of your daily rhythm. Whenever you want to unlock more features like unlimited groups and streak tracking, Premium is waiting for you in Settings.",
     Icon: StarIcon,
-    cta: 'Start my free trial',
+    cta: "Let's Go!",
   },
 ];
 
@@ -51,8 +52,8 @@ export default function OnboardingScreen() {
     }
     if (isLast) {
       analytics.capture('onboarding_completed');
-      // trial_ends_at is set server-side by the handle_new_user() trigger at signup
-      await AsyncStorage.setItem('onboarding_done', '1');
+      const { data: { user } } = await supabase.auth.getUser();
+      await AsyncStorage.setItem(`onboarding_done_${user?.id ?? ''}`, '1');
       router.replace('/(tabs)');
     } else {
       setStep(s => s + 1);
@@ -106,23 +107,6 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Premium features list for step 3 */}
-        {step === 2 && (
-          <View className="mt-8 gap-3">
-            {[
-              'Unlimited groups',
-              'Full calendar history',
-              'Personal & group streak tracking',
-            ].map(feature => (
-              <View key={feature} className="flex-row items-center gap-3">
-                <View style={{ backgroundColor: c.accent, width: 22, height: 22, borderRadius: 11 }} className="items-center justify-center">
-                  <CheckIcon size={12} color="#1A1A1A" />
-                </View>
-                <Text style={{ color: c.textPrimary, fontSize: 16 }}>{feature}</Text>
-              </View>
-            ))}
-          </View>
-        )}
       </View>
 
       {/* CTA */}
@@ -139,7 +123,8 @@ export default function OnboardingScreen() {
       {!isLast && (
         <TouchableOpacity
           onPress={async () => {
-            await AsyncStorage.setItem('onboarding_done', '1');
+            const { data: { user } } = await supabase.auth.getUser();
+            await AsyncStorage.setItem(`onboarding_done_${user?.id ?? ''}`, '1');
             router.replace('/(tabs)');
           }}
           className="mt-4 items-center"
