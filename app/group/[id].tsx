@@ -73,7 +73,7 @@ export default function GroupDetailScreen() {
 
     const { data: dgRows } = await supabase
       .from('devotional_groups')
-      .select('devotional:devotionals!devotional_id(id, content, visibility, created_at, comments_disabled, passage_id, user:users!user_id(id, name, yoke_code), passage:passages!passage_id(reference, title, date), reactions(type, user_id))')
+      .select('devotional:devotionals!devotional_id(id, content, visibility, created_at, comments_disabled, passage_id, user:users!user_id(id, name, yoke_code, avatar_url), passage:passages!passage_id(reference, title, date), reactions(type, user_id))')
       .eq('group_id', id);
 
     const allDevos = (dgRows ?? []).map((r: any) => r.devotional).filter(Boolean);
