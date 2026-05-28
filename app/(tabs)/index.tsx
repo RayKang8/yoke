@@ -237,9 +237,10 @@ export default function HomeScreen() {
     // Share to selected groups
     const groupIds = [...selectedAudiences].filter(a => a !== 'public' && a !== 'friends');
     if (groupIds.length > 0) {
-      await supabase.from('devotional_groups').insert(
+      const { error: shareError } = await supabase.from('devotional_groups').insert(
         groupIds.map(group_id => ({ devotional_id: data.id, group_id }))
       );
+      if (shareError) Alert.alert('Error', 'Posted, but could not share to some groups.');
     }
 
     haptics.success();

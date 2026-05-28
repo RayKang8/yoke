@@ -99,7 +99,8 @@ export default function SettingsScreen() {
     setReminderTime(time);
     setShowTimePicker(false);
     const { data: { user } } = await supabase.auth.getUser();
-    await AsyncStorage.setItem(`reminderTime_${user?.id ?? ''}`, time);
+    if (!user) return;
+    await AsyncStorage.setItem(`reminderTime_${user.id}`, time);
     await scheduleDailyReminder(time);
   }
 
