@@ -40,7 +40,17 @@ export async function getOfferings() {
 export async function purchasePackage(pkg: import('react-native-purchases').PurchasesPackage) {
   if (!Purchases) throw new Error('RevenueCat not available in Expo Go');
   const { customerInfo } = await Purchases.purchasePackage(pkg);
-  await syncPremiumStatus(customerInfo);
+
+  console.log('[RC] purchase complete — active entitlements:', JSON.stringify(Object.keys(customerInfo.entitlements.active ?? {})));
+  console.log('[RC] checking for entitlement key:', RC_ENTITLEMENT, '— found:', RC_ENTITLEMENT in (customerInfo.entitlements.active ?? {}));
+
+  // Sync to Supabase — wrapped so a network error here never blocks the success path
+  try {
+    await syncPremiumStatus(customerInfo);
+  } catch (e) {
+    console.warn('[RC] syncPremiumStatus failed (purchase still succeeded):', e);
+  }
+
   return customerInfo;
 }
 
@@ -78,7 +88,10 @@ export function isPremiumFromCustomerInfo(customerInfo: import('react-native-pur
 // Direct UPDATE on is_premium is revoked from the authenticated role.
 async function syncPremiumStatus(customerInfo: import('react-native-purchases').CustomerInfo) {
   const isPremium = isPremiumFromCustomerInfo(customerInfo);
+  console.log('[RC] syncPremiumStatus — isPremium:', isPremium);
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  await supabase.rpc('sync_premium_status', { p_is_premium: isPremium });
+  if (!user) { console.warn('[RC] syncPremiumStatus — no auth user'); return; }
+  const { error } = await supabase.rpc('sync_premium_status', { p_is_premium: isPremium });
+  if (error) console.error('[RC] sync_premium_status RPC error:', error.message);
+  else console.log('[RC] sync_premium_status RPC succeeded — is_premium set to:', isPremium);
 }

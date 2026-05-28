@@ -16,19 +16,24 @@ export function usePremium() {
     // Check RC first (source of truth for paid subs)
     const customerInfo = await getCustomerInfo();
     const rcPremium = isPremiumFromCustomerInfo(customerInfo);
+    console.log('[usePremium] RC active entitlements:', JSON.stringify(Object.keys(customerInfo?.entitlements?.active ?? {})));
+    console.log('[usePremium] rcPremium:', rcPremium);
 
-    // Check DB for trial status
+    // Check DB
     const { data: profile } = await supabase
       .from('users')
       .select('is_premium, trial_ends_at')
       .eq('id', user.id)
       .single();
+    console.log('[usePremium] DB is_premium:', profile?.is_premium);
 
     const trialEnd = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null;
     const trialActive = trialEnd ? trialEnd > new Date() : false;
     const daysLeft = trialEnd ? Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / 86400000)) : 0;
 
-    setIsPremium(rcPremium || profile?.is_premium || trialActive);
+    const result = rcPremium || profile?.is_premium || trialActive;
+    console.log('[usePremium] final isPremium:', result);
+    setIsPremium(result);
     setIsTrialActive(trialActive && !rcPremium && !profile?.is_premium);
     setTrialDaysLeft(daysLeft);
     setLoading(false);
