@@ -9,7 +9,7 @@ try {
   // Running in Expo Go — RevenueCat not available
 }
 
-export const RC_ENTITLEMENT = 'premium';
+export const RC_ENTITLEMENT = 'Yoke Premium';
 
 export const PRODUCT_IDS = {
   monthly: 'com.yokefaith.app.premium.monthly',
