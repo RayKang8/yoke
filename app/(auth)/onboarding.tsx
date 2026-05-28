@@ -44,16 +44,16 @@ export default function OnboardingScreen() {
   const isLast = step === STEPS.length - 1;
 
   async function handleContinue() {
+    const { data: { user } } = await supabase.auth.getUser();
+    const uid = user?.id ?? '';
     if (step === 1) {
-      // Step 2: request permission and schedule reminder
       await registerForPushNotifications();
-      await AsyncStorage.setItem('reminderTime', selectedTime);
+      await AsyncStorage.setItem(`reminderTime_${uid}`, selectedTime);
       await scheduleDailyReminder(selectedTime);
     }
     if (isLast) {
       analytics.capture('onboarding_completed');
-      const { data: { user } } = await supabase.auth.getUser();
-      await AsyncStorage.setItem(`onboarding_done_${user?.id ?? ''}`, '1');
+      await AsyncStorage.setItem(`onboarding_done_${uid}`, '1');
       router.replace('/(tabs)');
     } else {
       setStep(s => s + 1);

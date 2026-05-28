@@ -50,10 +50,14 @@ export default function SettingsScreen() {
   }, []);
 
   async function load() {
-    const [time, trans] = await Promise.all([
-      AsyncStorage.getItem('reminderTime'),
-      AsyncStorage.getItem('defaultTranslation'),
+    const { data: { user } } = await supabase.auth.getUser();
+    const uid = user?.id ?? '';
+    const [[, timePerUser], [, timeLegacy], [, trans]] = await AsyncStorage.multiGet([
+      `reminderTime_${uid}`,
+      'reminderTime',
+      'defaultTranslation',
     ]);
+    const time = timePerUser ?? timeLegacy;
     if (time) setReminderTime(time);
     if (trans) setDefaultTranslation(trans as Translation);
   }
@@ -94,7 +98,8 @@ export default function SettingsScreen() {
   async function handleTimeConfirm(time: string) {
     setReminderTime(time);
     setShowTimePicker(false);
-    await setSetting('reminderTime', time);
+    const { data: { user } } = await supabase.auth.getUser();
+    await AsyncStorage.setItem(`reminderTime_${user?.id ?? ''}`, time);
     await scheduleDailyReminder(time);
   }
 
@@ -128,6 +133,7 @@ export default function SettingsScreen() {
               `onboarding_done_${user.id}`,
               'pending_email',
               'reminderTime',
+              `reminderTime_${user.id}`,
               'defaultTranslation',
               'postAudiences',
               'bibleBook',
