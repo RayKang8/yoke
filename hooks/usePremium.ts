@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { getCustomerInfo, isPremiumFromCustomerInfo } from '../lib/revenuecat';
+import { getCustomerInfo, isPremiumFromCustomerInfo, syncPremiumStatus } from '../lib/revenuecat';
 
 export function usePremium() {
   const [isPremium, setIsPremium] = useState(false);
@@ -26,6 +26,12 @@ export function usePremium() {
       .eq('id', user.id)
       .single();
     console.log('[usePremium] DB is_premium:', profile?.is_premium);
+
+    // RC is source of truth — if it says premium but DB disagrees, heal the DB
+    if (rcPremium && !profile?.is_premium && customerInfo) {
+      console.log('[usePremium] healing DB — RC is premium but DB is not');
+      syncPremiumStatus(customerInfo).catch(e => console.warn('[usePremium] heal sync failed:', e));
+    }
 
     const trialEnd = profile?.trial_ends_at ? new Date(profile.trial_ends_at) : null;
     const trialActive = trialEnd ? trialEnd > new Date() : false;

@@ -86,7 +86,7 @@ export function isPremiumFromCustomerInfo(customerInfo: import('react-native-pur
 
 // Sync RC premium status → Supabase users table via SECURITY DEFINER RPC.
 // Direct UPDATE on is_premium is revoked from the authenticated role.
-async function syncPremiumStatus(customerInfo: import('react-native-purchases').CustomerInfo) {
+export async function syncPremiumStatus(customerInfo: import('react-native-purchases').CustomerInfo) {
   const isPremium = isPremiumFromCustomerInfo(customerInfo);
   console.log('[RC] syncPremiumStatus — isPremium:', isPremium);
   const { data: { user } } = await supabase.auth.getUser();
