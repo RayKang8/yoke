@@ -45,12 +45,6 @@ export default function CalendarScreen() {
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState(0);
 
-  useEffect(() => {
-    AsyncStorage.getItem('defaultTranslation').then(t => {
-      if (t) setTranslation(t as Translation);
-    });
-  }, []);
-
   const [selectedDay, setSelectedDay] = useState<DevotionalDay | null>(null);
   const [selectedVerses, setSelectedVerses] = useState<{ verse: number; text: string }[]>([]);
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -68,6 +62,13 @@ export default function CalendarScreen() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
+    const uid = user.id;
+
+    const [[, transPerUser], [, transLegacy]] = await AsyncStorage.multiGet([
+      `defaultTranslation_${uid}`, 'defaultTranslation',
+    ]);
+    const savedTrans = transPerUser ?? transLegacy;
+    if (savedTrans) setTranslation(savedTrans as Translation);
 
     const { data: devos, error: devosError } = await supabase
       .from('devotionals')

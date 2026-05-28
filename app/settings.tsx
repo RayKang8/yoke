@@ -28,6 +28,7 @@ export default function SettingsScreen() {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
 
+  const [userId, setUserId] = useState('');
   const [reminderTime, setReminderTime] = useState('8:00 AM');
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [defaultTranslation, setDefaultTranslation] = useState<Translation>('NIV');
@@ -52,18 +53,17 @@ export default function SettingsScreen() {
   async function load() {
     const { data: { user } } = await supabase.auth.getUser();
     const uid = user?.id ?? '';
-    const [[, timePerUser], [, timeLegacy], [, trans]] = await AsyncStorage.multiGet([
+    setUserId(uid);
+    const [[, timePerUser], [, timeLegacy], [, transPerUser], [, transLegacy]] = await AsyncStorage.multiGet([
       `reminderTime_${uid}`,
       'reminderTime',
+      `defaultTranslation_${uid}`,
       'defaultTranslation',
     ]);
     const time = timePerUser ?? timeLegacy;
+    const trans = transPerUser ?? transLegacy;
     if (time) setReminderTime(time);
     if (trans) setDefaultTranslation(trans as Translation);
-  }
-
-  async function setSetting(key: string, value: string) {
-    await AsyncStorage.setItem(key, value);
   }
 
   async function handleRestorePurchases() {
@@ -135,10 +135,15 @@ export default function SettingsScreen() {
               'reminderTime',
               `reminderTime_${user.id}`,
               'defaultTranslation',
+              `defaultTranslation_${user.id}`,
               'postAudiences',
+              `postAudiences_${user.id}`,
               'bibleBook',
+              `bibleBook_${user.id}`,
               'bibleChapter',
+              `bibleChapter_${user.id}`,
               'bibleTranslation',
+              `bibleTranslation_${user.id}`,
             ]);
             analytics.capture('account_deleted');
             await supabase.auth.signOut({ scope: 'local' });
@@ -245,7 +250,7 @@ export default function SettingsScreen() {
       <SectionHeader label="DEFAULT TRANSLATION" />
       {TRANSLATIONS.map(t => (
         <OptionRow key={t} label={t} selected={defaultTranslation === t}
-          onPress={() => { setDefaultTranslation(t); setSetting('defaultTranslation', t); }}
+          onPress={() => { setDefaultTranslation(t); AsyncStorage.setItem(`defaultTranslation_${userId}`, t); }}
         />
       ))}
 

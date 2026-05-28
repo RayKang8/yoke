@@ -79,10 +79,28 @@ export default function HomeScreen() {
   const cachedGroupIds = useRef<string[]>([]);
   const lastReactionRefetch = useRef(0);
 
-  // Load current user ID once on mount so reactions/comments work immediately
+  // Load current user ID once on mount so reactions/comments work immediately,
+  // then load per-user defaults with legacy global-key fallback
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setCurrentUserId(user.id);
+      if (!user) return;
+      setCurrentUserId(user.id);
+      const uid = user.id;
+      AsyncStorage.multiGet([
+        `defaultTranslation_${uid}`, 'defaultTranslation',
+        `postAudiences_${uid}`, 'postAudiences',
+      ]).then(pairs => {
+        const trans = (pairs[0][1] ?? pairs[1][1]) as Translation | null;
+        const audiences = pairs[2][1] ?? pairs[3][1];
+        if (trans) {
+          setTranslation(trans);
+        } else {
+          AsyncStorage.setItem(`defaultTranslation_${uid}`, 'NIV');
+        }
+        if (audiences) {
+          try { setSelectedAudiences(new Set(JSON.parse(audiences))); } catch {}
+        }
+      });
     });
   }, []);
 
@@ -114,21 +132,6 @@ export default function HomeScreen() {
       });
   }, [todaysDevotion?.id]);
 
-  // Load saved defaults — if no translation saved yet, write NIV so settings is always the source of truth
-  useEffect(() => {
-    AsyncStorage.multiGet(['defaultTranslation', 'postAudiences']).then(pairs => {
-      const trans = pairs[0][1] as Translation | null;
-      const audiences = pairs[1][1];
-      if (trans) {
-        setTranslation(trans);
-      } else {
-        AsyncStorage.setItem('defaultTranslation', 'NIV');
-      }
-      if (audiences) {
-        try { setSelectedAudiences(new Set(JSON.parse(audiences))); } catch {}
-      }
-    });
-  }, []);
 
   // Load passage verses (with numbers) for selected translation
   useEffect(() => {
@@ -186,7 +189,7 @@ export default function HomeScreen() {
     setSelectedAudiences(prev => {
       const next = new Set(prev);
       if (next.has(key)) { next.delete(key); } else { next.add(key); }
-      AsyncStorage.setItem('postAudiences', JSON.stringify([...next]));
+      AsyncStorage.setItem(`postAudiences_${currentUserId}`, JSON.stringify([...next]));
       return next;
     });
   }
@@ -449,7 +452,7 @@ export default function HomeScreen() {
                   {TRANSLATIONS.map(t => (
                     <TouchableOpacity
                       key={t}
-                      onPress={() => { setTranslation(t); AsyncStorage.setItem('defaultTranslation', t); }}
+                      onPress={() => { setTranslation(t); AsyncStorage.setItem(`defaultTranslation_${currentUserId}`, t); }}
                       style={{
                         backgroundColor: translation === t ? c.accent : c.surface,
                         borderColor: translation === t ? c.accent : c.border,
@@ -625,7 +628,7 @@ export default function HomeScreen() {
             {TRANSLATIONS.map(t => (
               <TouchableOpacity
                 key={t}
-                onPress={() => { setTranslation(t); AsyncStorage.setItem('defaultTranslation', t); }}
+                onPress={() => { setTranslation(t); AsyncStorage.setItem(`defaultTranslation_${currentUserId}`, t); }}
                 style={{
                   backgroundColor: translation === t ? c.accent : c.surface,
                   borderColor: translation === t ? c.accent : c.border,
@@ -707,7 +710,7 @@ export default function HomeScreen() {
               <TouchableOpacity
                 onPress={() => {
                   setSelectedAudiences(new Set());
-                  AsyncStorage.setItem('postAudiences', JSON.stringify([]));
+                  AsyncStorage.setItem(`postAudiences_${currentUserId}`, JSON.stringify([]));
                 }}
                 style={{
                   backgroundColor: onlyMe ? c.accent + '22' : c.surface,

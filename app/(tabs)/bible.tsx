@@ -7,6 +7,7 @@ import {
 import * as Clipboard from 'expo-clipboard';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../../lib/supabase';
 import { getChapter, Verse } from '../../lib/bible-api';
 import { BIBLE_BOOKS } from '../../constants/bible-books';
 import { colors } from '../../constants/theme';
@@ -22,6 +23,7 @@ export default function BibleScreen() {
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
 
+  const [userId, setUserId] = useState('');
   const [translation, setTranslation] = useState<Translation>('KJV');
   const [view, setView] = useState<BibleView>('book');
   const [selectedBook, setSelectedBook] = useState('John');
@@ -30,19 +32,28 @@ export default function BibleScreen() {
   const [loadingVerses, setLoadingVerses] = useState(false);
   const [showTranslations, setShowTranslations] = useState(false);
 
-  // Restore last position
+  // Restore last position per user, with legacy global-key fallback
   useEffect(() => {
-    AsyncStorage.multiGet(['bibleBook', 'bibleChapter', 'bibleTranslation', 'defaultTranslation']).then(pairs => {
-      const book = pairs[0][1];
-      const chapter = pairs[1][1];
-      const bibleTrans = pairs[2][1];
-      const defaultTrans = pairs[3][1];
-      if (book) setSelectedBook(book);
-      if (chapter) setSelectedChapter(parseInt(chapter));
-      const resolvedTrans = (bibleTrans || defaultTrans) as Translation | null;
-      if (resolvedTrans && FREE_TRANSLATIONS.includes(resolvedTrans)) {
-        setTranslation(resolvedTrans);
-      }
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      const uid = user?.id ?? '';
+      setUserId(uid);
+      AsyncStorage.multiGet([
+        `bibleBook_${uid}`, 'bibleBook',
+        `bibleChapter_${uid}`, 'bibleChapter',
+        `bibleTranslation_${uid}`, 'bibleTranslation',
+        `defaultTranslation_${uid}`, 'defaultTranslation',
+      ]).then(pairs => {
+        const book = pairs[0][1] ?? pairs[1][1];
+        const chapter = pairs[2][1] ?? pairs[3][1];
+        const bibleTrans = pairs[4][1] ?? pairs[5][1];
+        const defaultTrans = pairs[6][1] ?? pairs[7][1];
+        if (book) setSelectedBook(book);
+        if (chapter) setSelectedChapter(parseInt(chapter));
+        const resolvedTrans = (bibleTrans || defaultTrans) as Translation | null;
+        if (resolvedTrans && FREE_TRANSLATIONS.includes(resolvedTrans)) {
+          setTranslation(resolvedTrans);
+        }
+      });
     });
   }, []);
 
@@ -94,7 +105,7 @@ export default function BibleScreen() {
                 {section.books.map(book => (
                   <TouchableOpacity
                     key={book.name}
-                    onPress={() => { setSelectedBook(book.name); setSelectedChapter(1); setView('chapter'); AsyncStorage.setItem('bibleBook', book.name); }}
+                    onPress={() => { setSelectedBook(book.name); setSelectedChapter(1); setView('chapter'); AsyncStorage.setItem(`bibleBook_${userId}`, book.name); }}
                     style={{
                       backgroundColor: selectedBook === book.name ? c.accent : c.surface,
                       borderColor: selectedBook === book.name ? c.accent : c.border,
@@ -138,7 +149,7 @@ export default function BibleScreen() {
             {chapterNums.map(ch => (
               <TouchableOpacity
                 key={ch}
-                onPress={() => { setSelectedChapter(ch); setView('reader'); AsyncStorage.setItem('bibleChapter', String(ch)); }}
+                onPress={() => { setSelectedChapter(ch); setView('reader'); AsyncStorage.setItem(`bibleChapter_${userId}`, String(ch)); }}
                 style={{
                   backgroundColor: selectedChapter === ch ? c.accent : c.surface,
                   borderColor: c.border, borderWidth: 1, borderRadius: 10,
@@ -240,7 +251,7 @@ export default function BibleScreen() {
           <View className="flex-row gap-3 mt-6">
             {prevChapter && (
               <TouchableOpacity
-                onPress={() => { setSelectedChapter(prevChapter); AsyncStorage.setItem('bibleChapter', String(prevChapter)); }}
+                onPress={() => { setSelectedChapter(prevChapter); AsyncStorage.setItem(`bibleChapter_${userId}`, String(prevChapter)); }}
                 style={{ flex: 1, backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: c.border }}
                 className="py-3 items-center"
               >
@@ -252,7 +263,7 @@ export default function BibleScreen() {
             )}
             {nextChapter && (
               <TouchableOpacity
-                onPress={() => { setSelectedChapter(nextChapter); AsyncStorage.setItem('bibleChapter', String(nextChapter)); }}
+                onPress={() => { setSelectedChapter(nextChapter); AsyncStorage.setItem(`bibleChapter_${userId}`, String(nextChapter)); }}
                 style={{ flex: 1, backgroundColor: c.surface, borderRadius: 12, borderWidth: 1, borderColor: c.border }}
                 className="py-3 items-center"
               >
@@ -293,7 +304,7 @@ export default function BibleScreen() {
             {allRows.map(({ t, free }, i) => (
               <TouchableOpacity
                 key={t}
-                onPress={() => { if (!free) return; setTranslation(t); setShowTranslations(false); AsyncStorage.setItem('bibleTranslation', t); }}
+                onPress={() => { if (!free) return; setTranslation(t); setShowTranslations(false); AsyncStorage.setItem(`bibleTranslation_${userId}`, t); }}
                 activeOpacity={free ? 0.6 : 1}
                 style={{ padding: 16, borderBottomWidth: i < allRows.length - 1 ? 1 : 0, borderBottomColor: c.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', opacity: free ? 1 : 0.4 }}
               >
