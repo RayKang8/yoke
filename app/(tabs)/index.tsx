@@ -189,7 +189,7 @@ export default function HomeScreen() {
     setSelectedAudiences(prev => {
       const next = new Set(prev);
       if (next.has(key)) { next.delete(key); } else { next.add(key); }
-      AsyncStorage.setItem(`postAudiences_${currentUserId}`, JSON.stringify([...next]));
+      if (currentUserId) AsyncStorage.setItem(`postAudiences_${currentUserId}`, JSON.stringify([...next]));
       return next;
     });
   }
@@ -242,6 +242,9 @@ export default function HomeScreen() {
       );
       if (shareError) Alert.alert('Error', 'Posted, but could not share to some groups.');
     }
+
+    // Save the exact posted audience config as the default for next time
+    AsyncStorage.setItem(`postAudiences_${user.id}`, JSON.stringify([...selectedAudiences]));
 
     haptics.success();
     analytics.capture('devotional_posted', { visibility, audience_count: selectedAudiences.size });
@@ -711,7 +714,7 @@ export default function HomeScreen() {
               <TouchableOpacity
                 onPress={() => {
                   setSelectedAudiences(new Set());
-                  AsyncStorage.setItem(`postAudiences_${currentUserId}`, JSON.stringify([]));
+                  if (currentUserId) AsyncStorage.setItem(`postAudiences_${currentUserId}`, JSON.stringify([]));
                 }}
                 style={{
                   backgroundColor: onlyMe ? c.accent + '22' : c.surface,
