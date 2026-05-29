@@ -75,6 +75,30 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
     setText('');
   }
 
+  function reportComment(commentId: string) {
+    Alert.alert(
+      'Report Comment',
+      'Why are you reporting this?',
+      [
+        { text: 'Spam',                  onPress: () => submitCommentReport(commentId, 'spam') },
+        { text: 'Inappropriate content', onPress: () => submitCommentReport(commentId, 'inappropriate') },
+        { text: 'Harassment',            onPress: () => submitCommentReport(commentId, 'harassment') },
+        { text: 'Other',                 onPress: () => submitCommentReport(commentId, 'other') },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    );
+  }
+
+  async function submitCommentReport(commentId: string, reason: string) {
+    const { error } = await supabase.from('reports').insert({
+      reporter_id: currentUserId,
+      content_type: 'comment',
+      content_id: commentId,
+      reason,
+    });
+    if (!error) Alert.alert('Reported', 'Thank you — our team will review this comment.');
+  }
+
   async function deleteComment(commentId: string) {
     Alert.alert('Delete comment', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
@@ -139,11 +163,18 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
                     <Text style={{ color: c.textPrimary, fontSize: 15, lineHeight: 21 }}>
                       {item.content}
                     </Text>
-                    {canDelete && (
-                      <TouchableOpacity onPress={() => deleteComment(item.id)} className="mt-1">
-                        <Text style={{ color: c.textSecondary, fontSize: 12 }}>Delete</Text>
-                      </TouchableOpacity>
-                    )}
+                    <View className="flex-row gap-3 mt-1">
+                      {canDelete && (
+                        <TouchableOpacity onPress={() => deleteComment(item.id)}>
+                          <Text style={{ color: c.textSecondary, fontSize: 12 }}>Delete</Text>
+                        </TouchableOpacity>
+                      )}
+                      {item.user_id !== currentUserId && (
+                        <TouchableOpacity onPress={() => reportComment(item.id)}>
+                          <Text style={{ color: c.textSecondary, fontSize: 12 }}>Report</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
                 </View>
               );

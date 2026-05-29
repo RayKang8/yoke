@@ -1,12 +1,13 @@
 import { memo, useState } from 'react';
-import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, useColorScheme, Alert } from 'react-native';
 import { router } from 'expo-router';
+import { supabase } from '../lib/supabase';
 import { colors, fonts, shadows, radius } from '../constants/theme';
 import { timeAgo } from '../lib/utils';
 import { ReactionBar } from './ReactionBar';
 import { CommentThread } from './CommentThread';
 import { Avatar } from './Avatar';
-import { CommentIcon } from './icons';
+import { CommentIcon, DotsIcon } from './icons';
 import { FeedItem } from '../hooks/useFeed';
 
 interface Props {
@@ -23,6 +24,30 @@ export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId
   const [showComments, setShowComments] = useState(false);
   const [commentCount, setCommentCount] = useState(item.comment_count);
 
+  function handleReport() {
+    Alert.alert(
+      'Report Post',
+      'Why are you reporting this?',
+      [
+        { text: 'Spam',                 onPress: () => submitReport('spam') },
+        { text: 'Inappropriate content',onPress: () => submitReport('inappropriate') },
+        { text: 'Harassment',           onPress: () => submitReport('harassment') },
+        { text: 'Other',                onPress: () => submitReport('other') },
+        { text: 'Cancel', style: 'cancel' },
+      ],
+    );
+  }
+
+  async function submitReport(reason: string) {
+    const { error } = await supabase.from('reports').insert({
+      reporter_id: currentUserId,
+      content_type: 'devotional',
+      content_id: item.id,
+      reason,
+    });
+    if (!error) Alert.alert('Reported', 'Thank you — our team will review this post.');
+  }
+
   return (
     <View style={{
       backgroundColor: c.warmSurface,
@@ -34,14 +59,21 @@ export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId
       ...shadows.card,
     }}>
       {/* Author row */}
-      <TouchableOpacity className="flex-row items-center gap-3 mb-3" onPress={() => router.push(`/user/${item.user.id}` as any)} activeOpacity={0.7}>
-        <Avatar url={item.user.avatar_url} name={item.user.name} size={40} accent={c.accent} />
-        <View className="flex-1">
-          <Text style={{ color: c.textPrimary, fontFamily: fonts.uiBold, fontSize: 15 }}>{item.user.name}</Text>
-          <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 12 }}>{item.user.yoke_code}</Text>
-        </View>
-        <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 12 }}>{timeAgo(item.created_at)}</Text>
-      </TouchableOpacity>
+      <View className="flex-row items-center gap-3 mb-3">
+        <TouchableOpacity className="flex-row items-center gap-3 flex-1" onPress={() => router.push(`/user/${item.user.id}` as any)} activeOpacity={0.7}>
+          <Avatar url={item.user.avatar_url} name={item.user.name} size={40} accent={c.accent} />
+          <View className="flex-1">
+            <Text style={{ color: c.textPrimary, fontFamily: fonts.uiBold, fontSize: 15 }}>{item.user.name}</Text>
+            <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 12 }}>{item.user.yoke_code}</Text>
+          </View>
+          <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 12 }}>{timeAgo(item.created_at)}</Text>
+        </TouchableOpacity>
+        {item.user.id !== currentUserId && (
+          <TouchableOpacity onPress={handleReport} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <DotsIcon size={18} color={c.textSecondary} />
+          </TouchableOpacity>
+        )}
+      </View>
 
       {/* Passage reference */}
       <Text style={{ color: c.accent, fontFamily: fonts.uiMedium, fontSize: 13, marginBottom: 8 }}>
