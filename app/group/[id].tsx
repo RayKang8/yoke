@@ -48,6 +48,7 @@ export default function GroupDetailScreen() {
   const [pastFeed, setPastFeed] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState('');
+  const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
   const [showSettings, setShowSettings] = useState(false);
   const [invitableFriends, setInvitableFriends] = useState<InvitableFriend[]>([]);
   const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
@@ -59,6 +60,18 @@ export default function GroupDetailScreen() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (user) setCurrentUserId(user.id);
+
+    const ids = new Set<string>();
+    if (user) {
+      const { data: blockRows } = await supabase
+        .from('blocks')
+        .select('blocker_id, blocked_id')
+        .or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`);
+      for (const row of blockRows ?? []) {
+        ids.add(row.blocker_id === user.id ? row.blocked_id : row.blocker_id);
+      }
+      setBlockedIds(ids);
+    }
 
     const [{ data: groupData }, { data: memberData }] = await Promise.all([
       supabase.from('groups').select('*').eq('id', id).single(),
@@ -100,8 +113,9 @@ export default function GroupDetailScreen() {
       }
     }
 
-    setTodayFeed(todayDevos.map((d: any) => ({ ...d, comment_count: commentCounts[d.id] ?? 0 })) as FeedItem[]);
-    setPastFeed(pastDevos.map((d: any) => ({ ...d, comment_count: commentCounts[d.id] ?? 0 })) as FeedItem[]);
+    const notBlocked = (d: any) => !ids.has(d.user?.id);
+    setTodayFeed(todayDevos.filter(notBlocked).map((d: any) => ({ ...d, comment_count: commentCounts[d.id] ?? 0 })) as FeedItem[]);
+    setPastFeed(pastDevos.filter(notBlocked).map((d: any) => ({ ...d, comment_count: commentCounts[d.id] ?? 0 })) as FeedItem[]);
     setLoading(false);
   }
 
@@ -254,6 +268,11 @@ export default function GroupDetailScreen() {
                 currentUserId={currentUserId}
                 isPremium={isPremium}
                 onReactionUpdate={handleReactionUpdate}
+                onBlock={userId => {
+                  supabase.from('blocks').insert({ blocker_id: currentUserId, blocked_id: userId });
+                  setTodayFeed(prev => prev.filter(d => d.user.id !== userId));
+                  setPastFeed(prev => prev.filter(d => d.user.id !== userId));
+                }}
               />
             ))}
           </View>
@@ -272,6 +291,11 @@ export default function GroupDetailScreen() {
                 currentUserId={currentUserId}
                 isPremium={isPremium}
                 onReactionUpdate={handleReactionUpdate}
+                onBlock={userId => {
+                  supabase.from('blocks').insert({ blocker_id: currentUserId, blocked_id: userId });
+                  setTodayFeed(prev => prev.filter(d => d.user.id !== userId));
+                  setPastFeed(prev => prev.filter(d => d.user.id !== userId));
+                }}
               />
             ))}
           </>

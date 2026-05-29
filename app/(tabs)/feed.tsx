@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
 import { useFeed } from '../../hooks/useFeed';
 import { usePremium } from '../../hooks/usePremium';
+import { useBlocks } from '../../hooks/useBlocks';
 import { DevotionalCard } from '../../components/DevotionalCard';
 import { colors, fonts } from '../../constants/theme';
 
@@ -21,6 +22,7 @@ export default function FeedScreen() {
 
   const { items, loading, refreshing, loadingMore, hasMore, error, refresh, loadMore } = useFeed(tab);
   const { isPremium } = usePremium();
+  const { blockedIds, blockUser } = useBlocks(currentUserId);
 
   // Mutate reactions locally so the UI updates instantly
   const [localItems, setLocalItems] = useState(items);
@@ -91,7 +93,7 @@ export default function FeedScreen() {
         </View>
       ) : (
         <FlatList
-          data={localItems}
+          data={localItems.filter(item => !blockedIds.has(item.user.id))}
           keyExtractor={item => item.id}
           contentContainerStyle={{ padding: 16, paddingTop: 4 }}
           refreshControl={
@@ -123,6 +125,7 @@ export default function FeedScreen() {
               currentUserId={currentUserId}
               isPremium={isPremium}
               onReactionUpdate={handleReactionUpdate}
+              onBlock={blockUser}
             />
           )}
           ListFooterComponent={

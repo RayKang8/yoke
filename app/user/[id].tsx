@@ -42,6 +42,8 @@ export default function UserProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState('');
   const [busy, setBusy] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockBusy, setBlockBusy] = useState(false);
 
   const PAGE_SIZE = 15;
 
@@ -55,6 +57,14 @@ export default function UserProfileScreen() {
       const { data: { user } } = await supabase.auth.getUser();
       if (cancelled) return;
       if (user) setCurrentUserId(user.id);
+
+      // Check for mutual block before loading profile
+      const { data: blockRow } = await supabase
+        .from('blocks')
+        .select('blocker_id')
+        .or(`and(blocker_id.eq.${user?.id},blocked_id.eq.${id}),and(blocker_id.eq.${id},blocked_id.eq.${user?.id})`)
+        .maybeSingle();
+      if (blockRow) { setIsBlocked(true); setLoading(false); return; }
 
       const [{ data: profileData }, { data: devos }, { data: friendship }] = await Promise.all([
         supabase.from('users').select('id, name, yoke_code, bio, church, streak, avatar_url').eq('id', id).single(),
@@ -156,6 +166,31 @@ export default function UserProfileScreen() {
     ]);
   }
 
+  function handleBlock() {
+    Alert.alert(
+      `Block ${profile?.name}?`,
+      "You won't see each other's posts or profiles.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Block', style: 'destructive', onPress: async () => {
+            setBlockBusy(true);
+            await supabase.from('blocks').insert({ blocker_id: currentUserId, blocked_id: id });
+            setIsBlocked(true);
+            setBlockBusy(false);
+          },
+        },
+      ],
+    );
+  }
+
+  async function handleUnblock() {
+    setBlockBusy(true);
+    await supabase.from('blocks').delete().eq('blocker_id', currentUserId).eq('blocked_id', id);
+    setIsBlocked(false);
+    setBlockBusy(false);
+  }
+
   function FriendButton() {
     if (friendStatus === 'friends') {
       return (
@@ -199,6 +234,35 @@ export default function UserProfileScreen() {
     return (
       <View style={{ flex: 1, backgroundColor: c.background }} className="items-center justify-center">
         <ActivityIndicator color={c.accent} size="large" />
+      </View>
+    );
+  }
+
+  if (isBlocked) {
+    return (
+      <View style={{ flex: 1, backgroundColor: c.background }}>
+        <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 20 }}>
+          <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 24 }}>
+            <BackIcon size={16} color={c.textSecondary} />
+            <Text style={{ color: c.textSecondary, fontSize: 16 }}>Back</Text>
+          </TouchableOpacity>
+        </View>
+        <View className="flex-1 items-center justify-center px-8">
+          <Text style={{ color: c.textPrimary, fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Profile not available</Text>
+          <Text style={{ color: c.textSecondary, textAlign: 'center', marginBottom: 24 }}>
+            You can't view this profile.
+          </Text>
+          {currentUserId && (
+            <TouchableOpacity onPress={handleUnblock} disabled={blockBusy}
+              style={{ borderWidth: 1, borderColor: c.border, borderRadius: 12, paddingHorizontal: 20, paddingVertical: 10 }}
+            >
+              {blockBusy
+                ? <ActivityIndicator color={c.textSecondary} size="small" />
+                : <Text style={{ color: c.textSecondary }}>Unblock</Text>
+              }
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     );
   }
@@ -252,10 +316,16 @@ export default function UserProfileScreen() {
         </View>
       </View>
 
-      {/* Friend button */}
+      {/* Friend + Block buttons */}
       {currentUserId !== id && (
-        <View className="items-center mb-8">
+        <View className="items-center mb-8" style={{ gap: 10 }}>
           <FriendButton />
+          <TouchableOpacity onPress={handleBlock} disabled={blockBusy}>
+            {blockBusy
+              ? <ActivityIndicator color={c.textSecondary} size="small" />
+              : <Text style={{ color: c.textSecondary, fontSize: 13 }}>Block user</Text>
+            }
+          </TouchableOpacity>
         </View>
       )}
 
@@ -277,6 +347,10 @@ export default function UserProfileScreen() {
               onReactionUpdate={(devId, reactions) =>
                 setPublicDevos(prev => prev.map(d => d.id === devId ? { ...d, reactions } : d))
               }
+              onBlock={() => {
+                supabase.from('blocks').insert({ blocker_id: currentUserId, blocked_id: id });
+                setIsBlocked(true);
+              }}
             />
           ))}
           {loadingMore ? (

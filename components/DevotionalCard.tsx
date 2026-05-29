@@ -15,24 +15,33 @@ interface Props {
   currentUserId: string;
   isPremium?: boolean;
   onReactionUpdate: (id: string, reactions: { type: string; user_id: string }[]) => void;
+  onBlock?: (userId: string) => void;
 }
 
-export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId, isPremium = false, onReactionUpdate }: Props) {
+export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId, isPremium = false, onReactionUpdate, onBlock }: Props) {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const [expanded, setExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentCount, setCommentCount] = useState(item.comment_count);
 
+  function handleMoreOptions() {
+    Alert.alert(item.user.name, undefined, [
+      { text: 'Report post', onPress: handleReport },
+      { text: `Block ${item.user.name}`, style: 'destructive', onPress: confirmBlock },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  }
+
   function handleReport() {
     Alert.alert(
       'Report Post',
       'Why are you reporting this?',
       [
-        { text: 'Spam',                 onPress: () => submitReport('spam') },
-        { text: 'Inappropriate content',onPress: () => submitReport('inappropriate') },
-        { text: 'Harassment',           onPress: () => submitReport('harassment') },
-        { text: 'Other',                onPress: () => submitReport('other') },
+        { text: 'Spam',                  onPress: () => submitReport('spam') },
+        { text: 'Inappropriate content', onPress: () => submitReport('inappropriate') },
+        { text: 'Harassment',            onPress: () => submitReport('harassment') },
+        { text: 'Other',                 onPress: () => submitReport('other') },
         { text: 'Cancel', style: 'cancel' },
       ],
     );
@@ -46,6 +55,17 @@ export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId
       reason,
     });
     if (!error) Alert.alert('Reported', 'Thank you — our team will review this post.');
+  }
+
+  function confirmBlock() {
+    Alert.alert(
+      `Block ${item.user.name}?`,
+      "You won't see each other's posts.",
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Block', style: 'destructive', onPress: () => onBlock?.(item.user.id) },
+      ],
+    );
   }
 
   return (
@@ -69,7 +89,7 @@ export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId
           <Text style={{ color: c.textSecondary, fontFamily: fonts.uiRegular, fontSize: 12 }}>{timeAgo(item.created_at)}</Text>
         </TouchableOpacity>
         {item.user.id !== currentUserId && (
-          <TouchableOpacity onPress={handleReport} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity onPress={handleMoreOptions} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <DotsIcon size={18} color={c.textSecondary} />
           </TouchableOpacity>
         )}
