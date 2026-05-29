@@ -186,7 +186,7 @@ export default function GroupDetailScreen() {
       'Group invite',
       `You've been invited to join "${group?.name}" on Yoke.`,
       { screen: 'groups' },
-    );
+    ).catch(() => {});
   }
 
   async function handleShareCode() {
