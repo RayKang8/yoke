@@ -59,12 +59,12 @@ export default function UserProfileScreen() {
       if (user) setCurrentUserId(user.id);
 
       // Check for mutual block before loading profile
-      const { data: blockRow } = await supabase
+      const { data: blockRows } = await supabase
         .from('blocks')
         .select('blocker_id')
         .or(`and(blocker_id.eq.${user?.id},blocked_id.eq.${id}),and(blocker_id.eq.${id},blocked_id.eq.${user?.id})`)
-        .maybeSingle();
-      if (blockRow) { setIsBlocked(true); setLoading(false); return; }
+        .limit(1);
+      if (blockRows && blockRows.length > 0) { setIsBlocked(true); setLoading(false); return; }
 
       const [{ data: profileData }, { data: devos }, { data: friendship }] = await Promise.all([
         supabase.from('users').select('id, name, yoke_code, bio, church, streak, avatar_url').eq('id', id).single(),
