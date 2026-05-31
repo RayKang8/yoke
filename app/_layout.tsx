@@ -98,6 +98,7 @@ export default function RootLayout() {
 
   useNotificationListener((data) => {
     if (data.screen === 'home') router.push('/(tabs)');
+    else if (data.screen === 'groups') router.push('/(tabs)/groups' as any);
     else if (data.screen === 'profile' && data.userId) router.push(`/user/${data.userId}` as any);
   });
 

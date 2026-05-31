@@ -163,7 +163,7 @@ export default function GroupDetailScreen() {
     const pendingInviteeIds = new Set((existingInvites ?? []).map((i: any) => i.invitee_id));
     const invitable = (friendships ?? [])
       .map((f: any) => f.requester_id === currentUserId ? f.addressee : f.requester)
-      .filter((f: any) => !memberIds.has(f.id) && !pendingInviteeIds.has(f.id));
+      .filter((f: any) => f && !memberIds.has(f.id) && !pendingInviteeIds.has(f.id));
 
     setInvitableFriends(invitable);
     setInvitedIds(new Set());
