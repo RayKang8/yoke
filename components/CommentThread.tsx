@@ -104,7 +104,8 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete', style: 'destructive', onPress: async () => {
-          await supabase.from('comments').delete().eq('id', commentId);
+          const { error } = await supabase.from('comments').delete().eq('id', commentId);
+          if (error) { Alert.alert('Error', 'Could not delete comment.'); return; }
           const updated = comments.filter(c => c.id !== commentId);
           setComments(updated);
           onCountChange(updated.length);

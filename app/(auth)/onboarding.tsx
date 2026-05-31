@@ -45,7 +45,8 @@ export default function OnboardingScreen() {
 
   async function handleContinue() {
     const { data: { user } } = await supabase.auth.getUser();
-    const uid = user?.id ?? '';
+    if (!user) { router.replace('/(auth)/welcome'); return; }
+    const uid = user.id;
     if (step === 1) {
       await registerForPushNotifications();
       await AsyncStorage.setItem(`reminderTime_${uid}`, selectedTime);
@@ -124,7 +125,8 @@ export default function OnboardingScreen() {
         <TouchableOpacity
           onPress={async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            await AsyncStorage.setItem(`onboarding_done_${user?.id ?? ''}`, '1');
+            if (!user) { router.replace('/(auth)/welcome'); return; }
+            await AsyncStorage.setItem(`onboarding_done_${user.id}`, '1');
             router.replace('/(tabs)');
           }}
           className="mt-4 items-center"

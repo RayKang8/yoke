@@ -27,9 +27,12 @@ export function usePremium() {
       .single();
     console.log('[usePremium] DB is_premium:', profile?.is_premium);
 
-    // RC is source of truth — if it says premium but DB disagrees, heal the DB
+    // RC is source of truth — heal DB in both directions
     if (rcPremium && !profile?.is_premium && customerInfo) {
       console.log('[usePremium] healing DB — RC is premium but DB is not');
+      syncPremiumStatus(customerInfo).catch(e => console.warn('[usePremium] heal sync failed:', e));
+    } else if (!rcPremium && profile?.is_premium && customerInfo) {
+      console.log('[usePremium] healing DB — RC is not premium but DB still is (subscription lapsed)');
       syncPremiumStatus(customerInfo).catch(e => console.warn('[usePremium] heal sync failed:', e));
     }
 

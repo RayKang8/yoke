@@ -203,7 +203,7 @@ export default function HomeScreen() {
 
     setPosting(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setPosting(false); return; }
+    if (!user) { setPosting(false); Alert.alert('Session expired', 'Please log out and log back in.'); return; }
 
     // Derive visibility from selected audiences
     const visibility = selectedAudiences.has('public') ? 'public'
@@ -456,7 +456,7 @@ export default function HomeScreen() {
                   {TRANSLATIONS.map(t => (
                     <TouchableOpacity
                       key={t}
-                      onPress={() => { setTranslation(t); AsyncStorage.setItem(`defaultTranslation_${currentUserId}`, t); }}
+                      onPress={() => { setTranslation(t); if (currentUserId) AsyncStorage.setItem(`defaultTranslation_${currentUserId}`, t); }}
                       style={{
                         backgroundColor: translation === t ? c.accent : c.surface,
                         borderColor: translation === t ? c.accent : c.border,
@@ -632,7 +632,7 @@ export default function HomeScreen() {
             {TRANSLATIONS.map(t => (
               <TouchableOpacity
                 key={t}
-                onPress={() => { setTranslation(t); AsyncStorage.setItem(`defaultTranslation_${currentUserId}`, t); }}
+                onPress={() => { setTranslation(t); if (currentUserId) AsyncStorage.setItem(`defaultTranslation_${currentUserId}`, t); }}
                 style={{
                   backgroundColor: translation === t ? c.accent : c.surface,
                   borderColor: translation === t ? c.accent : c.border,
