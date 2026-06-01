@@ -34,6 +34,14 @@
     "web": {
       "favicon": "./assets/Yoke-Icon.png"
     },
+    "updates": {
+      "url": "https://u.expo.dev/5b309bb9-d078-4507-bbd6-abb2dc61333c",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "plugins": [
       "expo-router",
       [
