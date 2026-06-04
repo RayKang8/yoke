@@ -87,7 +87,7 @@ export default function RootLayout() {
   // Handle deep links for email confirmation and password reset (PKCE flow)
   useEffect(() => {
     async function handleUrl(url: string) {
-      if (!url.includes('code=')) return;
+      if (!url?.includes('code=')) return;
       await supabase.auth.exchangeCodeForSession(url);
       // onAuthStateChange fires automatically; _layout routing effect handles navigation
     }

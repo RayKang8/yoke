@@ -62,8 +62,9 @@ export async function registerForPushNotifications(): Promise<string | null> {
  * Parses "8:00 AM" → { hour: 8, minute: 0 }
  */
 function parseTime(timeStr: string): { hour: number; minute: number } {
+  if (!timeStr) return { hour: 8, minute: 0 };
   const [time, period] = timeStr.split(' ');
-  let [hour, minute] = time.split(':').map(Number);
+  let [hour, minute] = (time ?? '8:00').split(':').map(Number);
   if (period === 'PM' && hour !== 12) hour += 12;
   if (period === 'AM' && hour === 12) hour = 0;
   return { hour, minute };

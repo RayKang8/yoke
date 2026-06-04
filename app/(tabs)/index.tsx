@@ -136,7 +136,7 @@ export default function HomeScreen() {
   // Load passage verses (with numbers) for selected translation
   useEffect(() => {
     if (!passage) return;
-    const match = passage.reference.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?/);
+    const match = passage.reference?.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?/);
     if (!match) return;
     const book = match[1];
     const chapter = parseInt(match[2]);

@@ -115,7 +115,7 @@ export default function CalendarScreen() {
     setSelectedDay(devo);
     setSelectedVerses([]);
 
-    const match = devo.passage_reference.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?/);
+    const match = devo.passage_reference?.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?/);
     if (!match) return;
     const book = match[1];
     const chapter = parseInt(match[2]);

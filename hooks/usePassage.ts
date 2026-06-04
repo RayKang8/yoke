@@ -43,7 +43,7 @@ export function usePassage() {
 
   async function getVerseText(reference: string, translation: Translation): Promise<string | null> {
     // Parse reference like "John 3:16-17" or "Romans 8:18-25" or "John 3:16"
-    const match = reference.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?/);
+    const match = reference?.match(/^(.+?)\s+(\d+):(\d+)(?:-(\d+))?/);
     if (!match) return null;
     const book = match[1];
     const chapter = parseInt(match[2]);

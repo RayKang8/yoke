@@ -12,7 +12,7 @@ interface Props {
 export function Avatar({ url, name, size, accent, textColor = '#1A1A1A' }: Props) {
   const [imgError, setImgError] = useState(false);
 
-  const initials = name
+  const initials = (name ?? '')
     .trim()
     .split(/\s+/)
     .map(w => w[0] ?? '')

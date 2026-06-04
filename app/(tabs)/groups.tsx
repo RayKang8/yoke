@@ -59,10 +59,10 @@ export default function GroupsScreen() {
     const { error } = await supabase.rpc('accept_group_invite', { p_invite_id: invite.id });
     setInviteBusy(null);
     if (error) {
-      if (error.message.includes('Upgrade to Premium')) {
+      if (error.message?.includes('Upgrade to Premium')) {
         Alert.alert('Upgrade to Premium', 'Free accounts can be in 1 group. Upgrade to Yoke Premium for unlimited groups.');
       } else {
-        Alert.alert('Error', error.message);
+        Alert.alert('Error', error.message ?? 'Something went wrong');
       }
       return;
     }
@@ -169,14 +169,14 @@ export default function GroupsScreen() {
     setBusy(false);
 
     if (error) {
-      if (error.message.includes('Invalid invite code')) {
+      if (error.message?.includes('Invalid invite code')) {
         Alert.alert('Invalid code', 'No group found with that invite code.');
-      } else if (error.message.includes('Already a member')) {
+      } else if (error.message?.includes('Already a member')) {
         Alert.alert('Already a member', "You're already in this group.");
-      } else if (error.message.includes('Upgrade to Premium')) {
+      } else if (error.message?.includes('Upgrade to Premium')) {
         Alert.alert('Upgrade to Premium', 'Free accounts can be in 1 group. Upgrade to Yoke Premium for unlimited groups.');
       } else {
-        Alert.alert('Error', error.message);
+        Alert.alert('Error', error.message ?? 'Something went wrong');
       }
       return;
     }
