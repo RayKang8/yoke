@@ -3,6 +3,7 @@ import {
   View, Text, Modal, TouchableOpacity, ActivityIndicator,
   useColorScheme, Alert, ScrollView,
 } from 'react-native';
+import * as Linking from 'expo-linking';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '../constants/theme';
 import type { PurchasesOfferings } from 'react-native-purchases';
@@ -233,6 +234,16 @@ export function PaywallSheet({ visible, onClose, onPurchased }: Props) {
             }
             {' '}Payment charged to your Apple ID or Google Play account at confirmation. Subscription automatically renews unless cancelled at least 24 hours before the end of the current period. Manage or cancel in your device's account settings.
           </Text>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 10, gap: 6 }}>
+            <TouchableOpacity onPress={() => Linking.openURL('https://yokefaith.com/privacy')} style={{ paddingVertical: 8, paddingHorizontal: 4 }}>
+              <Text style={{ color: c.textSecondary, fontSize: 11 }}>Privacy Policy</Text>
+            </TouchableOpacity>
+            <Text style={{ color: c.textSecondary, fontSize: 11 }}>·</Text>
+            <TouchableOpacity onPress={() => Linking.openURL('https://yokefaith.com/terms')} style={{ paddingVertical: 8, paddingHorizontal: 4 }}>
+              <Text style={{ color: c.textSecondary, fontSize: 11 }}>Terms of Use</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </View>
     </Modal>
