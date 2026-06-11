@@ -1,6 +1,6 @@
 import '../global.css';
 import { useEffect, useRef } from 'react';
-import { View, ActivityIndicator, useColorScheme } from 'react-native';
+import { View, useColorScheme } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -19,12 +19,15 @@ import {
   Nunito_700Bold,
 } from '@expo-google-fonts/nunito';
 import * as Linking from 'expo-linking';
+import * as SplashScreen from 'expo-splash-screen';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { registerForPushNotifications, useNotificationListener } from '../lib/notifications';
 import { initRevenueCat } from '../lib/revenuecat';
 import { initPostHog, analytics } from '../lib/posthog';
 import { colors } from '../constants/theme';
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { session, loading, isRecovery } = useAuth();
@@ -44,6 +47,14 @@ export default function RootLayout() {
     Nunito_600SemiBold,
     Nunito_700Bold,
   });
+
+  useEffect(() => {
+    if (fontsLoaded && !loading) {
+      (async () => {
+        try { await SplashScreen.hideAsync(); } catch {}
+      })();
+    }
+  }, [fontsLoaded, loading]);
 
   useEffect(() => {
     if (loading) return;
@@ -103,14 +114,7 @@ export default function RootLayout() {
   });
 
   if (loading || !fontsLoaded) {
-    return (
-      <SafeAreaProvider>
-        <View style={{ flex: 1, backgroundColor: c.background, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator color={c.accent} size="large" />
-          <StatusBar style="auto" />
-        </View>
-      </SafeAreaProvider>
-    );
+    return null;
   }
 
   return (
