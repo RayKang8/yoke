@@ -3,7 +3,7 @@
     "name": "Yoke",
     "slug": "yoke",
     "scheme": "yoke",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/Yoke-Icon.png",
     "userInterfaceStyle": "automatic",
@@ -16,6 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "requireFullScreen": true,
+      "buildNumber": "7",
       "bundleIdentifier": "com.yokefaith.app",
       "infoPlist": {
         "NSUserNotificationsUsageDescription": "Yoke sends a daily reminder for your devotional and notifies you when friends react to or comment on your posts.",
