@@ -1,6 +1,5 @@
 import '../global.css';
 import { useEffect, useRef } from 'react';
-import { View, useColorScheme } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -25,7 +24,7 @@ import { supabase } from '../lib/supabase';
 import { registerForPushNotifications, useNotificationListener } from '../lib/notifications';
 import { initRevenueCat } from '../lib/revenuecat';
 import { initPostHog, analytics } from '../lib/posthog';
-import { colors } from '../constants/theme';
+import AppSplash from '../components/AppSplash';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,8 +33,6 @@ export default function RootLayout() {
   const registered = useRef(false);
 
   useEffect(() => { initPostHog(); }, []);
-  const scheme = useColorScheme();
-  const c = colors[scheme === 'dark' ? 'dark' : 'light'];
 
   const [fontsLoaded] = useFonts({
     Lora_400Regular,
@@ -48,13 +45,11 @@ export default function RootLayout() {
     Nunito_700Bold,
   });
 
+  // Hide the native splash immediately on first render — our AppSplash takes over
+  // from here and stays until fonts and auth are both ready.
   useEffect(() => {
-    if (fontsLoaded && !loading) {
-      (async () => {
-        try { await SplashScreen.hideAsync(); } catch {}
-      })();
-    }
-  }, [fontsLoaded, loading]);
+    SplashScreen.hideAsync().catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -114,7 +109,7 @@ export default function RootLayout() {
   });
 
   if (loading || !fontsLoaded) {
-    return <View style={{ flex: 1, backgroundColor: c.background }} />;
+    return <AppSplash />;
   }
 
   return (

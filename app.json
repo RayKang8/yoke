@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/Yoke.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F5C842"
+      "backgroundColor": "#FDD72D"
     },
     "ios": {
       "supportsTablet": false,
