@@ -82,7 +82,8 @@ export default function HomeScreen() {
   // Load current user ID once on mount so reactions/comments work immediately,
   // then load per-user defaults with legacy global-key fallback
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const user = session?.user ?? null;
       if (!user) return;
       setCurrentUserId(user.id);
       const uid = user.id;
@@ -170,8 +171,8 @@ export default function HomeScreen() {
     const now = Date.now();
     if (now - lastReactionRefetch.current < 30_000) return;
     lastReactionRefetch.current = now;
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setCurrentUserId(user.id);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) setCurrentUserId(session.user.id);
     });
     supabase
       .from('reactions')

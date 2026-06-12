@@ -18,7 +18,8 @@ export function useGroups() {
 
   const fetch = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     if (!user) { setLoading(false); return; }
     setUserId(user.id);
 
@@ -97,6 +98,13 @@ export function useGroups() {
   }, []);
 
   useEffect(() => { fetch(); }, [fetch]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) fetch();
+    });
+    return () => subscription.unsubscribe();
+  }, [fetch]);
 
   return { groups, loading, userId, refetch: fetch };
 }

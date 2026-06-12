@@ -34,8 +34,8 @@ export default function BibleScreen() {
 
   // Restore last position per user, with legacy global-key fallback
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      const uid = user?.id ?? '';
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const uid = session?.user?.id ?? '';
       setUserId(uid);
       AsyncStorage.multiGet([
         `bibleBook_${uid}`, 'bibleBook',

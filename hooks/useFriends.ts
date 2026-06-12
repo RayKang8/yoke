@@ -28,7 +28,8 @@ export function useFriends() {
 
   const fetch = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     if (!user) { setLoading(false); return; }
     setCurrentUserId(user.id);
 
@@ -70,6 +71,13 @@ export function useFriends() {
   }, []);
 
   useEffect(() => { fetch(); }, [fetch]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) fetch();
+    });
+    return () => subscription.unsubscribe();
+  }, [fetch]);
 
   return { friends, received, sent, loading, currentUserId, refetch: fetch };
 }

@@ -27,7 +27,8 @@ export function usePassage() {
   }
 
   async function fetchTodaysDevotion(passageId: string) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     if (!user) { setLoading(false); return; }
 
     const { data } = await supabase
@@ -71,6 +72,17 @@ export function usePassage() {
   useEffect(() => {
     if (passage) fetchTodaysDevotion(passage.id);
   }, [passage]);
+
+  // Retry when the user signs in via a PKCE deep-link — the initial fetch may
+  // have run before the session was available in the Supabase client cache.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        fetchPassage();
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   return {
     passage,

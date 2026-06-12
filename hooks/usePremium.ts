@@ -10,7 +10,8 @@ export function usePremium() {
 
   const check = useCallback(async function check() {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     if (!user) { setLoading(false); return; }
 
     // Check RC first (source of truth for paid subs)
@@ -48,8 +49,13 @@ export function usePremium() {
     setLoading(false);
   }, []);
 
+  useEffect(() => { check(); }, [check]);
+
   useEffect(() => {
-    check();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) check();
+    });
+    return () => subscription.unsubscribe();
   }, [check]);
 
   return { isPremium, isTrialActive, trialDaysLeft, loading, recheck: check };

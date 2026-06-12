@@ -6,7 +6,8 @@ export function useBadgeCounts() {
   const [groupsBadge, setGroupsBadge] = useState(0);
 
   const fetch = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     if (!user) return;
 
     const [notifResult, inviteResult] = await Promise.all([

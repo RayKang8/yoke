@@ -10,7 +10,8 @@ export function useProfile() {
 
   const fetch = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     if (!user) { setLoading(false); return; }
 
     const [{ data: profileData }, { count: devoTotal }, { count: friends }, { data: streakRows }] = await Promise.all([
@@ -37,6 +38,15 @@ export function useProfile() {
   }, []);
 
   useEffect(() => { fetch(); }, [fetch]);
+
+  // Retry when the user signs in via a PKCE deep-link — the initial fetch may
+  // have run before the session was available in the Supabase client cache.
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) fetch();
+    });
+    return () => subscription.unsubscribe();
+  }, [fetch]);
 
   async function updateProfile(updates: Partial<Pick<User, 'name' | 'bio' | 'church'>>) {
     const { data: { user } } = await supabase.auth.getUser();
