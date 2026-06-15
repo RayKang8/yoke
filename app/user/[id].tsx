@@ -66,7 +66,7 @@ export default function UserProfileScreen() {
         .limit(1);
       if (blockRows && blockRows.length > 0) { setIsBlocked(true); setLoading(false); return; }
 
-      const [{ data: profileData }, { data: devos }, { data: friendship }] = await Promise.all([
+      const [{ data: profileData }, { data: devos }, { data: friendship }, { data: streakRows }] = await Promise.all([
         supabase.from('users').select('id, name, yoke_code, bio, church, streak, avatar_url').eq('id', id).single(),
         supabase
           .from('devotionals')
@@ -80,10 +80,12 @@ export default function UserProfileScreen() {
           .select('id, requester_id, addressee_id, status')
           .or(`and(requester_id.eq.${user?.id},addressee_id.eq.${id}),and(requester_id.eq.${id},addressee_id.eq.${user?.id})`)
           .maybeSingle(),
+        supabase.rpc('compute_user_streak', { p_user_id: id }),
       ]);
 
       if (cancelled) return;
-      setProfile(profileData);
+      const computedStreak = (streakRows as any)?.[0]?.streak ?? profileData?.streak ?? 0;
+      setProfile(profileData ? { ...profileData, streak: computedStreak } : null);
       const page = devos ?? [];
       setHasMoreDevos(page.length > PAGE_SIZE);
       setPublicDevos(page.slice(0, PAGE_SIZE).map((d: any) => ({ ...d, comment_count: 0 })) as FeedItem[]);
