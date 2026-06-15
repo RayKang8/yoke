@@ -112,9 +112,13 @@ export default function RootLayout() {
     return <AppSplash />;
   }
 
+  // Key forces a full navigator remount when the user changes (e.g. delete +
+  // re-register with same email), preventing stale cached tab screen state.
+  const userId = session?.user?.id ?? 'guest';
+
   return (
     <SafeAreaProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack key={userId} screenOptions={{ headerShown: false }} />
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );
