@@ -6,6 +6,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
+import { sendPushToUser } from '../../lib/notifications';
 import { useFocusEffect } from 'expo-router';
 import { usePassage } from '../../hooks/usePassage';
 import { useProfile } from '../../hooks/useProfile';
@@ -242,6 +243,24 @@ export default function HomeScreen() {
         groupIds.map(group_id => ({ devotional_id: data.id, group_id }))
       );
       if (shareError) Alert.alert('Error', 'Posted, but could not share to some groups.');
+
+      // Notify group members (fire-and-forget)
+      const posterName = profile?.name ?? 'Someone';
+      supabase
+        .from('group_members')
+        .select('user_id, group:groups!group_id(name)')
+        .in('group_id', groupIds)
+        .neq('user_id', user.id)
+        .then(({ data: members }) => {
+          if (!members) return;
+          const seen = new Set<string>();
+          for (const m of members) {
+            if (seen.has(m.user_id)) continue;
+            seen.add(m.user_id);
+            const groupName = (m.group as any)?.name ?? 'your group';
+            sendPushToUser(m.user_id, 'New devotional', `${posterName} just posted in ${groupName}.`, { screen: 'home' }).catch(() => {});
+          }
+        });
     }
 
     // Save the exact posted audience config as the default for next time
@@ -395,6 +414,7 @@ export default function HomeScreen() {
           <View style={{ marginBottom: 12 }}>
             <ReactionBar
               devotionalId={todaysDevotion.id}
+              authorId={currentUserId}
               reactions={reactions}
               currentUserId={currentUserId}
               isPremium={isPremium}

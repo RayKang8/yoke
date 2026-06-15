@@ -6,6 +6,7 @@ import {
 import Animated, { useAnimatedKeyboard, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
+import { sendPushToUser } from '../lib/notifications';
 import { timeAgo } from '../lib/utils';
 import { colors } from '../constants/theme';
 import { Avatar } from './Avatar';
@@ -73,6 +74,10 @@ export function CommentThread({ devotionalId, authorId, commentsDisabled, curren
     setComments(updated);
     onCountChange(updated.length);
     setText('');
+    if (currentUserId !== authorId) {
+      const commenterName = (data as any).user?.name ?? 'Someone';
+      sendPushToUser(authorId, 'New comment', `${commenterName} commented on your devotional.`, { screen: 'home' }).catch(() => {});
+    }
   }
 
   function reportComment(commentId: string) {

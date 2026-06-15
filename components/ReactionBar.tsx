@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, useColorScheme, Modal, ActivityIndicator,
 import { useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
+import { sendPushToUser } from '../lib/notifications';
 import { colors } from '../constants/theme';
 import { haptics } from '../lib/haptics';
 import { PrayIcon, AmenIcon, HitIcon } from './icons';
@@ -16,13 +17,14 @@ const REACTIONS = [
 
 interface Props {
   devotionalId: string;
+  authorId: string;
   reactions: { type: string; user_id: string }[];
   currentUserId: string;
   isPremium?: boolean;
   onUpdate: (reactions: { type: string; user_id: string }[]) => void;
 }
 
-export function ReactionBar({ devotionalId, reactions, currentUserId, isPremium = false, onUpdate }: Props) {
+export function ReactionBar({ devotionalId, authorId, reactions, currentUserId, isPremium = false, onUpdate }: Props) {
   const scheme = useColorScheme();
   const c = colors[scheme === 'dark' ? 'dark' : 'light'];
   const insets = useSafeAreaInsets();
@@ -57,6 +59,14 @@ export function ReactionBar({ devotionalId, reactions, currentUserId, isPremium 
         .from('reactions')
         .insert({ devotional_id: devotionalId, user_id: currentUserId, type });
       onUpdate([...reactions, { type, user_id: currentUserId }]);
+      if (currentUserId !== authorId) {
+        const reactionLabel = REACTIONS.find(r => r.type === type)?.label ?? type;
+        supabase.from('users').select('name').eq('id', currentUserId).single()
+          .then(({ data: me }) => {
+            const myName = (me as any)?.name ?? 'Someone';
+            sendPushToUser(authorId, 'New reaction', `${myName} reacted "${reactionLabel}" to your devotional.`, { screen: 'home' }).catch(() => {});
+          });
+      }
     }
 
     setBusy(null);

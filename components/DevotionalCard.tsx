@@ -119,6 +119,7 @@ export const DevotionalCard = memo(function DevotionalCard({ item, currentUserId
       {/* Reactions + comments */}
       <ReactionBar
         devotionalId={item.id}
+        authorId={item.user.id}
         reactions={item.reactions}
         currentUserId={currentUserId}
         isPremium={isPremium}
