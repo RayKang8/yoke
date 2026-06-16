@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { useEffect, useRef } from 'react';
 import { supabase } from './supabase';
@@ -42,7 +43,8 @@ export async function registerForPushNotifications(): Promise<string | null> {
   }
 
   try {
-    const token = (await Notifications.getExpoPushTokenAsync()).data;
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId as string | undefined;
+    const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     // Save token to Supabase
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
@@ -50,8 +52,7 @@ export async function registerForPushNotifications(): Promise<string | null> {
     }
     return token;
   } catch {
-    // getExpoPushTokenAsync requires EAS projectId — fails in Expo Go
-    // Local notifications still work
+    // Falls through in Expo Go where no projectId is available
     return null;
   }
 }
