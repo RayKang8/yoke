@@ -116,7 +116,12 @@ export default function GroupsScreen() {
 
     const { data: group, error } = await supabase
       .from('groups')
-      .insert({ name: groupName.trim(), created_by: user.id, invite_code })
+      .insert({
+        name: groupName.trim(),
+        created_by: user.id,
+        invite_code,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      })
       .select()
       .single();
 

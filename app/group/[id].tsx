@@ -33,6 +33,7 @@ interface GroupDetail {
   invite_code: string;
   streak: number;
   created_by: string;
+  timezone?: string | null;
 }
 
 export default function GroupDetailScreen() {
@@ -81,8 +82,17 @@ export default function GroupDetailScreen() {
     setGroup(groupData);
     setMembers((memberData as unknown as Member[]) ?? []);
 
-    const { data: todayPassage } = await supabase
-      .from('passages').select('id').eq('date', localDateStr()).maybeSingle();
+    // Groups with a canonical timezone: "today" is determined by that timezone,
+    // and any devotional posted within today's window counts (passage date irrelevant).
+    // Legacy groups (timezone = null): keep original passage-date matching.
+    const groupTz: string | null = (groupData as any)?.timezone ?? null;
+
+    let todayPassageId: string | null = null;
+    if (!groupTz) {
+      const { data: tp } = await supabase
+        .from('passages').select('id').eq('date', localDateStr()).maybeSingle();
+      todayPassageId = tp?.id ?? null;
+    }
 
     const { data: dgRows } = await supabase
       .from('devotional_groups')
@@ -91,11 +101,17 @@ export default function GroupDetailScreen() {
 
     const allDevos = (dgRows ?? []).map((r: any) => r.devotional).filter(Boolean);
 
-    const todayDevos = todayPassage
-      ? allDevos.filter((d: any) => d.passage_id === todayPassage.id)
-      : [];
+    const isToday = groupTz
+      ? (() => {
+          const groupToday = new Date().toLocaleDateString('en-CA', { timeZone: groupTz });
+          return (d: any) =>
+            new Date(d.created_at).toLocaleDateString('en-CA', { timeZone: groupTz }) === groupToday;
+        })()
+      : (d: any) => todayPassageId && d.passage_id === todayPassageId;
+
+    const todayDevos = allDevos.filter(isToday);
     const pastDevos = allDevos
-      .filter((d: any) => !todayPassage || d.passage_id !== todayPassage.id)
+      .filter((d: any) => !isToday(d))
       .sort((a: any, b: any) => {
         const da = a.passage?.date ?? '';
         const db = b.passage?.date ?? '';

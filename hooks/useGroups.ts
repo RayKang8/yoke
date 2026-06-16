@@ -9,6 +9,7 @@ export interface GroupSummary {
   streak: number;
   member_count: number;
   posted_today: number;
+  timezone?: string | null;
 }
 
 export function useGroups() {
@@ -39,7 +40,7 @@ export function useGroups() {
 
     const { data: groupsData } = await supabase
       .from('groups')
-      .select('id, name, invite_code, streak')
+      .select('id, name, invite_code, streak, timezone')
       .in('id', groupIds);
 
     if (!groupsData) { setLoading(false); return; }
@@ -50,40 +51,48 @@ export function useGroups() {
       .select('group_id, user_id')
       .in('group_id', groupIds);
 
-    // Get today's passage id
-    const { data: todayPassage } = await supabase
-      .from('passages')
-      .select('id')
-      .eq('date', localDateStr())
-      .maybeSingle();
+    // Get today's passage id (only needed for legacy groups with no timezone)
+    const hasLegacyGroups = (groupsData ?? []).some((g: any) => !g.timezone);
+    const todayPassageId = hasLegacyGroups
+      ? (await supabase.from('passages').select('id').eq('date', localDateStr()).maybeSingle()).data?.id ?? null
+      : null;
 
-    // Get which members shared today's passage to each group (via devotional_groups)
-    // Two-step query to avoid nested RLS join chains
+    // Determine "posted today" per group+member.
+    // Two-step query to avoid nested RLS join chains.
+    // Groups with timezone: use posting timestamp in group's timezone.
+    // Groups without timezone: use passage date match (legacy behavior).
     const postedToGroupIds = new Set<string>(); // "groupId:userId"
-    if (todayPassage) {
-      const { data: dg } = await supabase
-        .from('devotional_groups')
-        .select('group_id, devotional_id')
-        .in('group_id', groupIds);
+    const { data: dg } = await supabase
+      .from('devotional_groups')
+      .select('group_id, devotional_id')
+      .in('group_id', groupIds);
 
-      if (dg && dg.length > 0) {
-        const devotionalIds = [...new Set(dg.map((r: any) => r.devotional_id))];
-        const { data: devos } = await supabase
-          .from('devotionals')
-          .select('id, user_id')
-          .in('id', devotionalIds)
-          .eq('passage_id', todayPassage.id);
+    if (dg && dg.length > 0) {
+      const devotionalIds = [...new Set((dg as any[]).map(r => r.devotional_id))];
+      const { data: devos } = await supabase
+        .from('devotionals')
+        .select('id, user_id, created_at, passage_id')
+        .in('id', devotionalIds);
 
-        for (const d of devos ?? []) {
-          const devGroups = dg.filter((r: any) => r.devotional_id === d.id);
-          for (const g of devGroups) {
-            postedToGroupIds.add(`${g.group_id}:${d.user_id}`);
-          }
+      const devoMap = new Map((devos as any[] ?? []).map(d => [d.id, d]));
+
+      for (const row of dg as any[]) {
+        const devo = devoMap.get(row.devotional_id);
+        if (!devo) continue;
+        const group = (groupsData as any[]).find(g => g.id === row.group_id);
+        const tz: string | null = group?.timezone ?? null;
+
+        if (tz) {
+          const groupToday = new Date().toLocaleDateString('en-CA', { timeZone: tz });
+          const postDate = new Date(devo.created_at).toLocaleDateString('en-CA', { timeZone: tz });
+          if (postDate === groupToday) postedToGroupIds.add(`${row.group_id}:${devo.user_id}`);
+        } else if (todayPassageId && devo.passage_id === todayPassageId) {
+          postedToGroupIds.add(`${row.group_id}:${devo.user_id}`);
         }
       }
     }
 
-    const summaries: GroupSummary[] = groupsData.map(g => {
+    const summaries: GroupSummary[] = (groupsData as any[]).map(g => {
       const members = (allMembers ?? []).filter(m => m.group_id === g.id);
       const posted = members.filter(m => postedToGroupIds.has(`${g.id}:${m.user_id}`));
       return {
