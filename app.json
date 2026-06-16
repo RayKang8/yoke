@@ -3,7 +3,7 @@
     "name": "Yoke",
     "slug": "yoke",
     "scheme": "yoke",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/Yoke-Icon.png",
     "userInterfaceStyle": "automatic",
@@ -14,6 +14,7 @@
       "backgroundColor": "#FDD72D"
     },
     "ios": {
+      "buildNumber": "9",
       "supportsTablet": false,
       "requireFullScreen": true,
       "bundleIdentifier": "com.yokefaith.app",
