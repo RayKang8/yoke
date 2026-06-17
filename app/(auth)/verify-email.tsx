@@ -13,20 +13,9 @@ export default function VerifyEmailScreen() {
   const [checking, setChecking] = useState(false);
   const [resending, setResending] = useState(false);
 
-  // If the user taps the email link and the app opens via deep link,
-  // Supabase fires SIGNED_IN with email_confirmed_at set — auto-advance.
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (
-        (event === 'SIGNED_IN' || event === 'USER_UPDATED') &&
-        session?.user?.email_confirmed_at
-      ) {
-        analytics.capture('email_confirmed');
-        router.replace('/(auth)/onboarding');
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  // Routing after email confirmation is handled entirely by _layout.tsx's routing
+  // effect. A second onAuthStateChange listener here raced with it and always lost
+  // (the routing effect fires last because it awaits AsyncStorage).
 
   async function handleCheckConfirmed() {
     setChecking(true);

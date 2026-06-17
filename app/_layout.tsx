@@ -70,6 +70,7 @@ export default function RootLayout() {
         // not user-scoped, so falling back to it causes new users on a device that
         // already has an account to skip onboarding entirely.
         const onboardingDone = await AsyncStorage.getItem(`onboarding_done_${session.user.id}`);
+        console.log('[routing] uid:', session.user.id, 'confirmed:', !!session.user.email_confirmed_at, 'onboardingDone:', onboardingDone);
         if (!onboardingDone) {
           router.replace('/(auth)/onboarding');
         } else {
