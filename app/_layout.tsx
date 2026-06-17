@@ -66,13 +66,10 @@ export default function RootLayout() {
           router.replace('/(auth)/verify-email');
           return;
         }
-        // Use per-user key so a deleted+recreated account (new UUID) always sees onboarding.
-        // Fall back to the legacy global key so existing users aren't shown it again.
-        const [[, perUserDone], [, legacyDone]] = await AsyncStorage.multiGet([
-          `onboarding_done_${session.user.id}`,
-          'onboarding_done',
-        ]);
-        const onboardingDone = perUserDone ?? legacyDone;
+        // Per-user key only. The old global 'onboarding_done' key is device-scoped,
+        // not user-scoped, so falling back to it causes new users on a device that
+        // already has an account to skip onboarding entirely.
+        const onboardingDone = await AsyncStorage.getItem(`onboarding_done_${session.user.id}`);
         if (!onboardingDone) {
           router.replace('/(auth)/onboarding');
         } else {
