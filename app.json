@@ -25,6 +25,7 @@
       }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/Yoke.png",
         "backgroundColor": "#F5C842"
