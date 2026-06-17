@@ -35,11 +35,16 @@ export function useAuth() {
     init();
 
     // Runtime deep links: app already open (password reset, email re-confirmation).
-    // Exchange the code; onAuthStateChange will update session and the routing
-    // effect in _layout handles navigation.
-    const linkSub = Linking.addEventListener('url', ({ url }) => {
+    // After exchanging the code, explicitly call getSession() so the routing
+    // effect sees email_confirmed_at — onAuthStateChange alone is unreliable
+    // on iOS when the app resumes from background.
+    const linkSub = Linking.addEventListener('url', async ({ url }) => {
       if (!url?.includes('code=')) return;
-      supabase.auth.exchangeCodeForSession(url).catch(() => {});
+      try {
+        await supabase.auth.exchangeCodeForSession(url);
+        const { data: { session: refreshed } } = await supabase.auth.getSession();
+        setSession(refreshed);
+      } catch {}
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
