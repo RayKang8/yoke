@@ -236,8 +236,10 @@ export default function HomeScreen() {
       return;
     }
 
-    // Share to selected groups
-    const groupIds = [...selectedAudiences].filter(a => a !== 'public' && a !== 'friends');
+    // Share to selected groups — filter against live groups list to drop any
+    // stale IDs from groups the user has since left (AsyncStorage may be stale).
+    const activeGroupIds = new Set(groups.map(g => g.id));
+    const groupIds = [...selectedAudiences].filter(a => a !== 'public' && a !== 'friends' && activeGroupIds.has(a));
     if (groupIds.length > 0) {
       const { error: shareError } = await supabase.from('devotional_groups').insert(
         groupIds.map(group_id => ({ devotional_id: data.id, group_id }))
@@ -296,7 +298,10 @@ export default function HomeScreen() {
         : editAudiences.has('friends') ? 'friends'
         : 'private';
 
-      const groupIds = [...editAudiences].filter(a => a !== 'public' && a !== 'friends');
+      // Same stale-ID guard as handlePost — editAudiences was seeded from
+      // cachedGroupIds which may include groups the user has since left.
+      const activeGroupIds = new Set(groups.map(g => g.id));
+      const groupIds = [...editAudiences].filter(a => a !== 'public' && a !== 'friends' && activeGroupIds.has(a));
 
       const { error } = await supabase.rpc('save_devotional_edit', {
         p_devotional_id:     todaysDevotion.id,

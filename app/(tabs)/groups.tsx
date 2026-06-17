@@ -97,61 +97,31 @@ export default function GroupsScreen() {
   async function handleCreate() {
     if (!groupName.trim()) return;
 
-    if (!isPremium && groups.length >= 1) {
-      Alert.alert(
-        'Upgrade to Premium',
-        'Free accounts can join 1 group. Upgrade to Yoke Premium for unlimited groups.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
-
     setBusy(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setBusy(false); return; }
-
-    // Generate invite code via DB function
-    const { data: codeData } = await supabase.rpc('generate_invite_code');
-    const invite_code = codeData as string;
-
-    const { data: group, error } = await supabase
-      .from('groups')
-      .insert({
-        name: groupName.trim(),
-        created_by: user.id,
-        invite_code,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      })
-      .select()
-      .single();
-
-    if (error || !group) {
-      Alert.alert('Error', error?.message ?? 'Could not create group.');
-      setBusy(false);
-      return;
-    }
-
-    // Add creator as member
-    const { error: memberError } = await supabase
-      .from('group_members')
-      .insert({ group_id: group.id, user_id: user.id });
-
-    if (memberError) {
-      Alert.alert('Error', memberError.message ?? 'Could not add you to the group.');
-      setBusy(false);
-      return;
-    }
-
+    const { data, error } = await supabase.rpc('create_group', {
+      p_name:     groupName.trim(),
+      p_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    });
     setBusy(false);
+
+    if (error) {
+      if (error.message?.includes('Upgrade to Premium')) {
+        Alert.alert('Upgrade to Premium', 'Free accounts can be in 1 group. Upgrade to Yoke Premium for unlimited groups.');
+      } else {
+        Alert.alert('Error', error.message ?? 'Could not create group.');
+      }
+      return;
+    }
+
+    const group = data as { id: string; name: string; invite_code: string };
     setShowCreate(false);
     setGroupName('');
     haptics.success();
     analytics.capture('group_created');
     refetch();
 
-    // Share invite code
     Share.share({
-      message: `Join my Yoke group "${group.name}"! Use invite code: ${invite_code}`,
+      message: `Join my Yoke group "${group.name}"! Use invite code: ${group.invite_code}`,
     });
   }
 
