@@ -131,6 +131,7 @@ export default function SettingsScreen() {
             await AsyncStorage.multiRemove([
               'onboarding_done',
               `onboarding_done_${user.id}`,
+              'post_confirm_goto_login',
               'pending_email',
               'reminderTime',
               `reminderTime_${user.id}`,
