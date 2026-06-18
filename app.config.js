@@ -1,3 +1,9 @@
+import { writeFileSync } from 'fs';
+
+if (process.env.GOOGLE_SERVICES_JSON_BASE64) {
+  writeFileSync('./google-services.json', Buffer.from(process.env.GOOGLE_SERVICES_JSON_BASE64, 'base64'));
+}
+
 export default {
   expo: {
     name: 'Yoke',
@@ -27,7 +33,7 @@ export default {
       },
     },
     android: {
-      googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
+      googleServicesFile: './google-services.json',
       permissions: [
         'android.permission.RECEIVE_BOOT_COMPLETED',
         'android.permission.VIBRATE',
