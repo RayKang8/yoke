@@ -397,8 +397,9 @@ export default function OnboardingScreen() {
             <Text style={{ color: CREAM, fontSize: 30, fontFamily: 'Lora_700Bold', lineHeight: 40, marginBottom: 10 }}>
               One last thing...
             </Text>
-            <Text style={{ color: DIM, fontSize: 16, fontFamily: 'Nunito_400Regular', lineHeight: 26, marginBottom: 20 }}>
-              Yoke is free to use. Premium helps keep it running and unlocks:
+            <Text style={{ fontSize: 16, fontFamily: 'Nunito_400Regular', lineHeight: 26, marginBottom: 20 }}>
+              <Text style={{ color: CREAM, fontFamily: 'Nunito_700Bold' }}>Yoke is free to use.</Text>
+              <Text style={{ color: DIM }}>{' '}Premium helps keep it running and unlocks:</Text>
             </Text>
             <View style={{ marginBottom: 28, gap: 12 }}>
               {([
