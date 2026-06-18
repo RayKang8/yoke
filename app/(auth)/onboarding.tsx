@@ -6,6 +6,7 @@ import {
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Linking from 'expo-linking';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, Easing, runOnJS,
 } from 'react-native-reanimated';
@@ -494,10 +495,20 @@ export default function OnboardingScreen() {
 
             <Text style={{
               color: 'rgba(255,255,255,0.22)', fontSize: 11,
-              fontFamily: 'Nunito_400Regular', textAlign: 'center', marginTop: 16,
+              fontFamily: 'Nunito_400Regular', textAlign: 'center', marginTop: 16, lineHeight: 18,
             }}>
-              Cancel anytime · Prices in your local currency
+              Cancel anytime · Prices in your local currency{'\n'}Payment charged to your Apple ID at confirmation. Subscription auto-renews unless cancelled 24 hours before the end of the current period.
             </Text>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 10, gap: 6 }}>
+              <TouchableOpacity onPress={() => Linking.openURL('https://yokefaith.com/privacy')} style={{ paddingVertical: 8, paddingHorizontal: 4 }}>
+                <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, fontFamily: 'Nunito_400Regular' }}>Privacy Policy</Text>
+              </TouchableOpacity>
+              <Text style={{ color: 'rgba(255,255,255,0.22)', fontSize: 11 }}>·</Text>
+              <TouchableOpacity onPress={() => Linking.openURL('https://yokefaith.com/terms')} style={{ paddingVertical: 8, paddingHorizontal: 4 }}>
+                <Text style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, fontFamily: 'Nunito_400Regular' }}>Terms of Use</Text>
+              </TouchableOpacity>
+            </View>
           </ScrollView>
         );
 
