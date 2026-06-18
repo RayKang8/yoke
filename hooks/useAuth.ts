@@ -16,9 +16,17 @@ export function useAuth() {
       try {
         const url = await Linking.getInitialURL();
         if (url?.includes('code=')) {
-          await supabase.auth.exchangeCodeForSession(url);
+          const { error } = await supabase.auth.exchangeCodeForSession(url);
+          if (error) {
+            console.warn('[useAuth] cold-start exchange failed:', error.message);
+          } else if (url.includes('reset-password')) {
+            // Set recovery immediately — don't wait for onAuthStateChange async
+            setIsRecovery(true);
+          }
         }
-      } catch {}
+      } catch (e) {
+        console.warn('[useAuth] cold-start init error:', e);
+      }
 
       try {
         const { data: { session } } = await supabase.auth.getSession();
