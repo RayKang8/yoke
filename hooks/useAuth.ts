@@ -45,16 +45,16 @@ export function useAuth() {
         await supabase.auth.exchangeCodeForSession(url);
       } catch {}
 
-      if (lastEvent === 'PASSWORD_RECOVERY') {
-        // Routing effect handles this — isRecovery is now true.
+      // Detect recovery from the URL directly — onAuthStateChange fires async
+      // so lastEvent may still be null by the time the await resolves.
+      if (lastEvent === 'PASSWORD_RECOVERY' || url.includes('reset-password')) {
+        // Routing effect handles navigation once isRecovery is set.
         setLoading(false);
         return;
       }
 
       // Email confirmation: sign out the temporary unconfirmed session and
       // flag the routing effect to send the user to login instead of welcome.
-      // They sign in fresh, which produces a confirmed session that the
-      // routing effect uses to route them to onboarding.
       try { await supabase.auth.signOut(); } catch {}
       await AsyncStorage.setItem('post_confirm_goto_login', '1');
       setLoading(false);
