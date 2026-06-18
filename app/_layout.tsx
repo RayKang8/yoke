@@ -50,18 +50,21 @@ export default function RootLayout() {
     SplashScreen.hideAsync().catch(() => {});
   }, []);
 
+  // Recovery routing — isolated so the normal effect can never override it.
   useEffect(() => {
-    if (loading) return;
+    if (loading || !isRecovery) return;
+    router.replace('/(auth)/reset-password');
+  }, [isRecovery, loading]);
+
+  // Normal routing — completely disabled while recovery is active.
+  useEffect(() => {
+    if (loading || isRecovery) return;
     (async () => {
       if (session) {
         analytics.identify(session.user.id, {
           email: session.user.email ?? null,
           name: session.user.user_metadata?.name ?? null,
         });
-        if (isRecovery) {
-          router.replace('/(auth)/reset-password');
-          return;
-        }
         if (!session.user.email_confirmed_at) {
           router.replace('/(auth)/verify-email');
           return;

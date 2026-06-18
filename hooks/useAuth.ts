@@ -17,11 +17,12 @@ export function useAuth() {
           // Ensure the Supabase client has loaded from AsyncStorage
           // (including the PKCE code verifier) before attempting the exchange.
           await supabase.auth.getSession();
-          const { data, error } = await supabase.auth.exchangeCodeForSession(url);
+          // exchangeCodeForSession expects the raw auth code, not the full URL.
+          const code = new URL(url).searchParams.get('code') ?? '';
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) {
             console.warn('[useAuth] cold-start exchange failed:', error.message);
           } else if (url.includes('reset-password') && data.session) {
-            // Set state directly from exchange result — don't wait for onAuthStateChange
             setSession(data.session);
             setIsRecovery(true);
             setLoading(false);
@@ -48,12 +49,13 @@ export function useAuth() {
       if (!url?.includes('code=')) return;
       setLoading(true);
 
-      const { data, error } = await supabase.auth.exchangeCodeForSession(url)
+      // exchangeCodeForSession expects the raw auth code, not the full URL.
+      const code = new URL(url).searchParams.get('code') ?? '';
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
         .catch(e => ({ data: { session: null as Session | null, user: null }, error: e }));
 
       if (url.includes('reset-password')) {
         if (!error && data.session) {
-          // Set state directly — don't depend on onAuthStateChange timing
           setSession(data.session);
           setIsRecovery(true);
         } else {
@@ -71,13 +73,9 @@ export function useAuth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      // Only set isRecovery on PASSWORD_RECOVERY, only clear it on SIGNED_OUT.
-      // Other events (INITIAL_SESSION, TOKEN_REFRESHED, SIGNED_IN) must not
-      // clear it — they fire async after the exchange and would route the user
-      // away from the reset-password screen.
-      if (event === 'PASSWORD_RECOVERY') {
-        setIsRecovery(true);
-      } else if (event === 'SIGNED_OUT') {
+      // exchangeCodeForSession fires SIGNED_IN (not PASSWORD_RECOVERY) — isRecovery
+      // is set directly in linkSub/init above. Only clear it on explicit sign-out.
+      if (event === 'SIGNED_OUT') {
         setIsRecovery(false);
       }
     });
