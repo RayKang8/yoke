@@ -4,7 +4,7 @@ import {
   KeyboardAvoidingView, Platform, ActivityIndicator,
   useColorScheme, Alert,
 } from 'react-native';
-import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
 
@@ -36,7 +36,10 @@ export default function ResetPasswordScreen() {
     }
 
     Alert.alert('Password updated', 'Your password has been changed. You can now log in.', [
-      { text: 'OK', onPress: () => { supabase.auth.signOut(); router.replace('/(auth)/login'); } },
+      { text: 'OK', onPress: async () => {
+        await AsyncStorage.setItem('post_confirm_goto_login', '1');
+        supabase.auth.signOut();
+      }},
     ]);
   }
 

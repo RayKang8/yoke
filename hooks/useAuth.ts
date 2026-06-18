@@ -71,7 +71,15 @@ export function useAuth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      setIsRecovery(event === 'PASSWORD_RECOVERY');
+      // Only set isRecovery on PASSWORD_RECOVERY, only clear it on SIGNED_OUT.
+      // Other events (INITIAL_SESSION, TOKEN_REFRESHED, SIGNED_IN) must not
+      // clear it — they fire async after the exchange and would route the user
+      // away from the reset-password screen.
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecovery(true);
+      } else if (event === 'SIGNED_OUT') {
+        setIsRecovery(false);
+      }
     });
 
     return () => {
