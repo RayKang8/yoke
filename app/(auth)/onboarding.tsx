@@ -16,6 +16,7 @@ import { getOfferings, purchasePackage, PRODUCT_IDS } from '../../lib/revenuecat
 import { TimePickerModal } from '../../components/TimePickerModal';
 import {
   AmenIcon, BellIcon, StarIcon, FriendsIcon, CheckIcon, PrayIcon, ChurchIcon,
+  StreakIcon, CalendarIcon,
 } from '../../components/icons';
 
 // expo-store-review requires a new native build — guard the import
@@ -395,9 +396,23 @@ export default function OnboardingScreen() {
             <Text style={{ color: CREAM, fontSize: 30, fontFamily: 'Lora_700Bold', lineHeight: 40, marginBottom: 10 }}>
               One last thing...
             </Text>
-            <Text style={{ color: DIM, fontSize: 16, fontFamily: 'Nunito_400Regular', lineHeight: 26, marginBottom: 32 }}>
-              Yoke is free to use. Premium helps keep it running for the price of a coffee a month — and unlocks everything.
+            <Text style={{ color: DIM, fontSize: 16, fontFamily: 'Nunito_400Regular', lineHeight: 26, marginBottom: 20 }}>
+              Yoke is free to use. Premium helps keep it running and unlocks:
             </Text>
+            <View style={{ marginBottom: 28, gap: 12 }}>
+              {([
+                [StreakIcon, 'Streak tracking'],
+                [FriendsIcon, 'Unlimited groups'],
+                [CalendarIcon, 'Full calendar history'],
+              ] as const).map(([Icon, label]) => (
+                <View key={label} style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(245,200,66,0.12)', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={16} color={GOLD} />
+                  </View>
+                  <Text style={{ color: CREAM, fontSize: 15, fontFamily: 'Nunito_600SemiBold' }}>{label}</Text>
+                </View>
+              ))}
+            </View>
 
             {/* Annual card */}
             <TouchableOpacity
@@ -507,7 +522,7 @@ export default function OnboardingScreen() {
                 You're all set!
               </Text>
               <Text style={{ color: DIM, fontSize: 17, fontFamily: 'Nunito_400Regular', textAlign: 'center', lineHeight: 28, paddingHorizontal: 4 }}>
-                Welcome to the Yoke community. Your journey starts today — open the app each morning and let the Word guide your day.
+                Welcome to the Yoke community. Your journey starts today. Open the app each morning and let the Word guide your day.
               </Text>
             </View>
             <Btn label="Let's Go!" onPress={handleFinish} />
