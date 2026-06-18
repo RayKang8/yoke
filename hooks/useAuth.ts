@@ -13,17 +13,19 @@ export function useAuth() {
     async function init() {
       try {
         const url = await Linking.getInitialURL();
-        console.log('[useAuth] initialURL:', url ?? 'null');
         if (url?.includes('code=')) {
-          // Call getSession first to ensure the Supabase client has fully
-          // loaded from AsyncStorage (including the PKCE code verifier).
+          // Ensure the Supabase client has loaded from AsyncStorage
+          // (including the PKCE code verifier) before attempting the exchange.
           await supabase.auth.getSession();
-          const { error } = await supabase.auth.exchangeCodeForSession(url);
+          const { data, error } = await supabase.auth.exchangeCodeForSession(url);
           if (error) {
             console.warn('[useAuth] cold-start exchange failed:', error.message);
-          } else if (url.includes('reset-password')) {
-            console.log('[useAuth] cold-start recovery detected — setting isRecovery');
+          } else if (url.includes('reset-password') && data.session) {
+            // Set state directly from exchange result — don't wait for onAuthStateChange
+            setSession(data.session);
             setIsRecovery(true);
+            setLoading(false);
+            return;
           }
         }
       } catch (e) {
@@ -32,7 +34,6 @@ export function useAuth() {
 
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        console.log('[useAuth] session after init:', session?.user?.email ?? 'null');
         setSession(session);
       } catch {
         setSession(null);
@@ -43,40 +44,32 @@ export function useAuth() {
 
     init();
 
-    // lastEvent is set synchronously inside exchangeCodeForSession before
-    // the promise resolves, so we can read it immediately after the await.
-    let lastEvent: string | null = null;
-
     const linkSub = Linking.addEventListener('url', async ({ url }) => {
       if (!url?.includes('code=')) return;
-      console.log('[useAuth] linkSub URL:', url);
       setLoading(true);
-      lastEvent = null;
-      try {
-        const { error } = await supabase.auth.exchangeCodeForSession(url);
-        if (error) console.warn('[useAuth] linkSub exchange failed:', error.message);
-      } catch (e) {
-        console.warn('[useAuth] linkSub exchange threw:', e);
-      }
-      console.log('[useAuth] linkSub lastEvent after exchange:', lastEvent);
 
-      // Detect recovery from the URL directly — onAuthStateChange fires async
-      // so lastEvent may still be null by the time the await resolves.
-      if (lastEvent === 'PASSWORD_RECOVERY' || url.includes('reset-password')) {
-        console.log('[useAuth] linkSub recovery — routing effect will handle navigation');
+      const { data, error } = await supabase.auth.exchangeCodeForSession(url)
+        .catch(e => ({ data: { session: null as Session | null, user: null }, error: e }));
+
+      if (url.includes('reset-password')) {
+        if (!error && data.session) {
+          // Set state directly — don't depend on onAuthStateChange timing
+          setSession(data.session);
+          setIsRecovery(true);
+        } else {
+          console.warn('[useAuth] recovery exchange failed:', error?.message);
+        }
         setLoading(false);
         return;
       }
 
-      // Email confirmation: sign out the temporary unconfirmed session and
-      // flag the routing effect to send the user to login instead of welcome.
+      // Email confirmation: sign out and route to login
       try { await supabase.auth.signOut(); } catch {}
       await AsyncStorage.setItem('post_confirm_goto_login', '1');
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      lastEvent = event;
       setSession(session);
       setIsRecovery(event === 'PASSWORD_RECOVERY');
     });
