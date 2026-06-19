@@ -21,8 +21,7 @@ export default {
     },
     ios: {
       buildNumber: '10',
-      supportsTablet: false,
-      requireFullScreen: true,
+      supportsTablet: true,
       bundleIdentifier: 'com.yokefaith.app',
       infoPlist: {
         NSUserNotificationsUsageDescription:
