@@ -13,6 +13,7 @@ import { analytics } from '../lib/posthog';
 import { colors } from '../constants/theme';
 import { Avatar } from '../components/Avatar';
 import { BackIcon, CheckIcon } from '../components/icons';
+import { isIPad } from '../lib/platform';
 
 interface SearchResult {
   id: string;
@@ -147,7 +148,7 @@ export default function FriendsScreen() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: c.background }}
-      contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 40 }}
+      contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 40, ...(isIPad && { maxWidth: 720, alignSelf: 'center' as const, width: '100%' }) }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={c.accent} />}
     >
       {/* Back */}

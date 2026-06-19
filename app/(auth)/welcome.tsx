@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, Linking } from 'react-native';
 import { router } from 'expo-router';
 import YokeLogo from '../../components/YokeLogo';
+import { isIPad } from '../../lib/platform';
 
 const PRIVACY_URL = 'https://yokefaith.com/privacy';
 const TERMS_URL   = 'https://yokefaith.com/terms';
@@ -16,7 +17,7 @@ export default function WelcomeScreen() {
       </View>
 
       {/* Buttons */}
-      <View className="w-full gap-3">
+      <View style={isIPad ? { width: '100%', maxWidth: 480, alignSelf: 'center' } : { width: '100%' }} className="gap-3">
         <TouchableOpacity
           onPress={() => router.push('/(auth)/signup')}
           style={{ backgroundColor: '#1A1A1A', borderRadius: 14 }}

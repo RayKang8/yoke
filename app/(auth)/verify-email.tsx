@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { analytics } from '../../lib/posthog';
 import { colors } from '../../constants/theme';
 import { EmailIcon } from '../../components/icons';
+import { isIPad } from '../../lib/platform';
 
 export default function VerifyEmailScreen() {
   const scheme = useColorScheme();
@@ -58,7 +59,8 @@ export default function VerifyEmailScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: c.background }} className="px-8 pt-20 pb-12 items-center">
+    <View style={{ flex: 1, backgroundColor: c.background }} className="items-center justify-center">
+    <View style={isIPad ? { maxWidth: 480, width: '100%' } : { flex: 1 }} className="px-8 pt-20 pb-12 items-center">
       <EmailIcon size={64} color={c.accent} />
       <Text style={{ color: c.textPrimary, fontSize: 28, fontWeight: '700', marginBottom: 12, textAlign: 'center' }}>
         Check your email
@@ -96,6 +98,7 @@ export default function VerifyEmailScreen() {
       >
         <Text style={{ color: c.textSecondary, fontSize: 15 }}>Use a different account</Text>
       </TouchableOpacity>
+    </View>
     </View>
   );
 }

@@ -12,6 +12,7 @@ import { colors } from '../../constants/theme';
 import { ChurchIcon, BackIcon, CheckIcon, LockIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
 import { usePremium } from '../../hooks/usePremium';
+import { isIPad } from '../../lib/platform';
 
 interface UserProfile {
   id: string;
@@ -280,7 +281,7 @@ export default function UserProfileScreen() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: c.background }}
-      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 40, paddingHorizontal: 20 }}
+      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 40, paddingHorizontal: 20, ...(isIPad && { maxWidth: 720, alignSelf: 'center' as const, width: '100%' }) }}
     >
       <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 24 }}>
         <BackIcon size={16} color={c.textSecondary} />

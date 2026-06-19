@@ -14,6 +14,7 @@ import { GroupsIcon, StreakIcon, BackIcon } from '../../components/icons';
 import { FeedItem } from '../../hooks/useFeed';
 import { usePremium } from '../../hooks/usePremium';
 import { sendPushToUser } from '../../lib/notifications';
+import { isIPad } from '../../lib/platform';
 
 interface Member {
   user_id: string;
@@ -230,7 +231,7 @@ export default function GroupDetailScreen() {
     <>
       <ScrollView
         style={{ flex: 1, backgroundColor: c.background }}
-        contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 40, paddingHorizontal: 20 }}
+        contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 40, paddingHorizontal: 20, ...(isIPad && { maxWidth: 720, alignSelf: 'center' as const, width: '100%' }) }}
       >
         {/* Header */}
         <View className="flex-row items-center justify-between mb-4">

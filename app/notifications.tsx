@@ -10,6 +10,7 @@ import { timeAgo } from '../lib/utils';
 import { useNotifications, AppNotification } from '../hooks/useNotifications';
 import { Avatar } from '../components/Avatar';
 import { BackIcon } from '../components/icons';
+import { isIPad } from '../lib/platform';
 
 function notificationText(n: AppNotification): string {
   const name = n.actor?.name ?? 'Someone';
@@ -37,10 +38,12 @@ export default function NotificationsScreen() {
     }
   }
 
+  const centerStyle = isIPad ? { maxWidth: 720, width: '100%' as const, alignSelf: 'center' as const } : undefined;
+
   return (
     <View style={{ flex: 1, backgroundColor: c.background }}>
       {/* Header */}
-      <View style={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: c.border }}>
+      <View style={[{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: c.border }, centerStyle]}>
         <View className="flex-row items-center justify-between">
           <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <BackIcon size={16} color={c.textSecondary} />
@@ -67,7 +70,7 @@ export default function NotificationsScreen() {
           </Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ paddingVertical: 8 }}>
+        <ScrollView contentContainerStyle={{ paddingVertical: 8, ...(isIPad && { maxWidth: 720, alignSelf: 'center' as const, width: '100%' }) }}>
           {notifications.map(n => (
             <TouchableOpacity
               key={n.id}

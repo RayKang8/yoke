@@ -1,11 +1,10 @@
-import { View, Platform, PlatformIOSStatic, useColorScheme } from 'react-native';
-
-const isIPad = Platform.OS === 'ios' && (Platform as PlatformIOSStatic).isPad;
+import { View, useColorScheme } from 'react-native';
 import { Tabs } from 'expo-router';
 import { colors } from '../../constants/theme';
 import { HomeIcon, FeedIcon, BibleIcon, GroupsIcon, ProfileIcon } from '../../components/icons';
 import { useBadgeCounts } from '../../hooks/useBadgeCounts';
 import TabletSidebar from '../../components/TabletSidebar';
+import { isIPad } from '../../lib/platform';
 
 export default function TabsLayout() {
   const scheme = useColorScheme();
@@ -40,7 +39,11 @@ export default function TabsLayout() {
     return (
       <View style={{ flex: 1, flexDirection: 'row', backgroundColor: c.background }}>
         <TabletSidebar />
-        {tabs}
+        <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, maxWidth: 720, width: '100%', alignSelf: 'center' }}>
+            {tabs}
+          </View>
+        </View>
       </View>
     );
   }

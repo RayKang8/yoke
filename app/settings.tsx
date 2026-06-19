@@ -16,6 +16,7 @@ import { PaywallSheet } from '../components/PaywallSheet';
 import { usePremium } from '../hooks/usePremium';
 import { BackIcon, ChevronRightIcon, CheckIcon } from '../components/icons';
 import { TimePickerModal } from '../components/TimePickerModal';
+import { isIPad } from '../lib/platform';
 
 const PRIVACY_URL = 'https://yokefaith.com/privacy';
 const TERMS_URL   = 'https://yokefaith.com/terms';
@@ -181,7 +182,7 @@ export default function SettingsScreen() {
     <>
     <ScrollView
       style={{ flex: 1, backgroundColor: c.background }}
-      contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 40 }}
+      contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 40, ...(isIPad && { maxWidth: 720, alignSelf: 'center' as const, width: '100%' }) }}
     >
       <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 24 }}>
         <BackIcon size={16} color={c.textSecondary} />

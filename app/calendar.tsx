@@ -13,6 +13,7 @@ import { colors } from '../constants/theme';
 import { Translation } from '../types';
 import { StreakIcon, BackIcon, ChevronLeftIcon, ChevronRightIcon, LockIcon, PrayIcon, AmenIcon, HitIcon } from '../components/icons';
 import { usePremium } from '../hooks/usePremium';
+import { isIPad } from '../lib/platform';
 
 const REACTION_CONFIG: Record<string, { label: string; Icon: React.FC<{ size?: number; color?: string }> }> = {
   pray: { label: 'Pray',        Icon: PrayIcon },
@@ -163,7 +164,7 @@ export default function CalendarScreen() {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: c.background }}
-      contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 40 }}
+      contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 20, paddingBottom: 40, ...(isIPad && { maxWidth: 720, alignSelf: 'center' as const, width: '100%' }) }}
     >
       <TouchableOpacity onPress={() => router.back()} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 24 }}>
         <BackIcon size={16} color={c.textSecondary} />

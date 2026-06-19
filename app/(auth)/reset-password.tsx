@@ -7,6 +7,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../lib/supabase';
 import { colors } from '../../constants/theme';
+import { isIPad } from '../../lib/platform';
 
 export default function ResetPasswordScreen() {
   const scheme = useColorScheme();
@@ -48,7 +49,8 @@ export default function ResetPasswordScreen() {
       style={{ flex: 1, backgroundColor: c.background }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={{ flex: 1, paddingHorizontal: 32, paddingTop: 80, paddingBottom: 40 }}>
+      <View style={{ flex: 1, alignItems: isIPad ? 'center' : undefined }}>
+      <View style={[{ paddingHorizontal: 32, paddingTop: 80, paddingBottom: 40 }, isIPad ? { maxWidth: 520, width: '100%' } : { flex: 1 }]}>
         <Text style={{ color: c.textPrimary, fontSize: 30, fontWeight: '700', marginBottom: 8 }}>
           Set new password
         </Text>
@@ -99,6 +101,7 @@ export default function ResetPasswordScreen() {
             : <Text style={{ color: '#1A1A1A', fontSize: 17, fontWeight: '600' }}>Update Password</Text>
           }
         </TouchableOpacity>
+      </View>
       </View>
     </KeyboardAvoidingView>
   );
