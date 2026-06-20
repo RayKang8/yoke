@@ -9,7 +9,7 @@ export default {
     name: 'Yoke',
     slug: 'yoke',
     scheme: 'yoke',
-    version: '1.0.4',
+    version: '1.0.5',
     orientation: 'portrait',
     icon: './assets/Yoke-Icon.png',
     userInterfaceStyle: 'automatic',
@@ -20,7 +20,7 @@ export default {
       backgroundColor: '#FDD72D',
     },
     ios: {
-      buildNumber: '10',
+      buildNumber: '11',
       supportsTablet: true,
       bundleIdentifier: 'com.yokefaith.app',
       infoPlist: {
