@@ -242,7 +242,7 @@ export default function OnboardingScreen() {
   const pb = { paddingBottom: insets.bottom + 28 } as const;
 
   function renderStep() {
-    if (step >= S_SHOWCASE && step < S_REVIEW) {
+    if (step >= S_SHOWCASE && step < S_FAITH) {
       const idx = step - S_SHOWCASE;
       const item = SHOWCASES[idx];
       const nextStep = idx < SHOWCASES.length - 1 ? step + 1 : S_FAITH;
