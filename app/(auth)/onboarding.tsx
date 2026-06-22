@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView,
-  useWindowDimensions, Alert,
+  useWindowDimensions, Alert, Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -33,15 +33,44 @@ const CREAM = '#FAFAF7';
 const DIM  = 'rgba(250,250,247,0.5)';
 const SURF = '#252525';
 
-const TOTAL = 8;
-const S_WELCOME = 0;
-const S_FAITH   = 1;
-const S_WHO     = 2;
-const S_JOURNEY = 3;
+const TOTAL = 13;
+const S_WELCOME  = 0;
+const S_FAITH    = 1;
+const S_WHO      = 2;
+const S_JOURNEY  = 3;
 const S_REMINDER = 4;
-const S_REVIEW  = 5;
-const S_PAYWALL = 6;
-const S_DONE    = 7;
+const S_SHOWCASE = 5; // S_SHOWCASE through S_SHOWCASE+4 = 5 feature slides
+const S_REVIEW   = 10;
+const S_PAYWALL  = 11;
+const S_DONE     = 12;
+
+const SHOWCASES = [
+  {
+    title: 'Your Daily Passage',
+    description: 'Each morning, Yoke gives you a curated scripture and a reflection prompt. Read, sit with it, and write what\'s on your heart.',
+    image: require('../../assets/Devotional.png'),
+  },
+  {
+    title: 'Post & Celebrate',
+    description: 'Share your devotional with friends and your group. Reactions and streak badges make daily faithfulness feel tangible.',
+    image: require('../../assets/posted devotional.png'),
+  },
+  {
+    title: 'Grow Together',
+    description: 'Create or join a small group with friends, family, or your church. Stay accountable and read each other\'s reflections.',
+    image: require('../../assets/groups.png'),
+  },
+  {
+    title: 'Community Feed',
+    description: 'See devotionals from friends and group members. Encourage them with a reaction or a heartfelt comment.',
+    image: require('../../assets/feed.png'),
+  },
+  {
+    title: 'Built-in Bible',
+    description: 'The full Bible is right here in the app. Look up any verse, explore any book, stay grounded in the Word.',
+    image: require('../../assets/bible.png'),
+  },
+] as const;
 
 function Chip({ label, on, onPress }: { label: string; on: boolean; onPress: () => void }) {
   return (
@@ -169,7 +198,7 @@ export default function OnboardingScreen() {
     await registerForPushNotifications();
     await AsyncStorage.setItem(`reminderTime_${user.id}`, time);
     await scheduleDailyReminder(time);
-    advance(S_REVIEW);
+    advance(S_SHOWCASE);
   }
 
   async function handleReview() {
@@ -213,6 +242,60 @@ export default function OnboardingScreen() {
   const pb = { paddingBottom: insets.bottom + 28 } as const;
 
   function renderStep() {
+    if (step >= S_SHOWCASE && step < S_REVIEW) {
+      const idx = step - S_SHOWCASE;
+      const item = SHOWCASES[idx];
+      const nextStep = step + 1 < S_REVIEW ? step + 1 : S_REVIEW;
+      return (
+        <View style={[{ flex: 1 }, px, pb]}>
+          <View style={{ marginTop: 12, marginBottom: 14 }}>
+            <Text style={{ color: CREAM, fontSize: 28, fontFamily: 'Lora_700Bold', lineHeight: 36 }}>
+              {item.title}
+            </Text>
+            <Text style={{ color: DIM, fontSize: 15, fontFamily: 'Nunito_400Regular', lineHeight: 24, marginTop: 8 }}>
+              {item.description}
+            </Text>
+          </View>
+
+          <View style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 24,
+            overflow: 'hidden',
+            borderWidth: 1,
+            borderColor: 'rgba(245,200,66,0.15)',
+            backgroundColor: 'rgba(255,255,255,0.03)',
+          }}>
+            <Image
+              source={item.image}
+              style={{ width: width - 56, height: '100%' }}
+              resizeMode="contain"
+            />
+          </View>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, paddingVertical: 18 }}>
+            {SHOWCASES.map((_, i) => (
+              <View
+                key={i}
+                style={{
+                  width: i === idx ? 20 : 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: i === idx ? GOLD : 'rgba(255,255,255,0.2)',
+                }}
+              />
+            ))}
+          </View>
+
+          <Btn
+            label={idx === SHOWCASES.length - 1 ? 'Continue' : 'Next'}
+            onPress={() => advance(nextStep)}
+          />
+        </View>
+      );
+    }
+
     switch (step) {
 
       case S_WELCOME:
