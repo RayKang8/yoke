@@ -35,11 +35,11 @@ const SURF = '#252525';
 
 const TOTAL = 13;
 const S_WELCOME  = 0;
-const S_FAITH    = 1;
-const S_WHO      = 2;
-const S_JOURNEY  = 3;
-const S_REMINDER = 4;
-const S_SHOWCASE = 5; // S_SHOWCASE through S_SHOWCASE+4 = 5 feature slides
+const S_SHOWCASE = 1; // S_SHOWCASE through S_SHOWCASE+4 = 5 feature slides
+const S_FAITH    = 6;
+const S_WHO      = 7;
+const S_JOURNEY  = 8;
+const S_REMINDER = 9;
 const S_REVIEW   = 10;
 const S_PAYWALL  = 11;
 const S_DONE     = 12;
@@ -198,7 +198,7 @@ export default function OnboardingScreen() {
     await registerForPushNotifications();
     await AsyncStorage.setItem(`reminderTime_${user.id}`, time);
     await scheduleDailyReminder(time);
-    advance(S_SHOWCASE);
+    advance(S_REVIEW);
   }
 
   async function handleReview() {
@@ -245,7 +245,7 @@ export default function OnboardingScreen() {
     if (step >= S_SHOWCASE && step < S_REVIEW) {
       const idx = step - S_SHOWCASE;
       const item = SHOWCASES[idx];
-      const nextStep = step + 1 < S_REVIEW ? step + 1 : S_REVIEW;
+      const nextStep = idx < SHOWCASES.length - 1 ? step + 1 : S_FAITH;
       return (
         <View style={[{ flex: 1 }, px, pb]}>
           <View style={{ marginTop: 12, marginBottom: 14 }}>
@@ -330,7 +330,7 @@ export default function OnboardingScreen() {
                 Every day, Yoke brings you a short passage to read and a simple question to sit with. Write your reflection, share it with friends or your small group, and grow in faith together.
               </Text>
             </View>
-            <Btn label="Get Started" onPress={() => advance(S_FAITH)} />
+            <Btn label="Get Started" onPress={() => advance(S_SHOWCASE)} />
           </View>
         );
 
